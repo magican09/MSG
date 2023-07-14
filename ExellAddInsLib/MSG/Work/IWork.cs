@@ -8,5 +8,6 @@
         decimal ProjectQuantity { get; set; }
         decimal Quantity { get; set; }
         UnitOfMeasurement UnitOfMeasurement { get; set; }
+
     }
 }

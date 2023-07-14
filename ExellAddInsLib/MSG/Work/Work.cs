@@ -1,19 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Excel = Microsoft.Office.Interop.Excel;
+using Microsoft.Office.Tools.Excel;
+using Microsoft.Office.Interop.Excel;
+using System.ComponentModel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class Work : IWork
+    public abstract class Work : IWork
     {
+        public event ExcelPropertyChangedEventHandler PropertyChanged = delegate { };
+        public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property = "")
+        {
+            
+             member = new_val;
+             
+        }
+
+        private int _rowIndex;
+
+        public int RowIndex
+        {
+            get { return _rowIndex; }
+            set { _rowIndex = value; }
+        }
+
+        public Dictionary<string, int> PropertyColumnMap = new Dictionary<string, int>();
+
+        
         private string _number;
 
         public string Number
         {
             get { return _number; }
-            set { _number = value; }
+            set { SetProperty(ref _number,value); }
         }//Номер работы
         private string _name;
 
@@ -59,6 +83,15 @@ namespace ExellAddInsLib.MSG
             get { return _reportCard; }
             set { _reportCard = value; }
         }
+       
+        private MSGExellModel _ownerExellModel;
+
+        public MSGExellModel OwnerExellModel
+        {
+            get { return _ownerExellModel; }
+            set { _ownerExellModel = value; }
+        }
+
 
     }
 }
