@@ -11,15 +11,9 @@ using System.ComponentModel;
 
 namespace ExellAddInsLib.MSG
 {
-    public abstract class Work : IWork
-    {
-        public event ExcelPropertyChangedEventHandler PropertyChanged = delegate { };
-        public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property = "")
-        {
-            
-             member = new_val;
-             
-        }
+    public abstract class Work : ExcelBindableBase, IWork
+    { 
+
 
         private int _rowIndex;
 
@@ -44,14 +38,14 @@ namespace ExellAddInsLib.MSG
         public string Name
         {
             get { return _name; }
-            set { _name = value; }
+            set { SetProperty(ref _name, value); }
         }//Наименование работы
         private decimal _quantity;
 
         public decimal Quantity
         {
             get { return _quantity; }
-            set { _quantity = value; }
+            set { SetProperty(ref _quantity, value); }
         }//Выполенный объем работ
 
         private decimal _projectQuantity;
@@ -59,7 +53,7 @@ namespace ExellAddInsLib.MSG
         public decimal ProjectQuantity
         {
             get { return _projectQuantity; }
-            set { _projectQuantity = value; }
+            set { SetProperty(ref _projectQuantity, value); }
         }//Проектный объем работ
 
         private UnitOfMeasurement _unitOfMeasurement;
@@ -67,13 +61,13 @@ namespace ExellAddInsLib.MSG
         public UnitOfMeasurement UnitOfMeasurement
         {
             get { return _unitOfMeasurement; }
-            set { _unitOfMeasurement = value; }
+            set { SetProperty(ref _unitOfMeasurement, value); }
         } //Ед. изм.
         private decimal _laboriousness;
         public decimal Laboriousness
         {
             get { return _laboriousness; }
-            set { _laboriousness = value; }
+            set { SetProperty(ref _laboriousness, value); }
         }//Трудоемкость  чел.час/ед.изм
 
         private WorkReportCard _reportCard;
@@ -81,10 +75,12 @@ namespace ExellAddInsLib.MSG
         public WorkReportCard ReportCard
         {
             get { return _reportCard; }
-            set { _reportCard = value; }
+            set { SetProperty(ref _reportCard, value); }
         }
        
         private MSGExellModel _ownerExellModel;
+
+     
 
         public MSGExellModel OwnerExellModel
         {

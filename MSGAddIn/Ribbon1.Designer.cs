@@ -37,6 +37,7 @@
             this.tab1 = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.buttonMSGLoad = this.Factory.CreateRibbonButton();
+            this.btnNotifyTest = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.SuspendLayout();
@@ -50,6 +51,7 @@
             // group1
             // 
             this.group1.Items.Add(this.buttonMSGLoad);
+            this.group1.Items.Add(this.btnNotifyTest);
             this.group1.Label = "Загрузка данных";
             this.group1.Name = "group1";
             // 
@@ -58,6 +60,12 @@
             this.buttonMSGLoad.Label = "Загрузить";
             this.buttonMSGLoad.Name = "buttonMSGLoad";
             this.buttonMSGLoad.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonMSGLoad_Click);
+            // 
+            // btnNotifyTest
+            // 
+            this.btnNotifyTest.Label = "btnNotifyTest";
+            this.btnNotifyTest.Name = "btnNotifyTest";
+            this.btnNotifyTest.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnNotifyTest_Click);
             // 
             // Ribbon1
             // 
@@ -78,6 +86,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonMSGLoad;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnNotifyTest;
     }
 
     partial class ThisRibbonCollection

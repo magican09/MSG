@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace ExellAddInsLib.MSG
 {
-    public  class WorkScheduleChunk
+    public  class WorkScheduleChunk:ExcelBindableBase
     {
         private DateTime _startTime;
         public DateTime StartTime
         {
             get { return _startTime; }
-            set {  _startTime =  value; }
+            set { SetProperty(ref _startTime,value); }
         }//Дата начала
         private DateTime? _endTime;
         public DateTime? EndTime
         {
             get { return _endTime; }
-            set {  _endTime =  value; }
+            set {   SetProperty(ref _endTime, value); }
         }//Дата окончания
         public WorkScheduleChunk(DateTime start_time, DateTime ent_time)
         {

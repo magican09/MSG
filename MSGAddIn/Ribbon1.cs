@@ -49,6 +49,7 @@ namespace MSGAddIn
         public const int WRC_DATE_COL = 24;
 
        
+        MSGExellModel MSGExellModel = new MSGExellModel();
 
         public ObservableCollection<MSGWork> MSGWorks { get; private set; } = new ObservableCollection<MSGWork>();
         public ObservableCollection<VOVRWork> VOVRWorks { get; private set; } = new ObservableCollection<VOVRWork>();
@@ -63,23 +64,25 @@ namespace MSGAddIn
 
         private void buttonMSGLoad_Click(object sender, RibbonControlEventArgs e)
         {
-            MSGWorks.Clear();
+            MSGExellModel.RegisterSheet = (Excel.Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets[1];
+
+            MSGExellModel.MSGWorks.Clear();
             VOVRWorks.Clear();
             KSWorks.Clear();
 
             LoadMSGWorks();
             LoadVOVRWorks();
-            LoadKSWorks();
-            LoadWorksReportCards();
-            CalcLabourness();
+            //LoadKSWorks();
+            //LoadWorksReportCards();
+            //CalcLabourness();
         }
 
         private void LoadMSGWorks()
         {
-            Excel.Worksheet registerSheet = (Excel.Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets[1];
+            Excel.Worksheet registerSheet = MSGExellModel.RegisterSheet;
             int rowIndex = FIRST_ROW_INDEX;
             null_str_count = 0;
-            MSGWorks.Clear();
+            MSGExellModel.MSGWorks.Clear();
 
             while (null_str_count < 100)
             {
@@ -90,12 +93,17 @@ namespace MSGAddIn
                     MSGWork msg_work = new MSGWork();
 
                     msg_work.Number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value.ToString();
+                    msg_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, MSG_NUMBER_COL));
+
                     msg_work.Name = registerSheet.Cells[rowIndex, MSG_NAME_COL].Value;
+                    msg_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, MSG_NAME_COL));
+
                     if (registerSheet.Cells[rowIndex, MSG_MEASURE_COL].Value != null)
                     {
                         msg_work.UnitOfMeasurement = new UnitOfMeasurement(registerSheet.Cells[rowIndex, MSG_MEASURE_COL].Value);
                         registerSheet.Range[registerSheet.Cells[rowIndex, MSG_MEASURE_COL], registerSheet.Cells[rowIndex, MSG_MEASURE_COL]].Interior.Color
                             = XlRgbColor.rgbWhite;
+                        msg_work.CellAddressesMap.Add("UnitOfMeasurement", Tuple.Create(rowIndex, MSG_MEASURE_COL));
                     }
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, MSG_MEASURE_COL], registerSheet.Cells[rowIndex, MSG_MEASURE_COL]].Interior.Color
@@ -106,6 +114,8 @@ namespace MSGAddIn
                         msg_work.ProjectQuantity = Decimal.Parse(registerSheet.Cells[rowIndex, MSG_QUANTITY_COL].Value.ToString());
                         registerSheet.Range[registerSheet.Cells[rowIndex, MSG_QUANTITY_COL], registerSheet.Cells[rowIndex, MSG_QUANTITY_COL]].Interior.Color
                             = XlRgbColor.rgbWhite;
+                        msg_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, MSG_QUANTITY_COL));
+
                     }
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, MSG_QUANTITY_COL], registerSheet.Cells[rowIndex, MSG_QUANTITY_COL]].Interior.Color
@@ -116,6 +126,7 @@ namespace MSGAddIn
                         msg_work.Laboriousness = Decimal.Parse(registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL].Value.ToString());
                         registerSheet.Range[registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL], registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL]].Interior.Color
                             = XlRgbColor.rgbWhite;
+                        msg_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, MSG_LABOURNESS_COL));
                     }
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL], registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL]].Interior.Color
@@ -123,23 +134,33 @@ namespace MSGAddIn
 
                     DateTime start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
                     DateTime end_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_END_DATE_COL].Value.ToString());
-                    msg_work.WorkSchedules.Add(new WorkScheduleChunk(start_time, end_time));
+                    WorkScheduleChunk work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
+                    work_sh_chunk.CellAddressesMap.Add("StartTime", Tuple.Create(rowIndex, MSG_START_DATE_COL));
+                    work_sh_chunk.CellAddressesMap.Add("EndTime", Tuple.Create(rowIndex, MSG_END_DATE_COL));
+                    msg_work.WorkSchedules.Add(work_sh_chunk);
+                    MSGExellModel.Register(work_sh_chunk);
+
                     while (registerSheet.Cells[rowIndex + 1, MSG_NUMBER_COL].Value == null
                                  && registerSheet.Cells[rowIndex + 1, MSG_START_DATE_COL].Value != null)
                     {
                         rowIndex++;
                         start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
                         end_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_END_DATE_COL].Value.ToString());
-                        msg_work.WorkSchedules.Add(new WorkScheduleChunk(start_time, end_time));
+                        WorkScheduleChunk  extra_work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
+                        extra_work_sh_chunk.CellAddressesMap.Add("StartTime", Tuple.Create(rowIndex, MSG_START_DATE_COL));
+                        extra_work_sh_chunk.CellAddressesMap.Add("EndTime", Tuple.Create(rowIndex, MSG_END_DATE_COL));
+
+                        msg_work.WorkSchedules.Add(extra_work_sh_chunk);
+                        MSGExellModel.Register(extra_work_sh_chunk);
                     }
-                    MSGWorks.Add(msg_work);
+                    MSGExellModel.Register(msg_work);
                 }
                 rowIndex++;
             }
         }
         private void LoadVOVRWorks()
         {
-            Excel.Worksheet registerSheet = (Excel.Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets[1];
+            Excel.Worksheet registerSheet = MSGExellModel.RegisterSheet;
             int rowIndex = FIRST_ROW_INDEX;
             null_str_count = 0;
 
@@ -153,12 +174,18 @@ namespace MSGAddIn
                     VOVRWork vovr_work = new VOVRWork();
 
                     vovr_work.Number = registerSheet.Cells[rowIndex, VOVR_NUMBER_COL].Value.ToString();
-                    vovr_work.Name = registerSheet.Cells[rowIndex, VOVR_NAME_COL].Value;
+                    vovr_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, VOVR_NUMBER_COL));
+
+                    vovr_work.Name = registerSheet.Cells[rowIndex, VOVR_NAME_COL].Value.ToString();
+                    vovr_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, VOVR_NAME_COL));
+
                     if (registerSheet.Cells[rowIndex, VOVR_MEASURE_COL].Value != null)
                     {
                         vovr_work.UnitOfMeasurement = new UnitOfMeasurement(registerSheet.Cells[rowIndex, VOVR_MEASURE_COL].Value);
                         registerSheet.Range[registerSheet.Cells[rowIndex, VOVR_MEASURE_COL], registerSheet.Cells[rowIndex, VOVR_MEASURE_COL]].Interior.Color
                             = XlRgbColor.rgbWhite;
+                        vovr_work.CellAddressesMap.Add("UnitOfMeasurement", Tuple.Create(rowIndex, VOVR_MEASURE_COL));
+
                     }
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, VOVR_MEASURE_COL], registerSheet.Cells[rowIndex, VOVR_MEASURE_COL]].Interior.Color
@@ -169,6 +196,8 @@ namespace MSGAddIn
                         vovr_work.ProjectQuantity = Decimal.Parse(registerSheet.Cells[rowIndex, VOVR_QUANTITY_COL].Value.ToString());
                         registerSheet.Range[registerSheet.Cells[rowIndex, VOVR_QUANTITY_COL], registerSheet.Cells[rowIndex, VOVR_QUANTITY_COL]].Interior.Color
                             = XlRgbColor.rgbWhite;
+                        vovr_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, VOVR_QUANTITY_COL));
+
                     }
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, VOVR_QUANTITY_COL], registerSheet.Cells[rowIndex, VOVR_QUANTITY_COL]].Interior.Color
@@ -179,18 +208,17 @@ namespace MSGAddIn
                         vovr_work.Laboriousness = Decimal.Parse(registerSheet.Cells[rowIndex, VOVR_LABOURNESS_COL].Value.ToString());
                         registerSheet.Range[registerSheet.Cells[rowIndex, VOVR_LABOURNESS_COL], registerSheet.Cells[rowIndex, VOVR_LABOURNESS_COL]].Interior.Color
                             = XlRgbColor.rgbWhite;
+                        vovr_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, VOVR_LABOURNESS_COL));
+
                     }
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, VOVR_LABOURNESS_COL], registerSheet.Cells[rowIndex, VOVR_LABOURNESS_COL]].Interior.Color
                             = XlRgbColor.rgbRed;
 
-                    VOVRWorks.Add(vovr_work);
-                    MSGWork msg_work = MSGWorks.Where(w => w.Number.StartsWith(vovr_work.Number.Remove(vovr_work.Number.LastIndexOf(".")))).FirstOrDefault();
-                    if (msg_work != null)
-                    {
-                        msg_work.VOVRWorks.Add(vovr_work);
-                    }
+                    MSGExellModel.Register(vovr_work);
+                   
                 }
+
                 rowIndex++;
             }
         }
@@ -312,5 +340,10 @@ namespace MSGAddIn
             }
         }
 
+        private void btnNotifyTest_Click(object sender, RibbonControlEventArgs e)
+        {
+            MSGExellModel.VOVRWorks[0].Name = "2222222";
+
+        }
     }
 }
