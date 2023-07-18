@@ -17,10 +17,13 @@ namespace MSGAddIn
     {
         private const int POST_NUMBER_COL = 1;
         private const int POST_NAME_COL = 2;
+      
         private const int EMPLOYER_NUMBER_COL = 1;
         private const int EMPLOYER_NAME_COL = 2;
         private const int EMPLOYER_POSTNAME_COL = 3;
 
+        private const int UM_NUMBER_COL = 1;
+        private const int UM_NAME_COL = 2;
 
 
         MSGExellModel CurrentMSGExellModel;
@@ -28,27 +31,37 @@ namespace MSGAddIn
         ObservableCollection<MSGExellModel> MSGExellModels = new ObservableCollection<MSGExellModel>();
 
         ObservableCollection<Employer> Employers { get; set; } = new ObservableCollection<Employer>();
+        ObservableCollection<UnitOfMeasurement> UnitOfMeasurements = new ObservableCollection<UnitOfMeasurement>();
+
         Excel._Workbook CurrentWorkbook;
         
         Excel.Worksheet EmployersWorksheet;
         Excel.Worksheet PostsWorksheet;
-        Excel.Worksheet MeasurementsWorksheet;
+        Excel.Worksheet UnitMeasurementsWorksheet;
        
         private void OnActiveWorksheetChanged(Excel.Worksheet last_wsh, Excel.Worksheet new_wsh)
         {
             if (CurrentWorkbook == null)
                 CurrentWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
- 
-            if (EmployersWorksheet == null)
-                EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
-            if (PostsWorksheet == null)
-                PostsWorksheet = CurrentWorkbook.Worksheets["Должности"];
-            if (MeasurementsWorksheet == null)
-                MeasurementsWorksheet = CurrentWorkbook.Worksheets["Ед_изм"];
 
+            if (EmployersWorksheet == null)
+            {
+                EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
+                EmployersWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
+            }
+            if (PostsWorksheet == null)
+            {
+                PostsWorksheet = CurrentWorkbook.Worksheets["Должности"];
+                PostsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
+            }
+            if (UnitMeasurementsWorksheet == null)
+            {
+                UnitMeasurementsWorksheet = CurrentWorkbook.Worksheets["Ед_изм"];
+                UnitMeasurementsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
+            }
          
             this.ReloadEmployersList();
-
+            this.ReloadMeasurementsList();
             switch (new_wsh.Name)
             {
                 case "Ведомость_общая":
@@ -71,8 +84,10 @@ namespace MSGAddIn
             MSGExellModels.Clear();
             CommonMSGExellModel = new MSGExellModel();
             CommonMSGExellModel.RegisterSheet = (Excel.Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets["Ведомость_общая"];
+            CommonMSGExellModel.UnitOfMeasurements = UnitOfMeasurements;
 
-            PostsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
+
+
             EmployersWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
 
             foreach (Excel.Worksheet worksheet in Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets)
@@ -87,6 +102,10 @@ namespace MSGAddIn
                     {
                         MSGExellModel model = new MSGExellModel();
                         model.RegisterSheet = worksheet;
+                        model.UnitOfMeasurements = UnitOfMeasurements;
+                        model.RealoadAll();
+                        MSGExellModels.Add(model);
+                       
                     }
                 }
 
@@ -145,6 +164,20 @@ namespace MSGAddIn
             }
         }
 
+        private void ReloadMeasurementsList()
+        {
+            UnitOfMeasurements.Clear();
+            int row_index = 2;
+            while (UnitMeasurementsWorksheet.Cells[row_index, POST_NUMBER_COL].Value != null)
+            {
+                int number = int.Parse(UnitMeasurementsWorksheet.Cells[row_index, UM_NUMBER_COL].Value.ToString());
+                string name = UnitMeasurementsWorksheet.Cells[row_index, UM_NAME_COL].Value.ToString();
+                UnitOfMeasurements.Add(new UnitOfMeasurement(number, name));
+                row_index++;
+            }
+
+        }
+
         private void btnChangeEmployers_Click(object sender, RibbonControlEventArgs e)
         {
             Excel.Worksheet activeWorksheet = CurrentWorkbook.ActiveSheet;
@@ -159,6 +192,13 @@ namespace MSGAddIn
             activeWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
             CurrentWorkbook.Worksheets["Должности"].Visible = Excel.XlSheetVisibility.xlSheetVisible;
             CurrentWorkbook.Worksheets["Должности"].Activate();
+        }
+
+        private void btnShowAlllHidenWorksheets_Click(object sender, RibbonControlEventArgs e)
+        {
+            EmployersWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
+            PostsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
+            UnitMeasurementsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
         }
     }
 }

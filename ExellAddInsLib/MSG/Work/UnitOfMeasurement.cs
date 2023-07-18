@@ -8,6 +8,14 @@ namespace ExellAddInsLib.MSG
 {
     public  class UnitOfMeasurement
     {
+        private int _number;
+
+        public int Number
+        {
+            get { return _number; }
+            set { _number = value; }
+        }
+
         private string _name;
 
         public string Name
@@ -16,22 +24,14 @@ namespace ExellAddInsLib.MSG
             set { _name = value; }
         }//Наименование
 
-        private string _shortName;
-        public string ShortName
-        {
-            get { return _shortName; }
-            set {  _shortName =  value; }
-        }
-        private string _fullName;
-        public string FullName
-        {
-            get { return _fullName; }
-            set {  _fullName= value; }
-        }
-
+   
         public UnitOfMeasurement(string name)
         {
             Name = name;
+        }
+        public UnitOfMeasurement(int number, string name):this(name)
+        {
+            Number = number;
         }
 
     }

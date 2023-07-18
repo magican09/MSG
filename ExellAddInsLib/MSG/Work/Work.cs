@@ -8,11 +8,13 @@ using Excel = Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Excel;
 using Microsoft.Office.Interop.Excel;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace ExellAddInsLib.MSG
 {
     public abstract class Work : ExcelBindableBase, IWork
-    { 
+    {
 
 
         private int _rowIndex;
@@ -25,13 +27,13 @@ namespace ExellAddInsLib.MSG
 
         public Dictionary<string, int> PropertyColumnMap = new Dictionary<string, int>();
 
-        
+
         private string _number;
 
         public string Number
         {
             get { return _number; }
-            set { SetProperty(ref _number,value); }
+            set { SetProperty(ref _number, value); }
         }//Номер работы
         private string _name;
 
@@ -77,10 +79,10 @@ namespace ExellAddInsLib.MSG
             get { return _reportCard; }
             set { SetProperty(ref _reportCard, value); }
         }
-       
+
         private MSGExellModel _ownerExellModel;
 
-     
+
 
         public MSGExellModel OwnerExellModel
         {
@@ -88,6 +90,37 @@ namespace ExellAddInsLib.MSG
             set { _ownerExellModel = value; }
         }
 
+        private IWork _owner;
 
+        public IWork Owner
+        {
+            get { return _owner; }
+            set { _owner = value;  }
+        }
+        private ObservableCollection<IWork> _children;
+
+        public ObservableCollection<IWork> Children
+        {
+            get { return _children; }
+            set { _children = value; }
+        }
+        public Work()
+        {
+            Children.CollectionChanged += OnChildrenAdd;
+        }
+
+        private void OnChildrenAdd(object sender, NotifyCollectionChangedEventArgs e)
+        {
+           if(e.Action==NotifyCollectionChangedAction.Add)
+            {
+                foreach (IWork child in e.NewItems)
+                    child.Owner = this;
+            }
+            if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                foreach (IWork child in e.OldItems)
+                    child.Owner = null;
+            }
+        }
     }
 }

@@ -49,8 +49,8 @@ namespace ExellAddInsLib.MSG
         public ObservableCollection<MSGWork> MSGWorks { get; private set; } = new ObservableCollection<MSGWork>();
         public ObservableCollection<VOVRWork> VOVRWorks { get; private set; } = new ObservableCollection<VOVRWork>();
         public ObservableCollection<KSWork> KSWorks { get; private set; } = new ObservableCollection<KSWork>();
-
-
+        public ObservableCollection<UnitOfMeasurement> UnitOfMeasurements { get; set; } = new ObservableCollection<UnitOfMeasurement>();
+        public MSGExellModel Owner { get; set; }
         public Excel.Worksheet RegisterSheet { get; set; }
 
         public MSGExellModel()
@@ -111,8 +111,6 @@ namespace ExellAddInsLib.MSG
                         break;
                     }
 
-
-
             }
         }
         private void OnPropertyChange(object sender, PropertyChangedEventArgs e)
@@ -120,21 +118,21 @@ namespace ExellAddInsLib.MSG
             if (sender is IExcelBindableBase bindable_object)
             {
                 if (bindable_object.CellAddressesMap.ContainsKey(e.PropertyName))
-                    {
+                {
                     RegisterSheet.Cells[bindable_object.CellAddressesMap[e.PropertyName].Item1,
                    bindable_object.CellAddressesMap[e.PropertyName].Item2] = sender.GetType().GetProperty(e.PropertyName).GetValue(sender).ToString();
                 }
             }
         }
 
-        public void  ResetMSG_VOVR()
+        public void ResetMSG_VOVR()
         {
-            foreach(MSGWork msg_work in this.MSGWorks)
+            foreach (MSGWork msg_work in this.MSGWorks)
             {
                 msg_work.Quantity = 0;
                 msg_work.Laboriousness = 0;
             }
-            foreach(VOVRWork vovr_work  in this.VOVRWorks)
+            foreach (VOVRWork vovr_work in this.VOVRWorks)
             {
                 vovr_work.Quantity = 0;
                 vovr_work.Laboriousness = 0;
@@ -156,6 +154,7 @@ namespace ExellAddInsLib.MSG
                     MSGWork msg_work = new MSGWork();
 
                     msg_work.Number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value.ToString();
+                   
                     msg_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, MSG_NUMBER_COL));
 
                     msg_work.Name = registerSheet.Cells[rowIndex, MSG_NAME_COL].Value;
@@ -172,9 +171,14 @@ namespace ExellAddInsLib.MSG
 
                     if (registerSheet.Cells[rowIndex, MSG_MEASURE_COL].Value != null)
                     {
-                        msg_work.UnitOfMeasurement = new UnitOfMeasurement(registerSheet.Cells[rowIndex, MSG_MEASURE_COL].Value);
-                        registerSheet.Range[registerSheet.Cells[rowIndex, MSG_MEASURE_COL], registerSheet.Cells[rowIndex, MSG_MEASURE_COL]].Interior.Color
-                            = XlRgbColor.rgbWhite;
+                        string un_name = registerSheet.Cells[rowIndex, MSG_MEASURE_COL].Value.ToString();
+                        UnitOfMeasurement unitOfMeasurement = UnitOfMeasurements.FirstOrDefault(um => um.Name == un_name);
+                        if (unitOfMeasurement != null)
+                        {
+                            msg_work.UnitOfMeasurement = unitOfMeasurement;
+                            registerSheet.Range[registerSheet.Cells[rowIndex, MSG_MEASURE_COL], registerSheet.Cells[rowIndex, MSG_MEASURE_COL]].Interior.Color
+                                = XlRgbColor.rgbWhite;
+                        }
                     }
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, MSG_MEASURE_COL], registerSheet.Cells[rowIndex, MSG_MEASURE_COL]].Interior.Color
@@ -456,6 +460,16 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
+        public void RealoadAll()
+        {
+            this.MSGWorks.Clear();
+            this.VOVRWorks.Clear();
+            this.KSWorks.Clear();
 
+            this.LoadMSGWorks();
+            this.LoadVOVRWorks();
+            this.LoadKSWorks();
+            this.LoadWorksReportCards();
+        }
     }
 }

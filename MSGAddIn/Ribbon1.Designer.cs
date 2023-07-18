@@ -44,15 +44,19 @@
             this.buttonMSGLoad = this.Factory.CreateRibbonButton();
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.btnCalcQuantities = this.Factory.CreateRibbonButton();
+            this.group2 = this.Factory.CreateRibbonGroup();
+            this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.grpInChargePersons.SuspendLayout();
             this.group1.SuspendLayout();
+            this.group2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tab1
             // 
             this.tab1.Groups.Add(this.grpInChargePersons);
             this.tab1.Groups.Add(this.group1);
+            this.tab1.Groups.Add(this.group2);
             this.tab1.Label = "МСГ";
             this.tab1.Name = "tab1";
             // 
@@ -113,6 +117,18 @@
             this.btnCalcQuantities.Label = "Подсчет  выполненных работ";
             this.btnCalcQuantities.Name = "btnCalcQuantities";
             // 
+            // group2
+            // 
+            this.group2.Items.Add(this.btnShowAlllHidenWorksheets);
+            this.group2.Label = "group2";
+            this.group2.Name = "group2";
+            // 
+            // btnShowAlllHidenWorksheets
+            // 
+            this.btnShowAlllHidenWorksheets.Label = "Показать все скрытые листы";
+            this.btnShowAlllHidenWorksheets.Name = "btnShowAlllHidenWorksheets";
+            this.btnShowAlllHidenWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnShowAlllHidenWorksheets_Click);
+            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -125,6 +141,8 @@
             this.grpInChargePersons.PerformLayout();
             this.group1.ResumeLayout(false);
             this.group1.PerformLayout();
+            this.group2.ResumeLayout(false);
+            this.group2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -141,6 +159,8 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonComboBox comboBoxEmployerName;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeEmployers;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangePosts;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group2;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnShowAlllHidenWorksheets;
     }
 
     partial class ThisRibbonCollection
