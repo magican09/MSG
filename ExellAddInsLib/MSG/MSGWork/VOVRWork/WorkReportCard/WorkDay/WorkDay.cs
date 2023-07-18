@@ -6,23 +6,23 @@ using System.Threading.Tasks;
 
 namespace ExellAddInsLib.MSG
 {
-    public class WorkDay
+    public class WorkDay:ExcelBindableBase
     {
 		private DateTime _date;
 
 		public DateTime Date
 		{
 			get { return _date; }
-			set { _date = value; }
-		}
+            set { SetProperty(ref _date, value); }
+        }
 
 		private decimal _quantity;
 
 		public decimal Quantity
         {
 			get { return _quantity; }
-			set { _quantity = value; }
-		}
+            set { SetProperty(ref _quantity, value); }
+        }
 
 
 	}

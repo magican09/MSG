@@ -20,7 +20,7 @@ namespace ExellAddInsLib.MSG
         public int RowIndex
         {
             get { return _rowIndex; }
-            set { _rowIndex = value; }
+            set { SetProperty(ref _rowIndex, value); }
         }
 
         public Dictionary<string, int> PropertyColumnMap = new Dictionary<string, int>();
@@ -70,7 +70,7 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _laboriousness, value); }
         }//Трудоемкость  чел.час/ед.изм
 
-        private WorkReportCard _reportCard;
+        private WorkReportCard _reportCard = new WorkReportCard();
 
         public WorkReportCard ReportCard
         {

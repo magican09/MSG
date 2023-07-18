@@ -14,15 +14,9 @@ namespace ExellAddInsLib.MSG
 		public ObservableCollection<KSWork> KSWorks
         {
 			get { return _kSWorks; }
-			set { _kSWorks = value; }
-		}
-		private WorkReportCard _workReportCard = new WorkReportCard();
-
-		public WorkReportCard WorkReportCard
-        {
-			get { return _workReportCard; }
-			set { _workReportCard = value; }
-		}
+            set { SetProperty(ref _kSWorks, value); }
+        }
+		
 
 	}
 }

@@ -55,17 +55,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MSG\Employer\Employer.cs" />
+    <Compile Include="MSG\Employer\Person\Person.cs" />
+    <Compile Include="MSG\Employer\Post\Post.cs" />
     <Compile Include="MSG\ExcelBindableBase.cs" />
-    <Compile Include="MSG\ExtentionClasses.cs" />
-    <Compile Include="MSG\MSGExellModel\Delegates.cs" />
-    <Compile Include="MSG\MSGExellModel\ExelToWorkLink.cs" />
+    <Compile Include="MSG\ExcelNotifyChangedCollection.cs" />
+    <Compile Include="MSG\IExcelBindableBase.cs" />
     <Compile Include="MSG\MSGExellModel\MSGExellModel.cs" />
     <Compile Include="MSG\MSGWork\MSGWork.cs" />
-    <Compile Include="MSG\MSGWork\MSGWorksCollection.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\KSWork\KSWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\VOVRWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\WorkReportCard\WorkDay\WorkDay.cs" />
-    <Compile Include="MSG\PropToCellLinkInfo.cs" />
     <Compile Include="MSG\Work\IWork.cs" />
     <Compile Include="MSG\Work\UnitOfMeasurement.cs" />
     <Compile Include="MSG\MSGWork\WorkSchedule\WorkScheduleChunk\WorkScheduleChunk.cs" />

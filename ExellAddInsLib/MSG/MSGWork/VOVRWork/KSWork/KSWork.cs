@@ -13,8 +13,14 @@ namespace ExellAddInsLib.MSG
 		public string Code
 		{
 			get { return _code; }
-			set { _code = value; }
-		}
+            set { SetProperty(ref _code, value); }
+        }
+        //private WorkReportCard _workReportCard = new WorkReportCard();
 
-	}
+        //public WorkReportCard WorkReportCard
+        //{
+        //    get { return _workReportCard; }
+        //    set { SetProperty(ref _workReportCard, value); }
+        //}
+    }
 }
