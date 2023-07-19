@@ -97,7 +97,9 @@ namespace ExellAddInsLib.MSG
             get { return _owner; }
             set { _owner = value;  }
         }
-        private ObservableCollection<IWork> _children;
+       
+       
+        private ObservableCollection<IWork> _children = new ObservableCollection<IWork>();
 
         public ObservableCollection<IWork> Children
         {
@@ -121,6 +123,12 @@ namespace ExellAddInsLib.MSG
                 foreach (IWork child in e.OldItems)
                     child.Owner = null;
             }
+        }
+
+        public void ClearCalculatesFields()
+        {
+            this.Laboriousness = 0;
+            this.Quantity = 0;
         }
     }
 }

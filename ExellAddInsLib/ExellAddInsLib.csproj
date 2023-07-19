@@ -55,12 +55,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MSG\BindableBase.cs" />
     <Compile Include="MSG\Employer\Employer.cs" />
     <Compile Include="MSG\Employer\Person\Person.cs" />
     <Compile Include="MSG\Employer\Post\Post.cs" />
     <Compile Include="MSG\ExcelBindableBase.cs" />
     <Compile Include="MSG\ExcelNotifyChangedCollection.cs" />
     <Compile Include="MSG\IExcelBindableBase.cs" />
+    <Compile Include="MSG\Interface1.cs" />
     <Compile Include="MSG\MSGExellModel\MSGExellModel.cs" />
     <Compile Include="MSG\MSGWork\MSGWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\KSWork\KSWork.cs" />

@@ -25,5 +25,12 @@ namespace ExellAddInsLib.MSG
             StartTime = start_time;
             EndTime = ent_time;
         }
+        private int _workersNumber;
+
+        public int WorkesNumber
+        {
+            get { return _workersNumber; }
+            set { SetProperty(ref _workersNumber, value); }
+        }
     }
 }

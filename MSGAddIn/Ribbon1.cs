@@ -25,7 +25,7 @@ namespace MSGAddIn
         private const int UM_NUMBER_COL = 1;
         private const int UM_NAME_COL = 2;
 
-
+        bool first_start_flag = true;
         MSGExellModel CurrentMSGExellModel;
         MSGExellModel CommonMSGExellModel;
         ObservableCollection<MSGExellModel> MSGExellModels = new ObservableCollection<MSGExellModel>();
@@ -38,38 +38,46 @@ namespace MSGAddIn
         Excel.Worksheet EmployersWorksheet;
         Excel.Worksheet PostsWorksheet;
         Excel.Worksheet UnitMeasurementsWorksheet;
-       
+        Excel.Worksheet CommonMSGWorksheet;
+        Excel.Worksheet TemplateMSGWorksheet;
+
+        ObservableCollection<Excel.Worksheet> EmployerMSGWorksheets;
+
+        Employer SelectedEmloeyer;
+
         private void OnActiveWorksheetChanged(Excel.Worksheet last_wsh, Excel.Worksheet new_wsh)
         {
-            if (CurrentWorkbook == null)
+          if(first_start_flag)
+            {
                 CurrentWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
-
-            if (EmployersWorksheet == null)
-            {
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
-                EmployersWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
-            }
-            if (PostsWorksheet == null)
-            {
                 PostsWorksheet = CurrentWorkbook.Worksheets["Должности"];
-                PostsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
-            }
-            if (UnitMeasurementsWorksheet == null)
-            {
                 UnitMeasurementsWorksheet = CurrentWorkbook.Worksheets["Ед_изм"];
-                UnitMeasurementsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
+                CommonMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_общая"];
+                TemplateMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_шаблон"];
+                EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
+                foreach (Excel.Worksheet worksheet in Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets)
+                {
+                    if (worksheet.Name.Contains("_"))
+                    {
+                        string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
+                        int employer_number;
+                        int.TryParse(emoloyer_namber_str, out employer_number);
+                        if (employer_number != 0)
+                        {
+                            EmployerMSGWorksheets.Add(worksheet);
+                        }
+                    }
+                }
+                first_start_flag = false;
+                this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
+
             }
-         
             this.ReloadEmployersList();
             this.ReloadMeasurementsList();
-            switch (new_wsh.Name)
-            {
-                case "Ведомость_общая":
-                    {
+            this.ReloadAllModels();
 
-                        break;
-                    }
-            }
+
 
         }
 
@@ -79,60 +87,80 @@ namespace MSGAddIn
 
         }
 
-        private void buttonMSGLoad_Click(object sender, RibbonControlEventArgs e)
+        private void btnChangeCommonMSG_Click(object sender, RibbonControlEventArgs e)
         {
-            MSGExellModels.Clear();
-            CommonMSGExellModel = new MSGExellModel();
-            CommonMSGExellModel.RegisterSheet = (Excel.Worksheet)Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets["Ведомость_общая"];
-            CommonMSGExellModel.UnitOfMeasurements = UnitOfMeasurements;
-
-
-
-            EmployersWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
-
-            foreach (Excel.Worksheet worksheet in Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets)
-            {
-                if (worksheet.Name.Contains("_"))
-                {
-                    string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
-                    int employer_number;
-                     int.TryParse(emoloyer_namber_str,out employer_number);
-                    Employer employer = Employers.Where(em => em.Number == employer_number).FirstOrDefault();
-                    if(employer!=null)
-                    {
-                        MSGExellModel model = new MSGExellModel();
-                        model.RegisterSheet = worksheet;
-                        model.UnitOfMeasurements = UnitOfMeasurements;
-                        model.RealoadAll();
-                        MSGExellModels.Add(model);
-                       
-                    }
-                }
-
-            }
-
-            //CurrentMSGExellModel.MSGWorks.Clear();
-            //CurrentMSGExellModel.VOVRWorks.Clear();
-            //CurrentMSGExellModel.KSWorks.Clear();
-
-            //CurrentMSGExellModel.LoadMSGWorks();
-            //CurrentMSGExellModel.LoadVOVRWorks();
-            //CurrentMSGExellModel.LoadKSWorks();
-            //CurrentMSGExellModel. LoadWorksReportCards();
-
+            this.ShowWorksheet(CommonMSGWorksheet);
+            CurrentMSGExellModel = CommonMSGExellModel;
+            btnCalcLabournes.Enabled = true;
+            btnCalcQuantities.Enabled = true;
         }
-
-
-        private void btnNotifyTest_Click(object sender, RibbonControlEventArgs e)
+        private void btnCalcLabournes_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.CalcLabourness();
+        }
+        private void btnCalcQuantities_Click(object sender, RibbonControlEventArgs e)
+        {
+           
             CurrentMSGExellModel.CalcQuantity();
-
         }
 
+        private void btnShowAlllHidenWorksheets_Click(object sender, RibbonControlEventArgs e)
+        {
+            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetVisible);
 
+        }
+        private void btnChangeUOM_Click(object sender, RibbonControlEventArgs e)
+        {
+            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
+            UnitMeasurementsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
+            UnitMeasurementsWorksheet.Activate();
+        }
+       
 
+        private void comboBoxEmployerName_TextChanged(object sender, RibbonControlEventArgs e)
+        {
+            string sected_empl_name = comboBoxEmployerName.Text;
+            SelectedEmloeyer = Employers.FirstOrDefault(em => em.Name == sected_empl_name);
+            bntChangeEmployerMSG.Enabled = SelectedEmloeyer != null;
+        }
+        private void bntChangeEmployerMSG_Click(object sender, RibbonControlEventArgs e)
+        {
+            CurrentMSGExellModel.RealoadAll();
+            MSGExellModel empl_model = MSGExellModels.FirstOrDefault(m => m.Employer.Name == SelectedEmloeyer.Name);
+            CurrentMSGExellModel = empl_model;
+            this.ShowWorksheet(empl_model.RegisterSheet);
+            empl_model.UpdateWorksheetCommonPart();
+            CurrentMSGExellModel.ResetCalculatesFields();
+        }
+        private void btnChangeEmployers_Click(object sender, RibbonControlEventArgs e)
+        {
+            this.ShowWorksheet(EmployersWorksheet); 
+           
+        }
+        private void btnChangePosts_Click(object sender, RibbonControlEventArgs e)
+        {
+            this.ShowWorksheet(PostsWorksheet);
+        }
 
+        private void SetAllWorksheetsVisibleState(Excel.XlSheetVisibility visibility)
+        {
+            CommonMSGWorksheet.Visible = visibility;
+            TemplateMSGWorksheet.Visible = visibility;
+
+            EmployersWorksheet.Visible = visibility;
+            PostsWorksheet.Visible = visibility;
+            UnitMeasurementsWorksheet.Visible = visibility;
+
+            foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
+                worksheet.Visible = visibility;
+        }
+        private void ShowWorksheet(Excel.Worksheet worksheet)
+        {
+            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
+            worksheet.Visible = XlSheetVisibility.xlSheetVisible;
+            worksheet.Activate();
+          
+        }
 
         private void ReloadEmployersList()
         {
@@ -163,7 +191,6 @@ namespace MSGAddIn
                 comboBoxEmployerName.Items.Add(ddItem1);
             }
         }
-
         private void ReloadMeasurementsList()
         {
             UnitOfMeasurements.Clear();
@@ -177,28 +204,38 @@ namespace MSGAddIn
             }
 
         }
-
-        private void btnChangeEmployers_Click(object sender, RibbonControlEventArgs e)
+        private void ReloadAllModels()
         {
-            Excel.Worksheet activeWorksheet = CurrentWorkbook.ActiveSheet;
-            activeWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
-            CurrentWorkbook.Worksheets["Ответственные"].Visible = Excel.XlSheetVisibility.xlSheetVisible;
-            CurrentWorkbook.Worksheets["Ответственные"].Activate();
+            MSGExellModels.Clear();
+            CommonMSGExellModel = new MSGExellModel();
+            CommonMSGExellModel.RegisterSheet = CommonMSGWorksheet;
+            CommonMSGExellModel.UnitOfMeasurements = UnitOfMeasurements;
+            CommonMSGExellModel.RealoadAll();
+            foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
+            {
+                string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
+                int employer_number;
+                int.TryParse(emoloyer_namber_str, out employer_number);
+                Employer employer = Employers.Where(em => em.Number == employer_number).FirstOrDefault();
+                if (employer != null)
+                {
+                    MSGExellModel model = new MSGExellModel();
+                    model.RegisterSheet = worksheet;
+                    model.UnitOfMeasurements = UnitOfMeasurements;
+                    
+                    model.Employer = employer;
+                    model.Owner = CommonMSGExellModel;
+                    CommonMSGExellModel.Children.Add(model);
+                    MSGExellModels.Add(model);
+                    model.UpdateWorksheetCommonPart();
+                    model.RealoadAll();
+                }
+
+
+            }
+
         }
 
-        private void btnChangePosts_Click(object sender, RibbonControlEventArgs e)
-        {
-            Excel.Worksheet activeWorksheet = CurrentWorkbook.ActiveSheet;
-            activeWorksheet.Visible = Excel.XlSheetVisibility.xlSheetHidden;
-            CurrentWorkbook.Worksheets["Должности"].Visible = Excel.XlSheetVisibility.xlSheetVisible;
-            CurrentWorkbook.Worksheets["Должности"].Activate();
-        }
-
-        private void btnShowAlllHidenWorksheets_Click(object sender, RibbonControlEventArgs e)
-        {
-            EmployersWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
-            PostsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
-            UnitMeasurementsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
-        }
+       
     }
 }

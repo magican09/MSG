@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace ExellAddInsLib.MSG 
 {
-    public  class UnitOfMeasurement
+    public  class UnitOfMeasurement: BindableBase,INameable
     {
         private int _number;
 
         public int Number
         {
             get { return _number; }
-            set { _number = value; }
+            set { SetProperty(ref _number, value); }
         }
 
         private string _name;
@@ -21,7 +21,7 @@ namespace ExellAddInsLib.MSG
         public string Name
         {
             get { return _name; }
-            set { _name = value; }
+            set { SetProperty(ref _name, value); }
         }//Наименование
 
    

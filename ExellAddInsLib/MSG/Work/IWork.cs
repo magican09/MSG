@@ -13,5 +13,6 @@
         WorkReportCard ReportCard { get; set; }
         int RowIndex { get; set; }
         UnitOfMeasurement UnitOfMeasurement { get; set; }
+      //  int WorkerNumber { get; set; }
     }
 }
