@@ -72,7 +72,7 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _laboriousness, value); }
         }//Трудоемкость  чел.час/ед.изм
 
-        private WorkReportCard _reportCard = new WorkReportCard();
+        private WorkReportCard _reportCard ;
 
         public WorkReportCard ReportCard
         {

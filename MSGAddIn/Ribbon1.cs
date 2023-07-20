@@ -17,7 +17,7 @@ namespace MSGAddIn
     {
         private const int POST_NUMBER_COL = 1;
         private const int POST_NAME_COL = 2;
-      
+
         private const int EMPLOYER_NUMBER_COL = 1;
         private const int EMPLOYER_NAME_COL = 2;
         private const int EMPLOYER_POSTNAME_COL = 3;
@@ -34,7 +34,7 @@ namespace MSGAddIn
         ObservableCollection<UnitOfMeasurement> UnitOfMeasurements = new ObservableCollection<UnitOfMeasurement>();
 
         Excel._Workbook CurrentWorkbook;
-        
+
         Excel.Worksheet EmployersWorksheet;
         Excel.Worksheet PostsWorksheet;
         Excel.Worksheet UnitMeasurementsWorksheet;
@@ -47,7 +47,7 @@ namespace MSGAddIn
 
         private void OnActiveWorksheetChanged(Excel.Worksheet last_wsh, Excel.Worksheet new_wsh)
         {
-          if(first_start_flag)
+            if (first_start_flag)
             {
                 CurrentWorkbook = Globals.ThisAddIn.Application.ActiveWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -100,7 +100,7 @@ namespace MSGAddIn
         }
         private void btnCalcQuantities_Click(object sender, RibbonControlEventArgs e)
         {
-           
+            CurrentMSGExellModel.CalcLabourness();
             CurrentMSGExellModel.CalcQuantity();
         }
 
@@ -115,7 +115,7 @@ namespace MSGAddIn
             UnitMeasurementsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
             UnitMeasurementsWorksheet.Activate();
         }
-       
+
 
         private void comboBoxEmployerName_TextChanged(object sender, RibbonControlEventArgs e)
         {
@@ -125,8 +125,44 @@ namespace MSGAddIn
         }
         private void bntChangeEmployerMSG_Click(object sender, RibbonControlEventArgs e)
         {
-            CurrentMSGExellModel.RealoadAll();
+          //  CurrentMSGExellModel.RealoadAll();
             MSGExellModel empl_model = MSGExellModels.FirstOrDefault(m => m.Employer.Name == SelectedEmloeyer.Name);
+            if (empl_model == null) //Если оаботник новый и на него нет еще модель и листы в книге - создаем их
+            {
+                Excel.Worksheet new_employer_worksheet = CurrentWorkbook.Worksheets.Add(CommonMSGWorksheet, Type.Missing, Type.Missing, Type.Missing);
+
+                string new_worksheet_name = CommonMSGWorksheet.Name.Substring(0, CommonMSGWorksheet.Name.IndexOf('_') + 1) + SelectedEmloeyer.Number.ToString();
+                //   Excel.Worksheet new_employer_worksheet = CurrentWorkbook.Worksheets.Add(new_worksheet_name);
+                new_employer_worksheet.Name = new_worksheet_name;
+                //Excel.Range source = CommonMSGWorksheet.Range[CommonMSGWorksheet.Cells[0, 0], CommonMSGWorksheet.Cells[200, MSGExellModel.WRC_NUMBER_COL]]
+                //    .Insert(Excel.XlInsertShiftDirection.xlShiftDown);
+                //Excel.Range dest = new_employer_worksheet.Range[new_employer_worksheet.Cells[0, 0]];
+                //CommonMSGWorksheet.UsedRange.Copy();
+                //new_employer_worksheet.UsedRange.PasteSpecial(
+                //    XlPasteType.xlPasteAll,
+                //    XlPasteSpecialOperation.xlPasteSpecialOperationNone,
+                //    Type.Missing, Type.Missing);
+
+                //Excel.Range source = CommonMSGWorksheet.Range[CommonMSGWorksheet.Cells[1, 1], CommonMSGWorksheet.Cells[20000, MSGExellModel.WRC_NUMBER_COL]];
+                //source.Copy(Type.Missing);
+                //Excel.Range dest = new_employer_worksheet.Range["A1"];
+                //dest.PasteSpecial(
+                //    XlPasteType.xlPasteAll,
+                //    XlPasteSpecialOperation.xlPasteSpecialOperationNone,
+                //    Type.Missing, Type.Missing);
+                //     new_employer_worksheet.Visible = XlSheetVisibility.xlSheetVisible;
+                //     new_employer_worksheet.Activate();
+                Range last_source = CommonMSGWorksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
+                Excel.Range source = CommonMSGWorksheet.Range[CommonMSGWorksheet.Cells[1, 1], last_source];
+                source.Copy();
+                Range last_dest = new_employer_worksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
+                Excel.Range dest = new_employer_worksheet.Range[new_employer_worksheet.Cells[1, 1], last_dest];
+                dest.PasteSpecial(XlPasteType.xlPasteAll);
+
+                EmployerMSGWorksheets.Add(new_employer_worksheet);
+                this.ReloadAllModels();
+                empl_model = MSGExellModels.FirstOrDefault(m => m.Employer.Name == SelectedEmloeyer.Name);
+            }
             CurrentMSGExellModel = empl_model;
             this.ShowWorksheet(empl_model.RegisterSheet);
             empl_model.UpdateWorksheetCommonPart();
@@ -134,8 +170,8 @@ namespace MSGAddIn
         }
         private void btnChangeEmployers_Click(object sender, RibbonControlEventArgs e)
         {
-            this.ShowWorksheet(EmployersWorksheet); 
-           
+            this.ShowWorksheet(EmployersWorksheet);
+
         }
         private void btnChangePosts_Click(object sender, RibbonControlEventArgs e)
         {
@@ -159,7 +195,7 @@ namespace MSGAddIn
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             worksheet.Visible = XlSheetVisibility.xlSheetVisible;
             worksheet.Activate();
-          
+
         }
 
         private void ReloadEmployersList()
@@ -222,13 +258,13 @@ namespace MSGAddIn
                     MSGExellModel model = new MSGExellModel();
                     model.RegisterSheet = worksheet;
                     model.UnitOfMeasurements = UnitOfMeasurements;
-                    
+
                     model.Employer = employer;
                     model.Owner = CommonMSGExellModel;
                     CommonMSGExellModel.Children.Add(model);
                     MSGExellModels.Add(model);
                     model.UpdateWorksheetCommonPart();
-                    model.RealoadAll();
+            //        model.RealoadAll();
                 }
 
 
@@ -236,6 +272,9 @@ namespace MSGAddIn
 
         }
 
-       
+        private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
+        {
+            CurrentMSGExellModel.RealoadAll();
+        }
     }
 }

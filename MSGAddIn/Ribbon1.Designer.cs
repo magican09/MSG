@@ -48,6 +48,7 @@
             this.btnSelectPerson = this.Factory.CreateRibbonButton();
             this.group2 = this.Factory.CreateRibbonGroup();
             this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
+            this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.grpInChargePersons.SuspendLayout();
@@ -68,6 +69,7 @@
             this.group1.Items.Add(this.btnCalcLabournes);
             this.group1.Items.Add(this.btnCalcQuantities);
             this.group1.Items.Add(this.btnChangeUOM);
+            this.group1.Items.Add(this.btnReloadWorksheets);
             this.group1.Label = "Общие данные";
             this.group1.Name = "group1";
             // 
@@ -109,27 +111,28 @@
             // 
             // comboBoxEmployerName
             // 
-            this.comboBoxEmployerName.Label = "Ответвенный";
+            this.comboBoxEmployerName.Label = "Выбор ответственного";
             this.comboBoxEmployerName.Name = "comboBoxEmployerName";
+            this.comboBoxEmployerName.ShowLabel = false;
             this.comboBoxEmployerName.Text = null;
             this.comboBoxEmployerName.TextChanged += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.comboBoxEmployerName_TextChanged);
             // 
             // bntChangeEmployerMSG
             // 
             this.bntChangeEmployerMSG.Enabled = false;
-            this.bntChangeEmployerMSG.Label = "Редактировать ведомость  отвественного";
+            this.bntChangeEmployerMSG.Label = "Открыть ведомость  ответственного";
             this.bntChangeEmployerMSG.Name = "bntChangeEmployerMSG";
             this.bntChangeEmployerMSG.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.bntChangeEmployerMSG_Click);
             // 
             // btnChangeEmployers
             // 
-            this.btnChangeEmployers.Label = "Редактировать отвественных";
+            this.btnChangeEmployers.Label = "Редактировать список отвественных";
             this.btnChangeEmployers.Name = "btnChangeEmployers";
             this.btnChangeEmployers.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeEmployers_Click);
             // 
             // btnChangePosts
             // 
-            this.btnChangePosts.Label = "Редактировать должности";
+            this.btnChangePosts.Label = "Редактировать список должностей";
             this.btnChangePosts.Name = "btnChangePosts";
             this.btnChangePosts.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangePosts_Click);
             // 
@@ -149,6 +152,12 @@
             this.btnShowAlllHidenWorksheets.Label = "Показать все скрытые листы";
             this.btnShowAlllHidenWorksheets.Name = "btnShowAlllHidenWorksheets";
             this.btnShowAlllHidenWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnShowAlllHidenWorksheets_Click);
+            // 
+            // btnReloadWorksheets
+            // 
+            this.btnReloadWorksheets.Label = "Обновить";
+            this.btnReloadWorksheets.Name = "btnReloadWorksheets";
+            this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
             // 
             // Ribbon1
             // 
@@ -184,6 +193,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeUOM;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton bntChangeEmployerMSG;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeCommonMSG;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnReloadWorksheets;
     }
 
     partial class ThisRibbonCollection
