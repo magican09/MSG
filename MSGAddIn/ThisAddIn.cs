@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
+﻿using Microsoft.Office.Interop.Excel;
 using Excel = Microsoft.Office.Interop.Excel;
-using Office = Microsoft.Office.Core;
-using Microsoft.Office.Tools.Excel;
-using Microsoft.Office.Interop.Excel;
 
 namespace MSGAddIn
 {
     public delegate void ActiveWorksheetChangedEventHeandler(Excel.Worksheet last_wsh, Excel.Worksheet new_wsh);
-    
+
     public partial class ThisAddIn
     {
         private Excel.Worksheet _currentActiveWorkSheet;
@@ -19,8 +12,9 @@ namespace MSGAddIn
         public Excel.Worksheet CurrentActiveWorksheet
         {
             get { return _currentActiveWorkSheet; }
-            set {
-                var last_wsh = _currentActiveWorkSheet; 
+            set
+            {
+                var last_wsh = _currentActiveWorkSheet;
                 _currentActiveWorkSheet = value;
                 OnActiveWorksheetChanged?.Invoke(last_wsh, _currentActiveWorkSheet);
             }
@@ -30,7 +24,7 @@ namespace MSGAddIn
 
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
-            this.Application.SheetActivate +=  Application_SheetActivate;
+            this.Application.SheetActivate += Application_SheetActivate;
             this.Application.WorkbookActivate += Application_WorkbookActivate;
         }
 
@@ -38,7 +32,7 @@ namespace MSGAddIn
         {
             if (CurrentActiveWorksheet == null)
                 Wb.Worksheets["Начальная"].Activate();
-           CurrentActiveWorksheet = Wb.ActiveSheet;
+            CurrentActiveWorksheet = Wb.ActiveSheet;
         }
 
         private void Application_SheetActivate(object Sh)
@@ -52,7 +46,7 @@ namespace MSGAddIn
 
         public Excel.Worksheet GetActiveWorksheet()
         {
-             return (Excel.Worksheet)  Application.ActiveSheet;
+            return (Excel.Worksheet)Application.ActiveSheet;
         }
 
         #region VSTO generated code
@@ -66,7 +60,7 @@ namespace MSGAddIn
             this.Startup += new System.EventHandler(ThisAddIn_Startup);
             this.Shutdown += new System.EventHandler(ThisAddIn_Shutdown);
         }
-        
+
         #endregion
     }
 }

@@ -40,6 +40,9 @@
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.btnCalcQuantities = this.Factory.CreateRibbonButton();
             this.btnChangeUOM = this.Factory.CreateRibbonButton();
+            this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
+            this.btnOpenMSGTemplate = this.Factory.CreateRibbonButton();
+            this.btnFillTemlate = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
             this.bntChangeEmployerMSG = this.Factory.CreateRibbonButton();
@@ -48,11 +51,14 @@
             this.btnSelectPerson = this.Factory.CreateRibbonButton();
             this.group2 = this.Factory.CreateRibbonGroup();
             this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
-            this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
+            this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.groupMSG_OUT = this.Factory.CreateRibbonGroup();
+            this.checkBoxSandayVocationrStatus = this.Factory.CreateRibbonCheckBox();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.grpInChargePersons.SuspendLayout();
             this.group2.SuspendLayout();
+            this.groupMSG_OUT.SuspendLayout();
             this.SuspendLayout();
             // 
             // tab1
@@ -60,6 +66,7 @@
             this.tab1.Groups.Add(this.group1);
             this.tab1.Groups.Add(this.grpInChargePersons);
             this.tab1.Groups.Add(this.group2);
+            this.tab1.Groups.Add(this.groupMSG_OUT);
             this.tab1.Label = "МСГ";
             this.tab1.Name = "tab1";
             // 
@@ -98,6 +105,26 @@
             this.btnChangeUOM.Label = "Радактировать ед.изм.";
             this.btnChangeUOM.Name = "btnChangeUOM";
             this.btnChangeUOM.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeUOM_Click);
+            // 
+            // btnReloadWorksheets
+            // 
+            this.btnReloadWorksheets.Enabled = false;
+            this.btnReloadWorksheets.Label = "Обновить";
+            this.btnReloadWorksheets.Name = "btnReloadWorksheets";
+            this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
+            // 
+            // btnOpenMSGTemplate
+            // 
+            this.btnOpenMSGTemplate.Label = "Открыть шаблон МСГ";
+            this.btnOpenMSGTemplate.Name = "btnOpenMSGTemplate";
+            this.btnOpenMSGTemplate.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnOpenMSGTemplate_Click);
+            // 
+            // btnFillTemlate
+            // 
+            this.btnFillTemlate.Enabled = false;
+            this.btnFillTemlate.Label = "Заполнить МСГ";
+            this.btnFillTemlate.Name = "btnFillTemlate";
+            this.btnFillTemlate.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnFillTemlate_Click);
             // 
             // grpInChargePersons
             // 
@@ -153,11 +180,23 @@
             this.btnShowAlllHidenWorksheets.Name = "btnShowAlllHidenWorksheets";
             this.btnShowAlllHidenWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnShowAlllHidenWorksheets_Click);
             // 
-            // btnReloadWorksheets
+            // openMSGTemplateFileDialog
             // 
-            this.btnReloadWorksheets.Label = "Обновить";
-            this.btnReloadWorksheets.Name = "btnReloadWorksheets";
-            this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
+            this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
+            // 
+            // groupMSG_OUT
+            // 
+            this.groupMSG_OUT.Items.Add(this.btnOpenMSGTemplate);
+            this.groupMSG_OUT.Items.Add(this.btnFillTemlate);
+            this.groupMSG_OUT.Items.Add(this.checkBoxSandayVocationrStatus);
+            this.groupMSG_OUT.Label = "МСГ выход";
+            this.groupMSG_OUT.Name = "groupMSG_OUT";
+            // 
+            // checkBoxSandayVocationrStatus
+            // 
+            this.checkBoxSandayVocationrStatus.Checked = true;
+            this.checkBoxSandayVocationrStatus.Label = "Вых. восскресенье";
+            this.checkBoxSandayVocationrStatus.Name = "checkBoxSandayVocationrStatus";
             // 
             // Ribbon1
             // 
@@ -173,6 +212,8 @@
             this.grpInChargePersons.PerformLayout();
             this.group2.ResumeLayout(false);
             this.group2.PerformLayout();
+            this.groupMSG_OUT.ResumeLayout(false);
+            this.groupMSG_OUT.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -194,6 +235,11 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton bntChangeEmployerMSG;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeCommonMSG;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnReloadWorksheets;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnOpenMSGTemplate;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnFillTemlate;
+        private System.Windows.Forms.OpenFileDialog openMSGTemplateFileDialog;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupMSG_OUT;
+        internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox checkBoxSandayVocationrStatus;
     }
 
     partial class ThisRibbonCollection

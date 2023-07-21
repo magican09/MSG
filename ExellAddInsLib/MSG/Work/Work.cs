@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Excel = Microsoft.Office.Interop.Excel;
-using Microsoft.Office.Tools.Excel;
-using Microsoft.Office.Interop.Excel;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -72,7 +63,7 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _laboriousness, value); }
         }//Трудоемкость  чел.час/ед.изм
 
-        private WorkReportCard _reportCard ;
+        private WorkReportCard _reportCard;
 
         public WorkReportCard ReportCard
         {
@@ -95,10 +86,10 @@ namespace ExellAddInsLib.MSG
         public IWork Owner
         {
             get { return _owner; }
-            set { _owner = value;  }
+            set { _owner = value; }
         }
-       
-       
+
+
         private ObservableCollection<IWork> _children = new ObservableCollection<IWork>();
 
         public ObservableCollection<IWork> Children
@@ -113,7 +104,7 @@ namespace ExellAddInsLib.MSG
 
         private void OnChildrenAdd(object sender, NotifyCollectionChangedEventArgs e)
         {
-           if(e.Action==NotifyCollectionChangedAction.Add)
+            if (e.Action == NotifyCollectionChangedAction.Add)
             {
                 foreach (IWork child in e.NewItems)
                     child.Owner = this;

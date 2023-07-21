@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ExellAddInsLib.MSG
+﻿namespace ExellAddInsLib.MSG
 {
     internal interface INameable
     {
-         string Name { get; set; }
+        string Name { get; set; }
     }
 }

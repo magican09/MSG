@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 
-namespace ExellAddInsLib.MSG 
+namespace ExellAddInsLib.MSG
 {
-    public  class VOVRWork:Work
+    public class VOVRWork : Work
     {
-		private ObservableCollection<KSWork>  _kSWorks = new ObservableCollection<KSWork>();
+        private ObservableCollection<KSWork> _kSWorks = new ObservableCollection<KSWork>();
 
-		public ObservableCollection<KSWork> KSWorks
+        public ObservableCollection<KSWork> KSWorks
         {
-			get { return _kSWorks; }
+            get { return _kSWorks; }
             set { SetProperty(ref _kSWorks, value); }
         }
-		
 
-	}
+
+    }
 }

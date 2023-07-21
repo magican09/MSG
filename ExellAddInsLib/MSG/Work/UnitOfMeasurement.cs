@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ExellAddInsLib.MSG 
+﻿namespace ExellAddInsLib.MSG
 {
-    public  class UnitOfMeasurement: BindableBase,INameable
+    public class UnitOfMeasurement : BindableBase, INameable
     {
         private int _number;
 
@@ -24,12 +18,12 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _name, value); }
         }//Наименование
 
-   
+
         public UnitOfMeasurement(string name)
         {
             Name = name;
         }
-        public UnitOfMeasurement(int number, string name):this(name)
+        public UnitOfMeasurement(int number, string name) : this(name)
         {
             Number = number;
         }
