@@ -12,6 +12,13 @@ namespace ExellAddInsLib.MSG
 {
     public class MSGExellModel
     {
+        public const int COMMON_PARAMETRS_VALUE_COL =3;
+   
+        public const int CONTRACT_CODE_ROW = 2;
+        public const int CONSTRUCTION_OBJECT_CODE_ROW = 3;
+        public const int CONSTRUCTION_SUBOBJECT_CODE_ROW = 4;
+
+
         public const int WORKS_START_DATE_ROW = 1;
         public const int WORKS_TART_DATE_COL = 3;
         public const int WORKS_END_DATE_ROW = 2;
@@ -52,16 +59,30 @@ namespace ExellAddInsLib.MSG
 
         private int null_str_count = 0;
         public DateTime WorksStartDate { get; set; }
+        public DateTime WorksEndDate 
+        { get 
+            {
+                DateTime end_date = DateTime.MinValue;
+                var last_ended_work = this.MSGWorks.OrderBy(w => w.WorkSchedules.EndDate).LastOrDefault();
+                if (last_ended_work != null)
+                    end_date = last_ended_work.WorkSchedules.EndDate;
+                return end_date;
+            }
+
+             }
         public ObservableCollection<MSGWork> MSGWorks { get; private set; } = new ObservableCollection<MSGWork>();
         public ObservableCollection<VOVRWork> VOVRWorks { get; private set; } = new ObservableCollection<VOVRWork>();
         public ObservableCollection<KSWork> KSWorks { get; private set; } = new ObservableCollection<KSWork>();
         public ObservableCollection<UnitOfMeasurement> UnitOfMeasurements { get; set; } = new ObservableCollection<UnitOfMeasurement>();
 
+        public string  ContractCode { get; set; } //Шифр
+        public string  ContructionObjectCode { get; set; }//Наименоваение объекта/договора
+        public string  ConstructionSubObjectCode { get; set; } //Наименование подобъекта
         public MSGExellModel Owner { get; set; }
         public ObservableCollection<MSGExellModel> Children { get; set; } = new ObservableCollection<MSGExellModel>();
 
         public Excel.Worksheet RegisterSheet { get; set; }
-
+        public Excel.Worksheet CommonSheet { get; set; }
         public Employer Employer { get; set; }
         public MSGExellModel()
         {
@@ -329,6 +350,9 @@ namespace ExellAddInsLib.MSG
 
                     ks_work.Number = registerSheet.Cells[rowIndex, KS_NUMBER_COL].Value.ToString();
                     ks_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, KS_NUMBER_COL));
+                   
+                    ks_work.Code = registerSheet.Cells[rowIndex, KS_CODE_COL].Value.ToString();
+                    ks_work.CellAddressesMap.Add("Code", Tuple.Create(rowIndex, KS_CODE_COL));
 
                     ks_work.Name = registerSheet.Cells[rowIndex, KS_NAME_COL].Value;
                     ks_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, KS_NAME_COL));
@@ -427,6 +451,10 @@ namespace ExellAddInsLib.MSG
             this.MSGWorks.Clear();
             this.VOVRWorks.Clear();
             this.KSWorks.Clear();
+            this.ContractCode = this.CommonSheet.Cells[CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
+            this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
+            this.ConstructionSubObjectCode = this.CommonSheet.Cells[CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
+
 
             this.LoadMSGWorks();
             this.LoadVOVRWorks();
@@ -440,12 +468,12 @@ namespace ExellAddInsLib.MSG
             this.RealoadAll();
             foreach (MSGWork msg_work in this.MSGWorks)
             {
-                if (msg_work.Laboriousness == 0)
+              //  if (msg_work.Laboriousness == 0)
                 {
                     decimal common_vovr_laboueness = 0;
                     foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
                     {
-                        if (vovr_work.Laboriousness == 0)
+                       // if (vovr_work.Laboriousness == 0)
                         {
                             decimal common_ks_laboueness = 0;
                             foreach (KSWork ks_work in vovr_work.KSWorks)
@@ -465,6 +493,8 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public void CalcQuantity()
         {
+            this.UpdateWorksheetCommonPart();
+            this.CalcLabourness();
             this.RealoadAll();
             //  this.ResetCalculatesFields();
             foreach (MSGWork msg_work in this.MSGWorks)

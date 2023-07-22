@@ -10,8 +10,8 @@ namespace ExellAddInsLib.MSG
             get { return _startTime; }
             set { SetProperty(ref _startTime, value); }
         }//Дата начала
-        private DateTime? _endTime;
-        public DateTime? EndTime
+        private DateTime _endTime;
+        public DateTime EndTime
         {
             get { return _endTime; }
             set { SetProperty(ref _endTime, value); }
