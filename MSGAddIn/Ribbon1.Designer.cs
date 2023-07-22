@@ -37,7 +37,6 @@
             this.tab1 = this.Factory.CreateRibbonTab();
             this.groupFileLaod = this.Factory.CreateRibbonGroup();
             this.btnLoadMSGFile = this.Factory.CreateRibbonButton();
-            this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.btnCloseMSGFile = this.Factory.CreateRibbonButton();
             this.groupMSGCommon = this.Factory.CreateRibbonGroup();
             this.btnChangeCommonMSG = this.Factory.CreateRibbonButton();
@@ -51,19 +50,20 @@
             this.btnChangePosts = this.Factory.CreateRibbonButton();
             this.btnChangeUOM = this.Factory.CreateRibbonButton();
             this.btnSelectPerson = this.Factory.CreateRibbonButton();
-            this.group2 = this.Factory.CreateRibbonGroup();
-            this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
             this.groupMSG_OUT = this.Factory.CreateRibbonGroup();
             this.btnLoadTeplateFile = this.Factory.CreateRibbonButton();
             this.checkBoxSandayVocationrStatus = this.Factory.CreateRibbonCheckBox();
             this.btnFillTemlate = this.Factory.CreateRibbonButton();
+            this.group2 = this.Factory.CreateRibbonGroup();
+            this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
+            this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
             this.grpInChargePersons.SuspendLayout();
-            this.group2.SuspendLayout();
             this.groupMSG_OUT.SuspendLayout();
+            this.group2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tab1
@@ -88,11 +88,6 @@
             this.btnLoadMSGFile.Label = "Загрузить ведомость";
             this.btnLoadMSGFile.Name = "btnLoadMSGFile";
             this.btnLoadMSGFile.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadMSGFile_Click);
-            // 
-            // labelConractCode
-            // 
-            this.labelConractCode.Label = "________";
-            this.labelConractCode.Name = "labelConractCode";
             // 
             // btnCloseMSGFile
             // 
@@ -188,19 +183,6 @@
             this.btnSelectPerson.Label = "";
             this.btnSelectPerson.Name = "btnSelectPerson";
             // 
-            // group2
-            // 
-            this.group2.Items.Add(this.btnShowAlllHidenWorksheets);
-            this.group2.Items.Add(this.labelConractCode);
-            this.group2.Label = "group2";
-            this.group2.Name = "group2";
-            // 
-            // btnShowAlllHidenWorksheets
-            // 
-            this.btnShowAlllHidenWorksheets.Label = "Показать все скрытые листы";
-            this.btnShowAlllHidenWorksheets.Name = "btnShowAlllHidenWorksheets";
-            this.btnShowAlllHidenWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnShowAlllHidenWorksheets_Click);
-            // 
             // groupMSG_OUT
             // 
             this.groupMSG_OUT.Items.Add(this.btnLoadTeplateFile);
@@ -229,6 +211,24 @@
             this.btnFillTemlate.Name = "btnFillTemlate";
             this.btnFillTemlate.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnFillTemlate_Click);
             // 
+            // group2
+            // 
+            this.group2.Items.Add(this.btnShowAlllHidenWorksheets);
+            this.group2.Items.Add(this.labelConractCode);
+            this.group2.Label = "group2";
+            this.group2.Name = "group2";
+            // 
+            // btnShowAlllHidenWorksheets
+            // 
+            this.btnShowAlllHidenWorksheets.Label = "Показать все скрытые листы";
+            this.btnShowAlllHidenWorksheets.Name = "btnShowAlllHidenWorksheets";
+            this.btnShowAlllHidenWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnShowAlllHidenWorksheets_Click);
+            // 
+            // labelConractCode
+            // 
+            this.labelConractCode.Label = "________";
+            this.labelConractCode.Name = "labelConractCode";
+            // 
             // openMSGTemplateFileDialog
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
@@ -247,10 +247,10 @@
             this.groupMSGCommon.PerformLayout();
             this.grpInChargePersons.ResumeLayout(false);
             this.grpInChargePersons.PerformLayout();
-            this.group2.ResumeLayout(false);
-            this.group2.PerformLayout();
             this.groupMSG_OUT.ResumeLayout(false);
             this.groupMSG_OUT.PerformLayout();
+            this.group2.ResumeLayout(false);
+            this.group2.PerformLayout();
             this.ResumeLayout(false);
 
         }
