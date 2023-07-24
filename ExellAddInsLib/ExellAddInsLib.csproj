@@ -68,6 +68,7 @@
     <Compile Include="MSG\MSGWork\VOVRWork\KSWork\KSWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\VOVRWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\WorkReportCard\WorkDay\WorkDay.cs" />
+    <Compile Include="MSG\WorksSection\WorksSection.cs" />
     <Compile Include="MSG\Work\IWork.cs" />
     <Compile Include="MSG\Work\UnitOfMeasurement.cs" />
     <Compile Include="MSG\MSGWork\WorkSchedule\WorkScheduleChunk\WorkScheduleChunk.cs" />
@@ -87,5 +88,6 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

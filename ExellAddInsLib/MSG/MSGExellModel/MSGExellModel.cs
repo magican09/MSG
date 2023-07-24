@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using ExellAddInsLib.MSG.Section;
+using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,36 +27,41 @@ namespace ExellAddInsLib.MSG
 
         public const int FIRST_ROW_INDEX = 7;
 
-        public const int MSG_NUMBER_COL = 2;
-        public const int MSG_NAME_COL = 3;
-        public const int MSG_MEASURE_COL = 4;
-        public const int MSG_QUANTITY_COL = 5;
-        public const int MSG_QUANTITY_FACT_COL = 6;
-        public const int MSG_LABOURNESS_COL = 7;
-        public const int MSG_START_DATE_COL = 8;
-        public const int MSG_END_DATE_COL = 9;
-        public const int MSG_WORKERS_NUMBER_COL = 10;
+        public const int WSEC_NUMBER_COL = 2;
+        public const int WSEC_NAME_COL = WSEC_NUMBER_COL + 1;
+
+        public const int MSG_NUMBER_COL = 4;
+        public const int MSG_NAME_COL = MSG_NUMBER_COL + 1;
+        public const int MSG_MEASURE_COL = MSG_NUMBER_COL + 2;
+        public const int MSG_QUANTITY_COL = MSG_NUMBER_COL + 3;
+        public const int MSG_QUANTITY_FACT_COL = MSG_NUMBER_COL + 4;
+        public const int MSG_LABOURNESS_COL = MSG_NUMBER_COL + 5;
+        public const int MSG_START_DATE_COL = MSG_NUMBER_COL + 6;
+        public const int MSG_END_DATE_COL = MSG_NUMBER_COL + 7;
+        public const int MSG_WORKERS_NUMBER_COL = MSG_NUMBER_COL + 8;
 
 
-        public const int VOVR_NUMBER_COL = 11;
-        public const int VOVR_NAME_COL = 12;
-        public const int VOVR_MEASURE_COL = 13;
-        public const int VOVR_QUANTITY_COL = 14;
-        public const int VOVR_QUANTITY_FACT_COL = 15;
-        public const int VOVR_LABOURNESS_COL = 16;
+        public const int VOVR_NUMBER_COL = 15;
+        public const int VOVR_NAME_COL = VOVR_NUMBER_COL + 1;
+        public const int VOVR_MEASURE_COL = VOVR_NUMBER_COL + 2;
+        public const int VOVR_QUANTITY_COL = VOVR_NUMBER_COL + 3;
+        public const int VOVR_QUANTITY_FACT_COL = VOVR_NUMBER_COL + 4;
+        public const int VOVR_LABOURNESS_COL = VOVR_NUMBER_COL + 5;
 
 
-        public const int KS_NUMBER_COL = 17;
-        public const int KS_CODE_COL = 18;
-        public const int KS_NAME_COL = 19;
-        public const int KS_MEASURE_COL = 20;
-        public const int KS_QUANTITY_COL = 21;
-        public const int KS_QUANTITY_FACT_COL = 22;
-        public const int KS_LABOURNESS_COL = 23;
+        public const int KS_NUMBER_COL = 21;
+        public const int KS_CODE_COL = KS_NUMBER_COL + 1;
+        public const int KS_NAME_COL = KS_NUMBER_COL + 2;
+        public const int KS_MEASURE_COL = KS_NUMBER_COL + 3;
+        public const int KS_QUANTITY_COL = KS_NUMBER_COL + 4;
+        public const int KS_QUANTITY_FACT_COL = KS_NUMBER_COL + 5;
+        public const int KS_LABOURNESS_COL = KS_NUMBER_COL + 6;
+        public const int KS_PC_QUANTITY_COL = WRC_NUMBER_COL + 1;
 
         public const int WRC_DATE_ROW = 6;
-        public const int WRC_NUMBER_COL = 24;
-        public const int WRC_DATE_COL = 25;
+
+        public const int WRC_NUMBER_COL = 28;
+        public const int WRC_DATE_COL = KS_PC_QUANTITY_COL + 1;
 
         private int null_str_count = 0;
         /// <summary>
@@ -78,6 +84,10 @@ namespace ExellAddInsLib.MSG
             }
 
         }
+        /// <summary>
+        /// Коллекция с разделами работ
+        /// </summary>
+        public ObservableCollection<WorksSection> WorksSections { get; private set; } = new ObservableCollection<WorksSection>();
         /// <summary>
         /// Коллекция с работами типа МСГ модели
         /// </summary>
@@ -137,23 +147,39 @@ namespace ExellAddInsLib.MSG
         /// с этим полем ячейки в документе Worksheet
         /// </summary>
         /// <param name="work"></param>
-        public void Register(object work)
+        public void Register(object obj)
         {
-            if (work is INotifyPropertyChanged notified_object)
+            if (obj is INotifyPropertyChanged notified_object)
                 notified_object.PropertyChanged += OnPropertyChange;
-            switch (work.GetType().Name)
+            switch (obj.GetType().Name)
             {
+
+                case nameof(WorksSection):
+                    {
+
+                        WorksSection w_section = (WorksSection)obj;
+                        if (!this.WorksSections.Contains(w_section))
+                            this.WorksSections.Add(w_section);
+                        break;
+                    }
+
                 case nameof(MSGWork):
                     {
 
-                        MSGWork msg_work = (MSGWork)work;
-                        if (!MSGWorks.Contains(msg_work))
-                            MSGWorks.Add(msg_work);
+                        MSGWork msg_work = (MSGWork)obj;
+                        if (!this.MSGWorks.Contains(msg_work))
+                            this.MSGWorks.Add(msg_work);
+
+                        WorksSection w_section = this.WorksSections.Where(ws => ws.Number.StartsWith(msg_work.Number.Remove(msg_work.Number.LastIndexOf(".")))).FirstOrDefault();
+                        if (w_section != null)
+                        {
+                            w_section.MSGWorks.Add(msg_work);
+                        }
                         break;
                     }
                 case nameof(VOVRWork):
                     {
-                        VOVRWork vovr_work = (VOVRWork)work;
+                        VOVRWork vovr_work = (VOVRWork)obj;
                         if (!this.VOVRWorks.Contains(vovr_work))
                             this.VOVRWorks.Add(vovr_work);
 
@@ -167,7 +193,7 @@ namespace ExellAddInsLib.MSG
                     }
                 case nameof(KSWork):
                     {
-                        KSWork ks_work = (KSWork)work;
+                        KSWork ks_work = (KSWork)obj;
                         if (!this.KSWorks.Contains(ks_work))
                             this.KSWorks.Add(ks_work);
 
@@ -180,7 +206,7 @@ namespace ExellAddInsLib.MSG
 
                 case nameof(WorkReportCard):
                     {
-                        WorkReportCard report_card = (WorkReportCard)work;
+                        WorkReportCard report_card = (WorkReportCard)obj;
 
                         KSWork ks_work = KSWorks.Where(w => w.Number == report_card.Number).FirstOrDefault();
                         if (ks_work != null && report_card.Count > 0)
@@ -208,15 +234,45 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
-
         /// <summary>
-        /// Функция из части ВОВР листа Worksheet создает и помещает в модель работы типа MSGWork 
+        /// Функция из части РАЗДЕЛЫ  листа Worksheet создает и помещает в модель  разделы работ
+        /// </summary>
+        public void LoadWorksSections()
+        {
+            Excel.Worksheet registerSheet = this.RegisterSheet;
+
+            WorksStartDate = DateTime.Parse(registerSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
+            int rowIndex = FIRST_ROW_INDEX;
+            null_str_count = 0;
+            this.MSGWorks.Clear();
+
+            while (null_str_count < 100)
+            {
+                if (registerSheet.Cells[rowIndex, WSEC_NUMBER_COL].Value == null) null_str_count++;
+                else
+                {
+                    null_str_count = 0;
+                    WorksSection w_section = new WorksSection();
+
+                    w_section.Number = registerSheet.Cells[rowIndex, WSEC_NUMBER_COL].Value.ToString();
+
+                    w_section.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, WSEC_NUMBER_COL));
+
+                    w_section.Name = registerSheet.Cells[rowIndex, WSEC_NAME_COL].Value;
+                    w_section.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, WSEC_NAME_COL));
+
+                    this.Register(w_section);
+                }
+                rowIndex++;
+            }
+        }
+        /// <summary>
+        /// Функция из части МСГ листа Worksheet создает и помещает в модель работы типа MSGWork 
         /// </summary>
         public void LoadMSGWorks()
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
 
-            WorksStartDate = DateTime.Parse(registerSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
             int rowIndex = FIRST_ROW_INDEX;
             null_str_count = 0;
             this.MSGWorks.Clear();
@@ -323,7 +379,7 @@ namespace ExellAddInsLib.MSG
             }
         }
         /// <summary>
-        /// Функция из части МСГ листа Worksheet создает и помещает в модель работы типа VOVRWork 
+        /// Функция из части  ВОВР листа Worksheet создает и помещает в модель работы типа VOVRWork 
         /// </summary>
         public void LoadVOVRWorks()
         {
@@ -417,7 +473,7 @@ namespace ExellAddInsLib.MSG
                     ks_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, KS_QUANTITY_COL));
                     ks_work.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, KS_QUANTITY_FACT_COL));
                     ks_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, KS_LABOURNESS_COL));
-
+                 
                     if (registerSheet.Cells[rowIndex, KS_MEASURE_COL].Value != null)
                     {
                         ks_work.UnitOfMeasurement = new UnitOfMeasurement(registerSheet.Cells[rowIndex, KS_MEASURE_COL].Value);
@@ -448,6 +504,11 @@ namespace ExellAddInsLib.MSG
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, KS_LABOURNESS_COL], registerSheet.Cells[rowIndex, KS_LABOURNESS_COL]].Interior.Color
                             = XlRgbColor.rgbRed;
+                  
+                    ks_work.CellAddressesMap.Add("PreviousComplatedQuantity", Tuple.Create(rowIndex, KS_PC_QUANTITY_COL));
+
+                    if (registerSheet.Cells[rowIndex, KS_PC_QUANTITY_COL].Value != null)
+                        ks_work.PreviousComplatedQuantity = Decimal.Parse(registerSheet.Cells[rowIndex, KS_PC_QUANTITY_COL].Value.ToString());
 
                     this.Register(ks_work);
                 }
@@ -514,6 +575,7 @@ namespace ExellAddInsLib.MSG
         {
             foreach (MSGExellModel model in Children)
                 model.RealoadAllSheetsInModel();
+            this.WorksSections.Clear();
             this.MSGWorks.Clear();
             this.VOVRWorks.Clear();
             this.KSWorks.Clear();
@@ -521,6 +583,7 @@ namespace ExellAddInsLib.MSG
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ConstructionSubObjectCode = this.CommonSheet.Cells[CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
 
+            this.LoadWorksSections();
             this.LoadMSGWorks();
             this.LoadVOVRWorks();
             this.LoadKSWorks();
@@ -564,21 +627,25 @@ namespace ExellAddInsLib.MSG
 
             foreach (MSGWork msg_work in this.MSGWorks)
             {
+                msg_work.Quantity = 0;
                 decimal common_vovr_labour_quantity = 0;
-
+                decimal common_vovr_previos_complate_labour_quantity = 0;
                 foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
                 {
+                    vovr_work.Quantity = 0;
                     decimal common_ks_labour_quantity = 0;
-
+                    decimal common_ks_previos_complate_labour_quantity = 0;
                     foreach (KSWork ks_work in vovr_work.KSWorks)
                     {
                         ks_work.Quantity = 0;
+                   
                         if (this.Owner != null && ks_work.ReportCard != null)
                         {
-                            ks_work.Quantity = ks_work.ReportCard.Quantity;
+                            ks_work.Quantity = ks_work.ReportCard.Quantity+ ks_work.PreviousComplatedQuantity;
                         }
                         else
                         {
+                            ks_work.PreviousComplatedQuantity = 0;
                             if (ks_work.ReportCard == null)
                             {
                                 ks_work.ReportCard = new WorkReportCard();
@@ -637,22 +704,33 @@ namespace ExellAddInsLib.MSG
                                         }
                                     }
                                 }
+                                ks_work.PreviousComplatedQuantity += child_ks_work.PreviousComplatedQuantity;
                             }
-                            ks_work.Quantity = ks_work.ReportCard.Quantity;
+                            //ks_work.Quantity = ks_work.ReportCard.Quantity;
+                            ks_work.Quantity = ks_work.ReportCard.Quantity + ks_work.PreviousComplatedQuantity;
                         }
 
                         if (ks_work.Laboriousness != 0)
+                        {
                             common_ks_labour_quantity += ks_work.Quantity * ks_work.Laboriousness;
+                            common_ks_previos_complate_labour_quantity += ks_work.PreviousComplatedQuantity * ks_work.Laboriousness;
+                        }
                     }
 
                     if (vovr_work.Laboriousness != 0)
+                    {
                         vovr_work.Quantity = common_ks_labour_quantity / vovr_work.Laboriousness;
+                        vovr_work.PreviousComplatedQuantity = common_ks_previos_complate_labour_quantity / vovr_work.Laboriousness;
+                    }
                     common_vovr_labour_quantity += vovr_work.Quantity * vovr_work.Laboriousness;
+                    common_vovr_previos_complate_labour_quantity+= vovr_work.PreviousComplatedQuantity * vovr_work.Laboriousness;
                 }
 
                 if (msg_work.Laboriousness != 0)
+                {
                     msg_work.Quantity = common_vovr_labour_quantity / msg_work.Laboriousness;
-
+                    msg_work.PreviousComplatedQuantity = common_vovr_previos_complate_labour_quantity / msg_work.Laboriousness;
+                }
                 var msg_work_all_ksWorks = this.KSWorks.Where(w => w.Number.StartsWith(msg_work.Number + "."));
                 foreach (KSWork ks_work in msg_work_all_ksWorks)
                 {
@@ -722,9 +800,9 @@ namespace ExellAddInsLib.MSG
             {
 
                 ClearWorksheetCommonPart();
-                foreach (MSGWork msg_work in this.Owner.MSGWorks)
+                foreach (WorksSection w_section in this.Owner.WorksSections)
                 {
-                    this.UpdateExellBindableObject(msg_work);
+                    this.UpdateExellBindableObject(w_section);
                 }
                 this.ResetCalculatesFields();
             }
@@ -793,7 +871,7 @@ namespace ExellAddInsLib.MSG
         public void ClearWorksheetCommonPart()
         {
             Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
-            Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, MSG_NUMBER_COL], this.RegisterSheet.Cells[10000, WRC_NUMBER_COL - 1]];
+            Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WSEC_NUMBER_COL], this.RegisterSheet.Cells[10000, WRC_NUMBER_COL - 1]];
             common_area_range.ClearContents();
         }
     }
