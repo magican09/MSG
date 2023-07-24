@@ -12,8 +12,8 @@ namespace ExellAddInsLib.MSG
 {
     public class MSGExellModel
     {
-        public const int COMMON_PARAMETRS_VALUE_COL =3;
-   
+        public const int COMMON_PARAMETRS_VALUE_COL = 3;
+
         public const int CONTRACT_CODE_ROW = 2;
         public const int CONSTRUCTION_OBJECT_CODE_ROW = 3;
         public const int CONSTRUCTION_SUBOBJECT_CODE_ROW = 4;
@@ -58,9 +58,17 @@ namespace ExellAddInsLib.MSG
         public const int WRC_DATE_COL = 25;
 
         private int null_str_count = 0;
+        /// <summary>
+        /// Дата начала ведомости 
+        /// </summary>
         public DateTime WorksStartDate { get; set; }
-        public DateTime WorksEndDate 
-        { get 
+        /// <summary>
+        /// Дата окончания работ в данной ведомости в соотвествии с планируемыми в  сроками отраженнным в части МСГ ведомости.
+        /// (в части WorkSchedules работ MSGWork)
+        /// </summary>
+        public DateTime WorksEndDate
+        {
+            get
             {
                 DateTime end_date = DateTime.MinValue;
                 var last_ended_work = this.MSGWorks.OrderBy(w => w.WorkSchedules.EndDate).LastOrDefault();
@@ -69,26 +77,66 @@ namespace ExellAddInsLib.MSG
                 return end_date;
             }
 
-             }
+        }
+        /// <summary>
+        /// Коллекция с работами типа МСГ модели
+        /// </summary>
         public ObservableCollection<MSGWork> MSGWorks { get; private set; } = new ObservableCollection<MSGWork>();
+        /// <summary>
+        /// Коллекция с работами типа ВОВР модели
+        /// </summary>
         public ObservableCollection<VOVRWork> VOVRWorks { get; private set; } = new ObservableCollection<VOVRWork>();
+        /// <summary>
+        /// Коллекция с работами типа КС-2 модели
+        /// </summary>
         public ObservableCollection<KSWork> KSWorks { get; private set; } = new ObservableCollection<KSWork>();
+        /// <summary>
+        /// Коллекция с единицами измерения модели
+        /// </summary>
         public ObservableCollection<UnitOfMeasurement> UnitOfMeasurements { get; set; } = new ObservableCollection<UnitOfMeasurement>();
 
-        public string  ContractCode { get; set; } //Шифр
-        public string  ContructionObjectCode { get; set; }//Наименоваение объекта/договора
-        public string  ConstructionSubObjectCode { get; set; } //Наименование подобъекта
+        /// <summary>
+        ///Шифр объекта или договора
+        /// </summary>
+        public string ContractCode { get; set; }
+        /// <summary>
+        ///Наименоваение объекта/договора
+        /// </summary
+        public string ContructionObjectCode { get; set; }
+        /// <summary>
+        ///Наименование подобъекта
+        /// </summary
+        public string ConstructionSubObjectCode { get; set; }
+        /// <summary>
+        /// Ссылка на родительскую модель
+        /// </summary>
         public MSGExellModel Owner { get; set; }
+        /// <summary>
+        /// Коллекия дочерних моделей
+        /// </summary>
         public ObservableCollection<MSGExellModel> Children { get; set; } = new ObservableCollection<MSGExellModel>();
-
+        /// <summary>
+        /// Прикрепленный к модели лист ведомости  Worksheet
+        /// </summary>
         public Excel.Worksheet RegisterSheet { get; set; }
+        /// <summary>
+        /// Прикрепленный к модели лист общих данных  Worksheet
+        /// </summary>
         public Excel.Worksheet CommonSheet { get; set; }
+        /// <summary>
+        /// Отвественных за работы отраженных в работах данной модели
+        /// </summary>
         public Employer Employer { get; set; }
         public MSGExellModel()
         {
 
         }
-
+        /// <summary>
+        /// Функция для регистрации объекта реализующего интрефейс INotifyPropertyChanged 
+        /// для обработки событий изменения полей объета и соотвествующего изменения связанной с 
+        /// с этим полем ячейки в документе Worksheet
+        /// </summary>
+        /// <param name="work"></param>
         public void Register(object work)
         {
             if (work is INotifyPropertyChanged notified_object)
@@ -161,7 +209,9 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-
+        /// <summary>
+        /// Функция из части ВОВР листа Worksheet создает и помещает в модель работы типа MSGWork 
+        /// </summary>
         public void LoadMSGWorks()
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
@@ -272,6 +322,9 @@ namespace ExellAddInsLib.MSG
                 rowIndex++;
             }
         }
+        /// <summary>
+        /// Функция из части МСГ листа Worksheet создает и помещает в модель работы типа VOVRWork 
+        /// </summary>
         public void LoadVOVRWorks()
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
@@ -335,6 +388,9 @@ namespace ExellAddInsLib.MSG
                 rowIndex++;
             }
         }
+        /// <summary>
+        /// Функция из части КС-2 листа Worksheet создает и помещает в модель работы типа KSWork 
+        /// </summary>
         public void LoadKSWorks()
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
@@ -350,7 +406,7 @@ namespace ExellAddInsLib.MSG
 
                     ks_work.Number = registerSheet.Cells[rowIndex, KS_NUMBER_COL].Value.ToString();
                     ks_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, KS_NUMBER_COL));
-                   
+
                     ks_work.Code = registerSheet.Cells[rowIndex, KS_CODE_COL].Value.ToString();
                     ks_work.CellAddressesMap.Add("Code", Tuple.Create(rowIndex, KS_CODE_COL));
 
@@ -398,6 +454,11 @@ namespace ExellAddInsLib.MSG
                 rowIndex++;
             }
         }
+        /// <summary>
+        /// Функция из календарной части (левой части) листа Worksheet создает и помещает в соответсвующие  
+        /// работы типа KSWork табели выполненных работ ReportCard с объектами типа WorkDay с даной и количеством 
+        /// выполенной работы
+        /// </summary>
         public void LoadWorksReportCards()
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
@@ -446,8 +507,13 @@ namespace ExellAddInsLib.MSG
                 }
 
         }
-        public void RealoadAll()
+        /// <summary>
+        /// Функция перезагружает все объекты из всех Worksheet в соотвествующие модели. 
+        /// </summary>
+        public void RealoadAllSheetsInModel()
         {
+            foreach (MSGExellModel model in Children)
+                model.RealoadAllSheetsInModel();
             this.MSGWorks.Clear();
             this.VOVRWorks.Clear();
             this.KSWorks.Clear();
@@ -455,25 +521,27 @@ namespace ExellAddInsLib.MSG
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ConstructionSubObjectCode = this.CommonSheet.Cells[CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
 
-
             this.LoadMSGWorks();
             this.LoadVOVRWorks();
             this.LoadKSWorks();
             this.LoadWorksReportCards();
         }
 
-
+        /// <summary>
+        /// Функиця пересчета трудоемкостей всех типов работ исходя из проставленных в трудоемкостей
+        /// в работах типа КС-2
+        /// </summary>
         public void CalcLabourness()
         {
-            this.RealoadAll();
+
             foreach (MSGWork msg_work in this.MSGWorks)
             {
-              //  if (msg_work.Laboriousness == 0)
+                //  if (msg_work.Laboriousness == 0)
                 {
                     decimal common_vovr_laboueness = 0;
                     foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
                     {
-                       // if (vovr_work.Laboriousness == 0)
+                        // if (vovr_work.Laboriousness == 0)
                         {
                             decimal common_ks_laboueness = 0;
                             foreach (KSWork ks_work in vovr_work.KSWorks)
@@ -493,10 +561,7 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public void CalcQuantity()
         {
-            this.UpdateWorksheetCommonPart();
-            this.CalcLabourness();
-            this.RealoadAll();
-            //  this.ResetCalculatesFields();
+
             foreach (MSGWork msg_work in this.MSGWorks)
             {
                 decimal common_vovr_labour_quantity = 0;
@@ -561,7 +626,7 @@ namespace ExellAddInsLib.MSG
                                                     date_index++;
                                                 }
                                                 int curent_wrc_row = ks_work.ReportCard.CellAddressesMap["ReportCard"].Item1;
-                                                //curent_w_day.CellAddressesMap.Add(map_item.Key,new Tuple<int, int>(WRC_DATE_ROW, WRC_DATE_COL + date_index));
+
                                                 curent_w_day.CellAddressesMap.Add(map_item.Key, new Tuple<int, int>(curent_wrc_row, WRC_DATE_COL + date_index));
 
                                                 this.RegisterSheet.Cells[curent_wrc_row, WRC_DATE_COL + date_index] =
@@ -615,20 +680,21 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
-        //public decimal CalcWorkDaysQuantity(WorkReportCard reportCard)
-        //{
-        //    decimal out_value = 0;
-        //    foreach (WorkDay work_day in reportCard)
-        //        out_value += work_day.Quantity;
-        //    return out_value;
-        //}
+        /// <summary>
+        /// Вычисление всех вычисляемых величин внутри модели и всех его дочерних моделей.
+        /// </summary>
         public void CalcAll()
         {
+            this.UpdateWorksheetCommonPart();
+            this.RealoadAllSheetsInModel();
             this.CalcLabourness();
             this.CalcQuantity();
             this.LoadWorksReportCards();
         }
 
+        /// <summary>
+        /// Функция сбрасывает в значение 0 все вычиляемые поля всех работ кроме  поля KSWork.Laboriousness
+        /// </summary>
         public void ResetCalculatesFields()
         {
             foreach (MSGWork work in this.MSGWorks)
@@ -646,6 +712,10 @@ namespace ExellAddInsLib.MSG
                 work.Quantity = 0;
             }
         }
+        /// <summary>
+        /// Функция обновляет разделы МСГ, ВОВР и КС-2 ведомости если модель является дочерней ( у нее есть владелец) 
+        /// или если ведомость сама общая, то просто очищает у нее каледарную часть с записями выполенных объемов
+        /// </summary>
         public void UpdateWorksheetCommonPart()
         {
             if (this.Owner != null)
@@ -661,6 +731,11 @@ namespace ExellAddInsLib.MSG
             else
                 this.ClearWorksheetDaysPart();
         }
+        /// <summary>
+        /// Функция обновляет документальное представление объетка (рукурсивно проходит по всем объектам 
+        /// реализующим интерфейс IExcelBindableBase). 
+        /// </summary>
+        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IExcelBindableBase </param>
         private void UpdateExellBindableObject(IExcelBindableBase obj)
         {
             var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
@@ -703,12 +778,18 @@ namespace ExellAddInsLib.MSG
 
             }
         }
+        /// <summary>
+        /// Фунция очищает календарную часть ведомости (очищает все записи выполненных работ)
+        /// </summary>
         public void ClearWorksheetDaysPart()
         {
             Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WRC_DATE_COL], this.RegisterSheet.Cells[10000, 10000]];
             common_area_range.ClearContents();
         }
+        /// <summary>
+        /// Функия очищает левую часть вдомости с МСГ, ВОВР и КС-2.
+        /// </summary>
         public void ClearWorksheetCommonPart()
         {
             Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);

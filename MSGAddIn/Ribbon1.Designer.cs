@@ -159,21 +159,18 @@
             // 
             // btnChangeEmployers
             // 
-            this.btnChangeEmployers.Enabled = false;
             this.btnChangeEmployers.Label = "Редактировать список отвественных";
             this.btnChangeEmployers.Name = "btnChangeEmployers";
             this.btnChangeEmployers.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeEmployers_Click);
             // 
             // btnChangePosts
             // 
-            this.btnChangePosts.Enabled = false;
             this.btnChangePosts.Label = "Редактировать список должностей";
             this.btnChangePosts.Name = "btnChangePosts";
             this.btnChangePosts.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangePosts_Click);
             // 
             // btnChangeUOM
             // 
-            this.btnChangeUOM.Enabled = false;
             this.btnChangeUOM.Label = "Радактировать ед.изм.";
             this.btnChangeUOM.Name = "btnChangeUOM";
             this.btnChangeUOM.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeUOM_Click);
