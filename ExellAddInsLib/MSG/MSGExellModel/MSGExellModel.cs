@@ -38,7 +38,10 @@ namespace ExellAddInsLib.MSG
         public const int MSG_LABOURNESS_COL = MSG_NUMBER_COL + 5;
         public const int MSG_START_DATE_COL = MSG_NUMBER_COL + 6;
         public const int MSG_END_DATE_COL = MSG_NUMBER_COL + 7;
-        public const int MSG_WORKERS_NUMBER_COL = MSG_NUMBER_COL + 8;
+
+        public const int MSG_NEEDS_OF_WORKERS_NUMBER_COL = MSG_END_DATE_COL + 1;
+        public const int MSG_NEEDS_OF_WORKERS_NAME_COL = MSG_NEEDS_OF_WORKERS_NUMBER_COL + 1;
+        public const int MSG_NEEDS_OF_WORKERS_QUANTITY_COL = MSG_NEEDS_OF_WORKERS_NAME_COL + 1;
 
 
         public const int VOVR_NUMBER_COL = 15;
@@ -101,9 +104,15 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public ObservableCollection<KSWork> KSWorks { get; private set; } = new ObservableCollection<KSWork>();
         /// <summary>
+        /// Коллекция  табелей выполненных работ
+        /// </summary>
+        public ObservableCollection<WorkReportCard> WorkReportCards { get; private set; } = new ObservableCollection<WorkReportCard>();
+        /// <summary>
         /// Коллекция с единицами измерения модели
         /// </summary>
         public ObservableCollection<UnitOfMeasurement> UnitOfMeasurements { get; set; } = new ObservableCollection<UnitOfMeasurement>();
+        //public WorkersCompositionReportCard WorkersCompositionReportCard = new MSG.WorkersCompositionReportCard();
+        public WorkersComposition WorkersComposition { get; set; } = new WorkersComposition();
 
         /// <summary>
         ///Шифр объекта или договора
@@ -177,6 +186,57 @@ namespace ExellAddInsLib.MSG
                         }
                         break;
                     }
+                case nameof(NeedsOfWorker):
+                    {
+                        NeedsOfWorker needs_of_workers = (NeedsOfWorker)obj;
+ 
+                        MSGWork msg_work = this.MSGWorks.Where(w => w.Number.StartsWith(needs_of_workers.Number.Remove(needs_of_workers.Number.LastIndexOf(".")))).FirstOrDefault();
+                        if (msg_work != null)
+                        {
+                            msg_work.WorkersComposition.Add(needs_of_workers);
+                            needs_of_workers.Owner = msg_work;
+                            foreach(WorkScheduleChunk chunk in msg_work.WorkSchedules)
+                            {
+                                for(DateTime date = chunk.StartTime;date<=chunk.EndTime;date=date.AddDays(1))
+                                {
+                                    NeedsOfWorkersDay needsOfWorkersDay = new NeedsOfWorkersDay();
+                                    needsOfWorkersDay.Date = date;
+                                    needsOfWorkersDay.Quantity = needs_of_workers.Quantity;
+                                    needs_of_workers.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
+                                }
+                            }
+                        }
+
+                        NeedsOfWorker global_needs_of_worker = this.WorkersComposition.FirstOrDefault(nw => nw.Name == needs_of_workers.Name);
+                        if (global_needs_of_worker == null)
+                        {
+                            global_needs_of_worker = new NeedsOfWorker();
+                            global_needs_of_worker.Number = needs_of_workers.Number;
+                            global_needs_of_worker.Name = needs_of_workers.Name;
+                            foreach (NeedsOfWorkersDay needsOfWorkersDay in needs_of_workers.NeedsOfWorkersReportCard)
+                                global_needs_of_worker.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
+                            this.WorkersComposition.Add(global_needs_of_worker);
+                        }
+                        else
+                        {
+                            foreach(NeedsOfWorkersDay needsOfWorkersDay in needs_of_workers.NeedsOfWorkersReportCard)
+                            {
+                                var nw_day = global_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == needsOfWorkersDay.Date);
+                                if (nw_day!=null)
+                                {
+                                    nw_day.Quantity += needsOfWorkersDay.Quantity;
+                                }
+                                else
+                                {
+                                    NeedsOfWorkersDay new_nw_day = new NeedsOfWorkersDay(needsOfWorkersDay);
+                                    global_needs_of_worker.NeedsOfWorkersReportCard.Add(new_nw_day);
+                                }
+                            }
+                          
+                        }
+
+                        break;
+                    }
                 case nameof(VOVRWork):
                     {
                         VOVRWork vovr_work = (VOVRWork)obj;
@@ -207,6 +267,8 @@ namespace ExellAddInsLib.MSG
                 case nameof(WorkReportCard):
                     {
                         WorkReportCard report_card = (WorkReportCard)obj;
+                        if (!this.WorkReportCards.Contains(report_card))
+                            this.WorkReportCards.Add(report_card);
 
                         KSWork ks_work = KSWorks.Where(w => w.Number == report_card.Number).FirstOrDefault();
                         if (ks_work != null && report_card.Count > 0)
@@ -216,6 +278,7 @@ namespace ExellAddInsLib.MSG
                             ks_work = new KSWork();
                             ks_work.Number = report_card.Number;
                             ks_work.ReportCard = report_card;
+                            report_card.Owner = ks_work;
                         }
 
                         break;
@@ -244,7 +307,7 @@ namespace ExellAddInsLib.MSG
             WorksStartDate = DateTime.Parse(registerSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
             int rowIndex = FIRST_ROW_INDEX;
             null_str_count = 0;
-            this.MSGWorks.Clear();
+            this.WorksSections.Clear();
 
             while (null_str_count < 100)
             {
@@ -351,23 +414,24 @@ namespace ExellAddInsLib.MSG
                         rowIndex++;
                         start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
                         end_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_END_DATE_COL].Value.ToString());
-                        var fd = registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL].Value;
-                        int workers_number = 0;
-                        if (registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL].Value != null)
-                        {
-                            int.TryParse(registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL].Value.ToString(), out workers_number);
-                            registerSheet.Range[registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL], registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL]].Interior.Color
-                                                             = XlRgbColor.rgbWhite;
-                        }
-                        else
-                            registerSheet.Range[registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL], registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL]].Interior.Color
-                                                              = XlRgbColor.rgbRed;
+
+                        //var fd = registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL].Value;
+                        //int workers_number = 0;
+                        //if (registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL].Value != null)
+                        //{
+                        //    int.TryParse(registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL].Value.ToString(), out workers_number);
+                        //    registerSheet.Range[registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL], registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL]].Interior.Color
+                        //                                     = XlRgbColor.rgbWhite;
+                        //}
+                        //else
+                        //    registerSheet.Range[registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL], registerSheet.Cells[rowIndex, MSG_WORKERS_NUMBER_COL]].Interior.Color
+                        //                                      = XlRgbColor.rgbRed;
 
                         WorkScheduleChunk extra_work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
-                        extra_work_sh_chunk.WorkesNumber = workers_number;
+                        // extra_work_sh_chunk.WorkesNumber = workers_number;
                         extra_work_sh_chunk.CellAddressesMap.Add("StartTime", Tuple.Create(rowIndex, MSG_START_DATE_COL));
                         extra_work_sh_chunk.CellAddressesMap.Add("EndTime", Tuple.Create(rowIndex, MSG_END_DATE_COL));
-                        extra_work_sh_chunk.CellAddressesMap.Add("WorkerNumber", Tuple.Create(rowIndex, MSG_WORKERS_NUMBER_COL));
+                        //extra_work_sh_chunk.CellAddressesMap.Add("WorkerNumber", Tuple.Create(rowIndex, MSG_WORKERS_NUMBER_COL));
 
 
                         msg_work.WorkSchedules.Add(extra_work_sh_chunk);
@@ -379,12 +443,56 @@ namespace ExellAddInsLib.MSG
             }
         }
         /// <summary>
+        /// Функция из части МСГ листа Worksheet создает и помещает в модель работы типа MSGWork 
+        /// </summary>
+        public void LoadMSGWorkerCompositions()
+        {
+            Excel.Worksheet registerSheet = this.RegisterSheet;
+
+            int rowIndex = FIRST_ROW_INDEX;
+            this.WorkersComposition.Clear();
+            null_str_count = 0;
+
+
+            while (null_str_count < 100)
+            {
+                if (registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL].Value == null) null_str_count++;
+                else
+                {
+                    null_str_count = 0;
+                    NeedsOfWorker msg_needs_of_workers = new NeedsOfWorker();
+
+                    msg_needs_of_workers.Number = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL].Value.ToString();
+                    msg_needs_of_workers.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL));
+
+                    msg_needs_of_workers.Name = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL].Value;
+                    msg_needs_of_workers.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL));
+                    msg_needs_of_workers.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL));
+
+                    if (registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value != null)
+                    {
+                        msg_needs_of_workers.Quantity = Int32.Parse(registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value.ToString());
+                        registerSheet.Range[registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL], registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL]].Interior.Color
+                            = XlRgbColor.rgbWhite;
+
+                    }
+                    else
+                        registerSheet.Range[registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL], registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL]].Interior.Color
+                            = XlRgbColor.rgbRed;
+
+                    this.Register(msg_needs_of_workers);
+                }
+                rowIndex++;
+            }
+        }
+        /// <summary>
         /// Функция из части  ВОВР листа Worksheet создает и помещает в модель работы типа VOVRWork 
         /// </summary>
         public void LoadVOVRWorks()
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
             int rowIndex = FIRST_ROW_INDEX;
+            this.VOVRWorks.Clear();
             null_str_count = 0;
 
             while (null_str_count < 100)
@@ -451,6 +559,7 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
             int rowIndex = FIRST_ROW_INDEX;
+            this.KSWorks.Clear();
             null_str_count = 0;
             while (null_str_count < 100)
             {
@@ -473,7 +582,7 @@ namespace ExellAddInsLib.MSG
                     ks_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, KS_QUANTITY_COL));
                     ks_work.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, KS_QUANTITY_FACT_COL));
                     ks_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, KS_LABOURNESS_COL));
-                 
+
                     if (registerSheet.Cells[rowIndex, KS_MEASURE_COL].Value != null)
                     {
                         ks_work.UnitOfMeasurement = new UnitOfMeasurement(registerSheet.Cells[rowIndex, KS_MEASURE_COL].Value);
@@ -504,7 +613,7 @@ namespace ExellAddInsLib.MSG
                     else
                         registerSheet.Range[registerSheet.Cells[rowIndex, KS_LABOURNESS_COL], registerSheet.Cells[rowIndex, KS_LABOURNESS_COL]].Interior.Color
                             = XlRgbColor.rgbRed;
-                  
+
                     ks_work.CellAddressesMap.Add("PreviousComplatedQuantity", Tuple.Create(rowIndex, KS_PC_QUANTITY_COL));
 
                     if (registerSheet.Cells[rowIndex, KS_PC_QUANTITY_COL].Value != null)
@@ -523,7 +632,9 @@ namespace ExellAddInsLib.MSG
         public void LoadWorksReportCards()
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
+            this.WorkReportCards.Clear();
             int rowIndex = FIRST_ROW_INDEX;
+
             null_str_count = 0;
             if (this.Owner != null)
                 while (null_str_count < 100)
@@ -575,16 +686,13 @@ namespace ExellAddInsLib.MSG
         {
             foreach (MSGExellModel model in Children)
                 model.RealoadAllSheetsInModel();
-            this.WorksSections.Clear();
-            this.MSGWorks.Clear();
-            this.VOVRWorks.Clear();
-            this.KSWorks.Clear();
             this.ContractCode = this.CommonSheet.Cells[CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ConstructionSubObjectCode = this.CommonSheet.Cells[CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
 
             this.LoadWorksSections();
             this.LoadMSGWorks();
+            this.LoadMSGWorkerCompositions();
             this.LoadVOVRWorks();
             this.LoadKSWorks();
             this.LoadWorksReportCards();
@@ -638,10 +746,10 @@ namespace ExellAddInsLib.MSG
                     foreach (KSWork ks_work in vovr_work.KSWorks)
                     {
                         ks_work.Quantity = 0;
-                   
+
                         if (this.Owner != null && ks_work.ReportCard != null)
                         {
-                            ks_work.Quantity = ks_work.ReportCard.Quantity+ ks_work.PreviousComplatedQuantity;
+                            ks_work.Quantity = ks_work.ReportCard.Quantity + ks_work.PreviousComplatedQuantity;
                         }
                         else
                         {
@@ -723,7 +831,7 @@ namespace ExellAddInsLib.MSG
                         vovr_work.PreviousComplatedQuantity = common_ks_previos_complate_labour_quantity / vovr_work.Laboriousness;
                     }
                     common_vovr_labour_quantity += vovr_work.Quantity * vovr_work.Laboriousness;
-                    common_vovr_previos_complate_labour_quantity+= vovr_work.PreviousComplatedQuantity * vovr_work.Laboriousness;
+                    common_vovr_previos_complate_labour_quantity += vovr_work.PreviousComplatedQuantity * vovr_work.Laboriousness;
                 }
 
                 if (msg_work.Laboriousness != 0)
@@ -768,8 +876,19 @@ namespace ExellAddInsLib.MSG
             this.CalcLabourness();
             this.CalcQuantity();
             this.LoadWorksReportCards();
+            this.CalcWorkersComposionsCards();
         }
 
+
+        public void CalcWorkersComposionsCards()
+        {
+
+            //foreach(NeedsOfWorkers needs_of_workers in  this.WorkersComposition)
+            //{
+
+            //}
+
+        }
         /// <summary>
         /// Функция сбрасывает в значение 0 все вычиляемые поля всех работ кроме  поля KSWork.Laboriousness
         /// </summary>

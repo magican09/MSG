@@ -7,11 +7,15 @@
         public Post Post
         {
             get { return _post; }
-            set { _post = value; }
+            set { SetProperty(ref _post, value); }
         }
-        public Employer(int number, string name, Post post) : base(number, name)
+        public Employer(string number, string name, Post post) : base(number, name)
         {
             Post = post;
+        }
+        public Employer()
+        {
+
         }
     }
 }

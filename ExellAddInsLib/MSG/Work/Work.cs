@@ -97,6 +97,15 @@ namespace ExellAddInsLib.MSG
             set { _owner = value; }
         }
 
+        private WorkersComposition _workersComposition = new WorkersComposition();
+
+        public WorkersComposition WorkersComposition
+        {
+            get { return _workersComposition; }
+            set { _workersComposition = value; }
+        }
+
+
 
         private ObservableCollection<IWork> _children = new ObservableCollection<IWork>();
 

@@ -1,10 +1,10 @@
 ﻿namespace ExellAddInsLib.MSG
 {
-    public class Post
+    public class Post:ExcelBindableBase
     {
-        private int _number;
+        private string _number;
 
-        public int Number
+        public string Number
         {
             get { return _number; }
             set { _number = value; }
@@ -16,10 +16,14 @@
             get { return _name; }
             set { _name = value; }
         }
-        public Post(int number, string name)
+        public Post(string number, string name)
         {
             Number = number;
             Name = name;
+        }
+        public Post()
+        {
+
         }
     }
 }

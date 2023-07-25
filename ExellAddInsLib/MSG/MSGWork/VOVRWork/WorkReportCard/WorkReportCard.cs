@@ -26,5 +26,13 @@
 
         }//Выполенный объем работ
 
+        private IWork  _owner;
+
+        public IWork  Owner
+        {
+            get { return _owner; }
+            set { _owner = value; }
+        }
+
     }
 }

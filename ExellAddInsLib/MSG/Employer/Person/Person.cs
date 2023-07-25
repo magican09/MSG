@@ -1,26 +1,30 @@
 ﻿namespace ExellAddInsLib.MSG
 {
-    public class Person
+    public class Person:ExcelBindableBase
     {
-        private int _number;
+        private string _number;
 
-        public int Number
+        public string Number
         {
             get { return _number; }
-            set { _number = value; }
+            set { SetProperty(ref _number, value); }
         }
         private string _name;
 
         public string Name
         {
             get { return _name; }
-            set { _name = value; }
+            set { SetProperty(ref _name, value); }
         }
-        public Person(int number, string name)
+        public Person(string number, string name)
         {
             Number = number;
 
             Name = name;
+
+        }
+        public Person()
+        {
 
         }
     }

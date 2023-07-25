@@ -57,8 +57,12 @@
   <ItemGroup>
     <Compile Include="MSG\BindableBase.cs" />
     <Compile Include="MSG\Employer\Employer.cs" />
+    <Compile Include="MSG\Employer\NeedsOfWorkers\NeedsOfWorkersDay\NeedsOfWorkersDay.cs" />
+    <Compile Include="MSG\Employer\NeedsOfWorkers\NeedsOfWorkersReportCard.cs" />
     <Compile Include="MSG\Employer\Person\Person.cs" />
     <Compile Include="MSG\Employer\Post\Post.cs" />
+    <Compile Include="MSG\Employer\NeedsOfWorkers\NeedsOfWorker.cs" />
+    <Compile Include="MSG\Employer\WorkersComposition\WorkersComposition.cs" />
     <Compile Include="MSG\ExcelBindableBase.cs" />
     <Compile Include="MSG\ExcelNotifyChangedCollection.cs" />
     <Compile Include="MSG\IExcelBindableBase.cs" />
