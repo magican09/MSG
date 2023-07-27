@@ -66,6 +66,13 @@ namespace ExellAddInsLib.MSG
         public const int WRC_NUMBER_COL = 28;
         public const int WRC_DATE_COL = KS_PC_QUANTITY_COL + 1;
 
+        public const int W_CONSUMPTIONS_FIRST_ROW_INDEX = 4;
+        public const int W_CONSUMPTIONS_NUMBER_COL = 1;
+        public const int W_CONSUMPTIONS_NAME_COL = 2;
+        public const int W_CONSUMPTIONS_DATE_RAW = 3;
+        public const int W_CONSUMPTIONS_FIRST_DATE_COL = 3;
+
+
         private int null_str_count = 0;
         /// <summary>
         /// Дата начала ведомости 
@@ -113,6 +120,7 @@ namespace ExellAddInsLib.MSG
         public ObservableCollection<UnitOfMeasurement> UnitOfMeasurements { get; set; } = new ObservableCollection<UnitOfMeasurement>();
         //public WorkersCompositionReportCard WorkersCompositionReportCard = new MSG.WorkersCompositionReportCard();
         public WorkersComposition WorkersComposition { get; set; } = new WorkersComposition();
+        public WorkerConsumptions WorkerConsumptions { get; set; } = new WorkerConsumptions();
 
         /// <summary>
         ///Шифр объекта или договора
@@ -138,6 +146,11 @@ namespace ExellAddInsLib.MSG
         /// Прикрепленный к модели лист ведомости  Worksheet
         /// </summary>
         public Excel.Worksheet RegisterSheet { get; set; }
+        /// <summary>
+        /// Прикрепленный к модели лист  Людских ресурсов Worksheet
+        /// </summary>
+        public Excel.Worksheet WorkerConsumptionsSheet { get; set; }
+
         /// <summary>
         /// Прикрепленный к модели лист общих данных  Worksheet
         /// </summary>
@@ -189,15 +202,15 @@ namespace ExellAddInsLib.MSG
                 case nameof(NeedsOfWorker):
                     {
                         NeedsOfWorker needs_of_workers = (NeedsOfWorker)obj;
- 
+
                         MSGWork msg_work = this.MSGWorks.Where(w => w.Number.StartsWith(needs_of_workers.Number.Remove(needs_of_workers.Number.LastIndexOf(".")))).FirstOrDefault();
                         if (msg_work != null)
                         {
                             msg_work.WorkersComposition.Add(needs_of_workers);
                             needs_of_workers.Owner = msg_work;
-                            foreach(WorkScheduleChunk chunk in msg_work.WorkSchedules)
+                            foreach (WorkScheduleChunk chunk in msg_work.WorkSchedules)
                             {
-                                for(DateTime date = chunk.StartTime;date<=chunk.EndTime;date=date.AddDays(1))
+                                for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1))
                                 {
                                     NeedsOfWorkersDay needsOfWorkersDay = new NeedsOfWorkersDay();
                                     needsOfWorkersDay.Date = date;
@@ -219,10 +232,10 @@ namespace ExellAddInsLib.MSG
                         }
                         else
                         {
-                            foreach(NeedsOfWorkersDay needsOfWorkersDay in needs_of_workers.NeedsOfWorkersReportCard)
+                            foreach (NeedsOfWorkersDay needsOfWorkersDay in needs_of_workers.NeedsOfWorkersReportCard)
                             {
                                 var nw_day = global_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == needsOfWorkersDay.Date);
-                                if (nw_day!=null)
+                                if (nw_day != null)
                                 {
                                     nw_day.Quantity += needsOfWorkersDay.Quantity;
                                 }
@@ -232,7 +245,7 @@ namespace ExellAddInsLib.MSG
                                     global_needs_of_worker.NeedsOfWorkersReportCard.Add(new_nw_day);
                                 }
                             }
-                          
+
                         }
 
                         break;
@@ -283,7 +296,14 @@ namespace ExellAddInsLib.MSG
 
                         break;
                     }
+                case nameof(WorkerConsumption):
+                    {
 
+                        WorkerConsumption w_consumption = (WorkerConsumption)obj;
+                        if (!this.WorkerConsumptions.Contains(w_consumption))
+                            this.WorkerConsumptions.Add(w_consumption);
+                        break;
+                    }
             }
         }
         private void OnPropertyChange(object sender, PropertyChangedEventArgs e)
@@ -292,7 +312,8 @@ namespace ExellAddInsLib.MSG
             {
                 if (bindable_object.CellAddressesMap.ContainsKey(e.PropertyName))
                 {
-                    RegisterSheet.Cells[bindable_object.CellAddressesMap[e.PropertyName].Item1,
+                    bindable_object.CellAddressesMap[e.PropertyName].Item3
+                        .Cells[bindable_object.CellAddressesMap[e.PropertyName].Item1,
                    bindable_object.CellAddressesMap[e.PropertyName].Item2] = sender.GetType().GetProperty(e.PropertyName).GetValue(sender).ToString();
                 }
             }
@@ -319,10 +340,10 @@ namespace ExellAddInsLib.MSG
 
                     w_section.Number = registerSheet.Cells[rowIndex, WSEC_NUMBER_COL].Value.ToString();
 
-                    w_section.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, WSEC_NUMBER_COL));
+                    w_section.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, WSEC_NUMBER_COL, this.RegisterSheet));
 
                     w_section.Name = registerSheet.Cells[rowIndex, WSEC_NAME_COL].Value;
-                    w_section.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, WSEC_NAME_COL));
+                    w_section.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, WSEC_NAME_COL, this.RegisterSheet));
 
                     this.Register(w_section);
                 }
@@ -350,14 +371,14 @@ namespace ExellAddInsLib.MSG
 
                     msg_work.Number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value.ToString();
 
-                    msg_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, MSG_NUMBER_COL));
+                    msg_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, MSG_NUMBER_COL, this.RegisterSheet));
 
                     msg_work.Name = registerSheet.Cells[rowIndex, MSG_NAME_COL].Value;
-                    msg_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, MSG_NAME_COL));
-                    msg_work.CellAddressesMap.Add("UnitOfMeasurement", Tuple.Create(rowIndex, MSG_MEASURE_COL));
-                    msg_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, MSG_QUANTITY_COL));
-                    msg_work.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, MSG_QUANTITY_FACT_COL));
-                    msg_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, MSG_LABOURNESS_COL));
+                    msg_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, MSG_NAME_COL, this.RegisterSheet));
+                    msg_work.CellAddressesMap.Add("UnitOfMeasurement", Tuple.Create(rowIndex, MSG_MEASURE_COL, this.RegisterSheet));
+                    msg_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, MSG_QUANTITY_COL, this.RegisterSheet));
+                    msg_work.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, MSG_QUANTITY_FACT_COL, this.RegisterSheet));
+                    msg_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, MSG_LABOURNESS_COL, this.RegisterSheet));
 
                     if (registerSheet.Cells[rowIndex, MSG_MEASURE_COL].Value != null)
                     {
@@ -403,8 +424,8 @@ namespace ExellAddInsLib.MSG
                     DateTime start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
                     DateTime end_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_END_DATE_COL].Value.ToString());
                     WorkScheduleChunk work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
-                    work_sh_chunk.CellAddressesMap.Add("StartTime", Tuple.Create(rowIndex, MSG_START_DATE_COL));
-                    work_sh_chunk.CellAddressesMap.Add("EndTime", Tuple.Create(rowIndex, MSG_END_DATE_COL));
+                    work_sh_chunk.CellAddressesMap.Add("StartTime", Tuple.Create(rowIndex, MSG_START_DATE_COL, this.RegisterSheet));
+                    work_sh_chunk.CellAddressesMap.Add("EndTime", Tuple.Create(rowIndex, MSG_END_DATE_COL, this.RegisterSheet));
                     msg_work.WorkSchedules.Add(work_sh_chunk);
                     this.Register(work_sh_chunk);
 
@@ -429,8 +450,8 @@ namespace ExellAddInsLib.MSG
 
                         WorkScheduleChunk extra_work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
                         // extra_work_sh_chunk.WorkesNumber = workers_number;
-                        extra_work_sh_chunk.CellAddressesMap.Add("StartTime", Tuple.Create(rowIndex, MSG_START_DATE_COL));
-                        extra_work_sh_chunk.CellAddressesMap.Add("EndTime", Tuple.Create(rowIndex, MSG_END_DATE_COL));
+                        extra_work_sh_chunk.CellAddressesMap.Add("StartTime", Tuple.Create(rowIndex, MSG_START_DATE_COL, this.RegisterSheet));
+                        extra_work_sh_chunk.CellAddressesMap.Add("EndTime", Tuple.Create(rowIndex, MSG_END_DATE_COL, this.RegisterSheet));
                         //extra_work_sh_chunk.CellAddressesMap.Add("WorkerNumber", Tuple.Create(rowIndex, MSG_WORKERS_NUMBER_COL));
 
 
@@ -443,7 +464,7 @@ namespace ExellAddInsLib.MSG
             }
         }
         /// <summary>
-        /// Функция из части МСГ листа Worksheet создает и помещает в модель работы типа MSGWork 
+        /// Функция из части МСГ листа Worksheet 
         /// </summary>
         public void LoadMSGWorkerCompositions()
         {
@@ -463,11 +484,11 @@ namespace ExellAddInsLib.MSG
                     NeedsOfWorker msg_needs_of_workers = new NeedsOfWorker();
 
                     msg_needs_of_workers.Number = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL].Value.ToString();
-                    msg_needs_of_workers.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL));
+                    msg_needs_of_workers.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL, this.RegisterSheet));
 
                     msg_needs_of_workers.Name = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL].Value;
-                    msg_needs_of_workers.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL));
-                    msg_needs_of_workers.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL));
+                    msg_needs_of_workers.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL, this.RegisterSheet));
+                    msg_needs_of_workers.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL, this.RegisterSheet));
 
                     if (registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value != null)
                     {
@@ -504,14 +525,14 @@ namespace ExellAddInsLib.MSG
                     VOVRWork vovr_work = new VOVRWork();
 
                     vovr_work.Number = registerSheet.Cells[rowIndex, VOVR_NUMBER_COL].Value.ToString();
-                    vovr_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, VOVR_NUMBER_COL));
+                    vovr_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, VOVR_NUMBER_COL, this.RegisterSheet));
 
                     vovr_work.Name = registerSheet.Cells[rowIndex, VOVR_NAME_COL].Value.ToString();
-                    vovr_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, VOVR_NAME_COL));
-                    vovr_work.CellAddressesMap.Add("UnitOfMeasurement", Tuple.Create(rowIndex, VOVR_MEASURE_COL));
-                    vovr_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, VOVR_QUANTITY_COL));
-                    vovr_work.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, VOVR_QUANTITY_FACT_COL));
-                    vovr_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, VOVR_LABOURNESS_COL));
+                    vovr_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, VOVR_NAME_COL, this.RegisterSheet));
+                    vovr_work.CellAddressesMap.Add("UnitOfMeasurement", Tuple.Create(rowIndex, VOVR_MEASURE_COL, this.RegisterSheet));
+                    vovr_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, VOVR_QUANTITY_COL, this.RegisterSheet));
+                    vovr_work.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, VOVR_QUANTITY_FACT_COL, this.RegisterSheet));
+                    vovr_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, VOVR_LABOURNESS_COL, this.RegisterSheet));
 
                     if (registerSheet.Cells[rowIndex, VOVR_MEASURE_COL].Value != null)
                     {
@@ -570,18 +591,18 @@ namespace ExellAddInsLib.MSG
                     KSWork ks_work = new KSWork();
 
                     ks_work.Number = registerSheet.Cells[rowIndex, KS_NUMBER_COL].Value.ToString();
-                    ks_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, KS_NUMBER_COL));
+                    ks_work.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, KS_NUMBER_COL, this.RegisterSheet));
 
                     ks_work.Code = registerSheet.Cells[rowIndex, KS_CODE_COL].Value.ToString();
-                    ks_work.CellAddressesMap.Add("Code", Tuple.Create(rowIndex, KS_CODE_COL));
+                    ks_work.CellAddressesMap.Add("Code", Tuple.Create(rowIndex, KS_CODE_COL, this.RegisterSheet));
 
                     ks_work.Name = registerSheet.Cells[rowIndex, KS_NAME_COL].Value;
-                    ks_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, KS_NAME_COL));
+                    ks_work.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, KS_NAME_COL, this.RegisterSheet));
 
-                    ks_work.CellAddressesMap.Add("UnitOfMeasurement", Tuple.Create(rowIndex, KS_MEASURE_COL));
-                    ks_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, KS_QUANTITY_COL));
-                    ks_work.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, KS_QUANTITY_FACT_COL));
-                    ks_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, KS_LABOURNESS_COL));
+                    ks_work.CellAddressesMap.Add("UnitOfMeasurement", Tuple.Create(rowIndex, KS_MEASURE_COL, this.RegisterSheet));
+                    ks_work.CellAddressesMap.Add("ProjectQuantity", Tuple.Create(rowIndex, KS_QUANTITY_COL, this.RegisterSheet));
+                    ks_work.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, KS_QUANTITY_FACT_COL, this.RegisterSheet));
+                    ks_work.CellAddressesMap.Add("Laboriousness", Tuple.Create(rowIndex, KS_LABOURNESS_COL, this.RegisterSheet));
 
                     if (registerSheet.Cells[rowIndex, KS_MEASURE_COL].Value != null)
                     {
@@ -614,7 +635,7 @@ namespace ExellAddInsLib.MSG
                         registerSheet.Range[registerSheet.Cells[rowIndex, KS_LABOURNESS_COL], registerSheet.Cells[rowIndex, KS_LABOURNESS_COL]].Interior.Color
                             = XlRgbColor.rgbRed;
 
-                    ks_work.CellAddressesMap.Add("PreviousComplatedQuantity", Tuple.Create(rowIndex, KS_PC_QUANTITY_COL));
+                    ks_work.CellAddressesMap.Add("PreviousComplatedQuantity", Tuple.Create(rowIndex, KS_PC_QUANTITY_COL, this.RegisterSheet));
 
                     if (registerSheet.Cells[rowIndex, KS_PC_QUANTITY_COL].Value != null)
                         ks_work.PreviousComplatedQuantity = Decimal.Parse(registerSheet.Cells[rowIndex, KS_PC_QUANTITY_COL].Value.ToString());
@@ -647,7 +668,7 @@ namespace ExellAddInsLib.MSG
                         WorkReportCard report_card = new WorkReportCard();
                         DateTime end_date = DateTime.Parse(registerSheet.Cells[WORKS_END_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
                         report_card.Number = registerSheet.Cells[rowIndex, WRC_NUMBER_COL].Value.ToString();
-                        report_card.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, WRC_NUMBER_COL));
+                        report_card.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, WRC_NUMBER_COL,this.RegisterSheet));
                         int date_index = 0;
                         while (registerSheet.Cells[WRC_DATE_ROW, WRC_DATE_COL + date_index].Value != null &&
                             DateTime.Parse(registerSheet.Cells[WRC_DATE_ROW, WRC_DATE_COL + date_index].Value.ToString()) < end_date)
@@ -662,7 +683,7 @@ namespace ExellAddInsLib.MSG
                                 workDay.Date = current_date;
                                 // workDay.CellAddressesMap.Add("Date", Tuple.Create(WRC_DATE_ROW, WRC_DATE_COL + date_index));
                                 workDay.Quantity = quantity;
-                                workDay.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, WRC_DATE_COL + date_index));
+                                workDay.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, WRC_DATE_COL + date_index, this.RegisterSheet));
                                 this.Register(workDay);
                                 report_card.Add(workDay);
                             }
@@ -679,6 +700,64 @@ namespace ExellAddInsLib.MSG
                 }
 
         }
+        public void LoadWorkerConsumptions()
+        {
+            Excel.Worksheet consumtionsSheet = this.WorkerConsumptionsSheet;
+            int rowIndex = W_CONSUMPTIONS_FIRST_ROW_INDEX;
+            this.WorkerConsumptions.Clear();
+            null_str_count = 0;
+
+            while (null_str_count < 100)
+            {
+                if (WorkerConsumptionsSheet.Cells[rowIndex, W_CONSUMPTIONS_NUMBER_COL].Value == null) null_str_count++;
+                else
+                {
+                    null_str_count = 0;
+                    WorkerConsumption worker_consumption = new WorkerConsumption();
+
+                    worker_consumption.Number = consumtionsSheet.Cells[rowIndex, W_CONSUMPTIONS_NUMBER_COL].Value.ToString();
+                    worker_consumption.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, W_CONSUMPTIONS_NUMBER_COL, this.WorkerConsumptionsSheet));
+
+                    worker_consumption.Name = consumtionsSheet.Cells[rowIndex, W_CONSUMPTIONS_NAME_COL].Value;
+                    worker_consumption.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, W_CONSUMPTIONS_NAME_COL,this.WorkerConsumptionsSheet));
+                    worker_consumption.WorkersConsumptionReportCard.Clear();
+                    if (!worker_consumption.WorkersConsumptionReportCard.CellAddressesMap.ContainsKey("WorkersConsumptionReportCard"))
+                      worker_consumption.WorkersConsumptionReportCard.CellAddressesMap
+                                    .Add("WorkersConsumptionReportCard", new Tuple<int, int,Excel.Worksheet>(rowIndex, W_CONSUMPTIONS_NUMBER_COL, this.WorkerConsumptionsSheet));
+                  
+                    int date_index = 0;
+                    if (this.Owner != null)
+                        while (consumtionsSheet.Cells[W_CONSUMPTIONS_DATE_RAW, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value != null)
+                        {
+                            DateTime current_date = DateTime.Parse(consumtionsSheet.Cells[W_CONSUMPTIONS_DATE_RAW, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString());
+                            decimal quantity = 0;
+                            if (consumtionsSheet.Cells[rowIndex, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value != null)
+                                quantity = Decimal.Parse(consumtionsSheet.Cells[rowIndex, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString());
+
+                            if (quantity != 0)
+                            {
+                                WorkerConsumptionDay w_consumption_Day = new WorkerConsumptionDay();
+                                w_consumption_Day.Date = current_date;
+                                // workDay.CellAddressesMap.Add("Date", Tuple.Create(WRC_DATE_ROW, WRC_DATE_COL + date_index));
+                                w_consumption_Day.Quantity = quantity;
+                                w_consumption_Day.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, W_CONSUMPTIONS_FIRST_DATE_COL + date_index, this.WorkerConsumptionsSheet));
+                                this.Register(w_consumption_Day);
+                                worker_consumption.WorkersConsumptionReportCard.Add(w_consumption_Day);
+                                
+                            }
+
+                            this.Register(worker_consumption.WorkersConsumptionReportCard);
+                            date_index++;
+                        }
+                    this.WorkerConsumptions.Add(worker_consumption);
+                    this.Register(worker_consumption);
+                   
+                }
+                rowIndex++;
+            }
+
+        }
+
         /// <summary>
         /// Функция перезагружает все объекты из всех Worksheet в соотвествующие модели. 
         /// </summary>
@@ -691,11 +770,14 @@ namespace ExellAddInsLib.MSG
             this.ConstructionSubObjectCode = this.CommonSheet.Cells[CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
 
             this.LoadWorksSections();
+            this.WorkersComposition.Clear();
             this.LoadMSGWorks();
             this.LoadMSGWorkerCompositions();
             this.LoadVOVRWorks();
             this.LoadKSWorks();
             this.LoadWorksReportCards();
+
+            this.LoadWorkerConsumptions();
         }
 
         /// <summary>
@@ -761,7 +843,7 @@ namespace ExellAddInsLib.MSG
                                 this.RegisterSheet.Cells[ks_work.CellAddressesMap["Number"].Item1,
                                     WRC_NUMBER_COL] = ks_work.Number;
                                 ks_work.ReportCard.CellAddressesMap.Add("ReportCard",
-                                    new Tuple<int, int>(ks_work.CellAddressesMap["Number"].Item1, WRC_NUMBER_COL));
+                                    new Tuple<int, int,Excel.Worksheet>(ks_work.CellAddressesMap["Number"].Item1, WRC_NUMBER_COL,this.RegisterSheet));
                                 this.Register(ks_work.ReportCard);
                             }
                             else
@@ -790,7 +872,7 @@ namespace ExellAddInsLib.MSG
                                             curent_w_day.LaborСosts = child_w_day.Quantity * ks_work.Laboriousness;
                                             DateTime end_date = DateTime.Parse(this.RegisterSheet.Cells[WORKS_END_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
 
-                                            foreach (KeyValuePair<string, Tuple<int, int>> map_item in child_w_day.CellAddressesMap)
+                                            foreach (KeyValuePair<string, Tuple<int, int,Excel.Worksheet>> map_item in child_w_day.CellAddressesMap)
                                             {
                                                 int date_index = 0;
                                                 while (this.RegisterSheet.Cells[WRC_DATE_ROW, WRC_DATE_COL + date_index].Value != null &&
@@ -802,7 +884,8 @@ namespace ExellAddInsLib.MSG
                                                 }
                                                 int curent_wrc_row = ks_work.ReportCard.CellAddressesMap["ReportCard"].Item1;
 
-                                                curent_w_day.CellAddressesMap.Add(map_item.Key, new Tuple<int, int>(curent_wrc_row, WRC_DATE_COL + date_index));
+                                                curent_w_day.CellAddressesMap.Add(map_item.Key,
+                                                    new Tuple<int, int,Excel.Worksheet>(curent_wrc_row, WRC_DATE_COL + date_index,this.WorkerConsumptionsSheet));
 
                                                 this.RegisterSheet.Cells[curent_wrc_row, WRC_DATE_COL + date_index] =
                                                     curent_w_day.Quantity.ToString();
@@ -866,6 +949,70 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
+
+        public void CalcWorkerConsumptions()
+        {
+            Excel.Worksheet consumtionsSheet = this.WorkerConsumptionsSheet;
+            int rowIndex = W_CONSUMPTIONS_FIRST_ROW_INDEX;
+           // this.WorkerConsumptions.Clear();
+            null_str_count = 0;
+
+            
+            if(this.Owner==null)
+                foreach (WorkerConsumption worker_consumption in this.WorkerConsumptions)
+                {
+               
+                    foreach (MSGExellModel model in this.Children)
+                    {
+
+                        WorkerConsumption child_w_consumption = model.WorkerConsumptions.FirstOrDefault(w => w.Number == worker_consumption.Number);
+                        if (child_w_consumption != null)
+                        {
+
+                            foreach (WorkerConsumptionDay child_w_day in child_w_consumption.WorkersConsumptionReportCard)
+                            {
+                                WorkerConsumptionDay curent_w_day = worker_consumption.WorkersConsumptionReportCard.FirstOrDefault(wd => wd.Date == child_w_day.Date);
+                                if (curent_w_day != null)
+                                {
+                                    curent_w_day.Quantity += child_w_day.Quantity;
+                                }
+                                else
+                                {
+                                    curent_w_day = new WorkerConsumptionDay();
+                                    this.Register(curent_w_day);
+                                    curent_w_day.Date = child_w_day.Date;
+                                    curent_w_day.Quantity = child_w_day.Quantity;
+ 
+                                    DateTime end_date = DateTime.Parse(this.RegisterSheet.Cells[WORKS_END_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
+
+                                    foreach (KeyValuePair<string, Tuple<int, int,Excel.Worksheet>> map_item in child_w_day.CellAddressesMap)
+                                    {
+                                        int date_index = 0;
+                                        while (this.WorkerConsumptionsSheet.Cells[W_CONSUMPTIONS_DATE_RAW, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value != null &&
+                                          DateTime.Parse(this.WorkerConsumptionsSheet.Cells[W_CONSUMPTIONS_DATE_RAW, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString()) < end_date)
+                                        {
+                                            if (DateTime.Parse(this.WorkerConsumptionsSheet.Cells[W_CONSUMPTIONS_DATE_RAW, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString()) == curent_w_day.Date)
+                                                break;
+                                            date_index++;
+                                        }
+                                        int curent_w_consumption_row = worker_consumption.WorkersConsumptionReportCard.CellAddressesMap["WorkersConsumptionReportCard"].Item1;
+
+                                        curent_w_day.CellAddressesMap.Add(map_item.Key, new Tuple<int, int,Excel.Worksheet>(curent_w_consumption_row, W_CONSUMPTIONS_FIRST_DATE_COL + date_index,this.WorkerConsumptionsSheet));
+
+                                        this.WorkerConsumptionsSheet.Cells[curent_w_consumption_row, W_CONSUMPTIONS_FIRST_DATE_COL + date_index] =
+                                            curent_w_day.Quantity.ToString();
+                                        this.Register(curent_w_day);
+                                    }
+                                    worker_consumption.WorkersConsumptionReportCard.Add(curent_w_day);
+                                }
+                            }
+                        }
+                       
+                    }
+                }
+                
+            
+        }
         /// <summary>
         /// Вычисление всех вычисляемых величин внутри модели и всех его дочерних моделей.
         /// </summary>
@@ -876,19 +1023,10 @@ namespace ExellAddInsLib.MSG
             this.CalcLabourness();
             this.CalcQuantity();
             this.LoadWorksReportCards();
-            this.CalcWorkersComposionsCards();
+            this.CalcWorkerConsumptions();
         }
 
 
-        public void CalcWorkersComposionsCards()
-        {
-
-            //foreach(NeedsOfWorkers needs_of_workers in  this.WorkersComposition)
-            //{
-
-            //}
-
-        }
         /// <summary>
         /// Функция сбрасывает в значение 0 все вычиляемые поля всех работ кроме  поля KSWork.Laboriousness
         /// </summary>
@@ -980,8 +1118,13 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public void ClearWorksheetDaysPart()
         {
-            Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+        //    Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WRC_DATE_COL], this.RegisterSheet.Cells[10000, 10000]];
+            common_area_range.ClearContents();
+
+          //  last_cell = this.WorkerConsumptionsSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+            common_area_range = this.WorkerConsumptionsSheet.Range[this.WorkerConsumptionsSheet.Cells[W_CONSUMPTIONS_FIRST_ROW_INDEX, W_CONSUMPTIONS_FIRST_DATE_COL],
+                this.WorkerConsumptionsSheet.Cells[10000, 10000]];
             common_area_range.ClearContents();
         }
         /// <summary>

@@ -53,11 +53,13 @@
             this.groupMSG_OUT = this.Factory.CreateRibbonGroup();
             this.btnLoadTeplateFile = this.Factory.CreateRibbonButton();
             this.checkBoxSandayVocationrStatus = this.Factory.CreateRibbonCheckBox();
+            this.checkBoxRerightDatePart = this.Factory.CreateRibbonCheckBox();
             this.btnFillTemlate = this.Factory.CreateRibbonButton();
             this.group2 = this.Factory.CreateRibbonGroup();
             this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -184,6 +186,7 @@
             // 
             this.groupMSG_OUT.Items.Add(this.btnLoadTeplateFile);
             this.groupMSG_OUT.Items.Add(this.checkBoxSandayVocationrStatus);
+            this.groupMSG_OUT.Items.Add(this.checkBoxRerightDatePart);
             this.groupMSG_OUT.Items.Add(this.btnFillTemlate);
             this.groupMSG_OUT.Label = "МСГ выход";
             this.groupMSG_OUT.Name = "groupMSG_OUT";
@@ -198,8 +201,16 @@
             // checkBoxSandayVocationrStatus
             // 
             this.checkBoxSandayVocationrStatus.Checked = true;
+            this.checkBoxSandayVocationrStatus.Enabled = false;
             this.checkBoxSandayVocationrStatus.Label = "Вых. восскресенье";
             this.checkBoxSandayVocationrStatus.Name = "checkBoxSandayVocationrStatus";
+            // 
+            // checkBoxRerightDatePart
+            // 
+            this.checkBoxRerightDatePart.Checked = true;
+            this.checkBoxRerightDatePart.Enabled = false;
+            this.checkBoxRerightDatePart.Label = "Переписать каленраную часть";
+            this.checkBoxRerightDatePart.Name = "checkBoxRerightDatePart";
             // 
             // btnFillTemlate
             // 
@@ -212,6 +223,7 @@
             // 
             this.group2.Items.Add(this.btnShowAlllHidenWorksheets);
             this.group2.Items.Add(this.labelConractCode);
+            this.group2.Items.Add(this.labelCurrentEmployerName);
             this.group2.Label = "group2";
             this.group2.Name = "group2";
             // 
@@ -229,6 +241,11 @@
             // openMSGTemplateFileDialog
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
+            // 
+            // labelCurrentEmployerName
+            // 
+            this.labelCurrentEmployerName.Label = "________";
+            this.labelCurrentEmployerName.Name = "labelCurrentEmployerName";
             // 
             // Ribbon1
             // 
@@ -278,6 +295,8 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadMSGFile;
         internal Microsoft.Office.Tools.Ribbon.RibbonLabel labelConractCode;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCloseMSGFile;
+        internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox checkBoxRerightDatePart;
+        internal Microsoft.Office.Tools.Ribbon.RibbonLabel labelCurrentEmployerName;
     }
 
     partial class ThisRibbonCollection

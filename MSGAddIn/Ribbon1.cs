@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ConstrainedExecution;
 using System.Windows.Forms;
 using static System.Windows.Forms.AxHost;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -43,15 +44,18 @@ namespace MSGAddIn
         Excel.Worksheet UnitMeasurementsWorksheet;
         Excel.Worksheet CommonWorksheet;
         Excel.Worksheet CommonMSGWorksheet;
+        Excel.Worksheet CommonWorkConsumptionsWorksheet;
         Excel.Worksheet TemplateMSGWorksheet;
 
         ObservableCollection<Excel.Worksheet> EmployerMSGWorksheets = new ObservableCollection<Worksheet>();
+        ObservableCollection<Excel.Worksheet> EmployerWorkConsumptionsWorksheets = new ObservableCollection<Worksheet>();
 
         Employer SelectedEmloeyer;
         private bool InMSGWorkbook = false;
         private void OnActiveWorkbookChanged(Workbook last_wbk, Workbook new_wbk)
         {
             CommonMSGWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Ведомость_общая");
+            CommonWorkConsumptionsWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Люди_общая");
             CommonWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Начальная");
             UnitMeasurementsWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Ед_изм");
             PostsWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Должности");
@@ -129,7 +133,9 @@ namespace MSGAddIn
             UnitMeasurementsWorksheet = CurrentWorkbook.Worksheets["Ед_изм"];
             CommonWorksheet = CurrentWorkbook.Worksheets["Начальная"];
             CommonMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_общая"];
-            TemplateMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_шаблон"];
+            CommonWorkConsumptionsWorksheet = CurrentWorkbook.Worksheets["Люди_общая"];
+
+            //TemplateMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_шаблон"];
             EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
             this.ReloadEmployersList();
             this.ReloadMeasurementsList();
@@ -138,12 +144,19 @@ namespace MSGAddIn
                 if (worksheet.Name.Contains("_"))
                 {
                     string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
-                    int employer_number;
-                    int.TryParse(emoloyer_namber_str, out employer_number);
-                    if (employer_number != 0)
+                    //string emoloyer_name_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
+                    //int employer_number;
+                    //int.TryParse(emoloyer_namber_str, out employer_number);
+                    //if (employer_number != 0)
+                    //{
+                    //    EmployerMSGWorksheets.Add(worksheet);
+                    //}
+                    if (worksheet.Name.Contains("Ведомость"))
                     {
                         EmployerMSGWorksheets.Add(worksheet);
                     }
+                    else if (worksheet.Name.Contains("Люди"))
+                        EmployerWorkConsumptionsWorksheets.Add(worksheet);
                 }
             }
             this.ReloadAllModels();
@@ -165,10 +178,14 @@ namespace MSGAddIn
             if (CommonMSGExellModel == null)
                 this.ReloadAllModels();
             CurrentMSGExellModel = CommonMSGExellModel;
+            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             this.ShowWorksheet(CommonMSGWorksheet);
+            this.ShowWorksheet(CommonWorkConsumptionsWorksheet);
+            CommonMSGWorksheet.Activate();
             btnCalcLabournes.Enabled = true;
             btnCalcQuantities.Enabled = true;
             btnReloadWorksheets.Enabled = true;
+            labelCurrentEmployerName.Label = $"ОБЩИЕ ДАННЫЕ";
         }
         private void btnCalcLabournes_Click(object sender, RibbonControlEventArgs e)
         {
@@ -187,8 +204,8 @@ namespace MSGAddIn
         private void btnChangeUOM_Click(object sender, RibbonControlEventArgs e)
         {
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
-            UnitMeasurementsWorksheet.Visible = Excel.XlSheetVisibility.xlSheetVisible;
-            UnitMeasurementsWorksheet.Activate();
+            this.ShowWorksheet(UnitMeasurementsWorksheet);
+            labelCurrentEmployerName.Label = $"ЕД. ИЗМ.";
         }
 
 
@@ -204,6 +221,7 @@ namespace MSGAddIn
             if (empl_model == null) //Если оаботник новый и на него нет еще модель и листы в книге - создаем их
             {
                 Excel.Worksheet new_employer_worksheet = CurrentWorkbook.Worksheets.Add(CommonMSGWorksheet, Type.Missing, Type.Missing, Type.Missing);
+
                 //  this.ShowWorksheet(new_employer_worksheet);
                 string new_worksheet_name = CommonMSGWorksheet.Name.Substring(0, CommonMSGWorksheet.Name.IndexOf('_') + 1) + SelectedEmloeyer.Number.ToString();
                 new_employer_worksheet.Name = new_worksheet_name;
@@ -214,26 +232,58 @@ namespace MSGAddIn
                 Range last_dest = new_employer_worksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
                 Excel.Range dest = new_employer_worksheet.Range[new_employer_worksheet.Cells[1, 1], last_dest];
                 dest.PasteSpecial(XlPasteType.xlPasteAll);
-
                 EmployerMSGWorksheets.Add(new_employer_worksheet);
+
+
+                Excel.Worksheet employer_worker_consumption_worksheet = CurrentWorkbook.Worksheets.Add(CommonWorkConsumptionsWorksheet, Type.Missing, Type.Missing, Type.Missing);
+
+                string work_consumptions_worksheet_name = CommonWorkConsumptionsWorksheet.Name.Substring(0, CommonWorkConsumptionsWorksheet.Name.IndexOf('_') + 1) + SelectedEmloeyer.Number.ToString();
+                employer_worker_consumption_worksheet.Name = work_consumptions_worksheet_name;
+
+                last_source = CommonWorkConsumptionsWorksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
+                source = CommonWorkConsumptionsWorksheet.Range[CommonWorkConsumptionsWorksheet.Cells[1, 1], last_source];
+                source.Copy();
+                last_dest = employer_worker_consumption_worksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
+                dest = employer_worker_consumption_worksheet.Range[employer_worker_consumption_worksheet.Cells[1, 1], last_dest];
+                dest.PasteSpecial(XlPasteType.xlPasteAll);
+                EmployerWorkConsumptionsWorksheets.Add(employer_worker_consumption_worksheet);
+
                 this.ReloadAllModels();
 
                 empl_model = MSGExellModels.FirstOrDefault(m => m.Employer.Name == SelectedEmloeyer.Name);
                 empl_model.ClearWorksheetDaysPart();
             }
             CurrentMSGExellModel = empl_model;
-            this.ShowWorksheet(empl_model.RegisterSheet);
 
+            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
+            this.ShowWorksheet(empl_model.RegisterSheet);
+            this.ShowWorksheet(empl_model.WorkerConsumptionsSheet);
+            empl_model.RegisterSheet.Activate();
+            labelCurrentEmployerName.Label = $"ОТВЕСТВЕННЫЙ: {empl_model.Employer.Name}";
             CurrentMSGExellModel.ResetCalculatesFields();
+        }
+        private void bntChangeEmployerWorkersConsumption_Click(object sender, RibbonControlEventArgs e)
+        {
+            //MSGExellModel empl_model = MSGExellModels.FirstOrDefault(m => m.Employer.Name == SelectedEmloeyer.Name);
+            //if (empl_model != null)
+            //{
+            //    Excel.Worksheet employer_worker_consumption_worksheet = CurrentWorkbook.Worksheets.Add(CommonMSGWorksheet, Type.Missing, Type.Missing, Type.Missing);
+
+            //}
+
+
         }
         private void btnChangeEmployers_Click(object sender, RibbonControlEventArgs e)
         {
+            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             this.ShowWorksheet(EmployersWorksheet);
-
+            labelCurrentEmployerName.Label = $"ОТВЕТСТВЕННЫЕ";
         }
         private void btnChangePosts_Click(object sender, RibbonControlEventArgs e)
         {
+            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             this.ShowWorksheet(PostsWorksheet);
+            labelCurrentEmployerName.Label = $"ДОЛЖНОСТИ";
         }
 
         /// <summary>
@@ -243,11 +293,15 @@ namespace MSGAddIn
         private void SetAllWorksheetsVisibleState(Excel.XlSheetVisibility visibility)
         {
             CommonMSGWorksheet.Visible = visibility;
+            CommonWorkConsumptionsWorksheet.Visible = visibility;
             EmployersWorksheet.Visible = visibility;
             PostsWorksheet.Visible = visibility;
             UnitMeasurementsWorksheet.Visible = visibility;
 
             foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
+                worksheet.Visible = visibility;
+      
+            foreach (Excel.Worksheet worksheet in EmployerWorkConsumptionsWorksheets)
                 worksheet.Visible = visibility;
         }
         /// <summary>
@@ -256,7 +310,6 @@ namespace MSGAddIn
         /// <param name="worksheet"></param>
         private void ShowWorksheet(Excel.Worksheet worksheet)
         {
-            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             worksheet.Visible = XlSheetVisibility.xlSheetVisible;
             worksheet.Activate();
 
@@ -270,7 +323,7 @@ namespace MSGAddIn
             while (PostsWorksheet.Cells[row_index, POST_NUMBER_COL].Value != null)
             {
                 //int number = int.Parse(PostsWorksheet.Cells[row_index, POST_NUMBER_COL].Value.ToString());
-                string number =  PostsWorksheet.Cells[row_index, POST_NUMBER_COL].Value.ToString();
+                string number = PostsWorksheet.Cells[row_index, POST_NUMBER_COL].Value.ToString();
                 string name = PostsWorksheet.Cells[row_index, POST_NAME_COL].Value.ToString();
                 PostsList.Add(new Post(number, name));
                 row_index++;
@@ -278,7 +331,7 @@ namespace MSGAddIn
             row_index = 2;
             while (EmployersWorksheet.Cells[row_index, EMPLOYER_NUMBER_COL].Value != null)
             {
-                string number =  EmployersWorksheet.Cells[row_index, EMPLOYER_NUMBER_COL].Value.ToString();
+                string number = EmployersWorksheet.Cells[row_index, EMPLOYER_NUMBER_COL].Value.ToString();
                 string name = EmployersWorksheet.Cells[row_index, EMPLOYER_NAME_COL].Value.ToString();
                 string post_name = EmployersWorksheet.Cells[row_index, EMPLOYER_POSTNAME_COL].Value.ToString();
                 Employers.Add(new Employer(number, name, PostsList.FirstOrDefault(p => p.Name == post_name)));
@@ -310,6 +363,7 @@ namespace MSGAddIn
             MSGExellModels.Clear();
             CommonMSGExellModel = new MSGExellModel();
             CommonMSGExellModel.RegisterSheet = CommonMSGWorksheet;
+            CommonMSGExellModel.WorkerConsumptionsSheet = CommonWorkConsumptionsWorksheet;
             CommonMSGExellModel.CommonSheet = CommonWorksheet;
             CommonMSGExellModel.UnitOfMeasurements = UnitOfMeasurements;
             CommonMSGExellModel.RealoadAllSheetsInModel();
@@ -317,10 +371,12 @@ namespace MSGAddIn
             foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
             {
                 string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
-               // string employer_number;
-              //  int.TryParse(emoloyer_namber_str, out employer_number);
+                //  string emoloyer_name_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
+                string employer_number;
+                // int.TryParse(emoloyer_namber_str, out employer_number);
                 Employer employer = Employers.Where(em => em.Number == emoloyer_namber_str).FirstOrDefault();
-                if (employer != null)
+                // Employer employer = Employers.Where(em => em.Name == emoloyer_name_str).FirstOrDefault();
+                if (employer != null && worksheet.Name.Contains("Ведомость"))
                 {
                     MSGExellModel model = new MSGExellModel();
                     model.RegisterSheet = worksheet;
@@ -331,11 +387,25 @@ namespace MSGAddIn
                     model.Owner = CommonMSGExellModel;
                     CommonMSGExellModel.Children.Add(model);
                     MSGExellModels.Add(model);
-                    model.UpdateWorksheetCommonPart();
-                    model.RealoadAllSheetsInModel();
                 }
             }
+            foreach (Excel.Worksheet worksheet in EmployerWorkConsumptionsWorksheets)
+            {
+                string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
+                string employer_number;
+                Employer employer = Employers.Where(em => em.Number == emoloyer_namber_str).FirstOrDefault();
+                var model = MSGExellModels.FirstOrDefault(m => m.Employer.Number == emoloyer_namber_str);
+                if (model != null && worksheet.Name.Contains("Люди"))
+                {
+                    model.WorkerConsumptionsSheet = worksheet;
 
+                }
+            }
+            foreach (MSGExellModel model in this.MSGExellModels)
+            {
+                model.UpdateWorksheetCommonPart();
+                model.RealoadAllSheetsInModel();
+            }
         }
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
@@ -393,7 +463,7 @@ namespace MSGAddIn
 
 
             const int TMP_CONSTRUCTION_OBJECT_CODE_ROW = 4;
-           
+
             const int TMP_WORK_SELECTION_FIRST_ROW = 5;
 
             const int TMP_WORK_FIRST_INDEX_ROW = 6;
@@ -405,9 +475,9 @@ namespace MSGAddIn
             const int TMP_WORK_START_DATE_COL = 13;
             const int TMP_WORK_END_DATE_COL = 14;
             const int TMP_WORK_DAYS_NUMBER_COL = 15;
-           
+
             const int TMP_PREVIOUS_WORK_QUANTITY_COL = 17;
-           
+
             const int TMP_WORKDAY_DATE_ROW_COL = 2;
             const int TMP_WORKDAY_DATE_FIRST_COL = 19;
 
@@ -416,7 +486,7 @@ namespace MSGAddIn
 
             const int NEEDS_WORKDAY_DATE_ROW = 9;
             const int NEEDS_WORKDAY_DATE_FIRST_COL = 10;
-            const int NEEDS_WORKERS_FIRST_ROW =12;
+            const int NEEDS_WORKERS_FIRST_ROW = 12;
             const int NEEDS_WORKERS_NAME_COL = 6;
 
             int row_index = TMP_WORK_SELECTION_FIRST_ROW;
@@ -427,25 +497,29 @@ namespace MSGAddIn
 
             Excel.Worksheet MSGTemplateWorksheet = MSGTemplateWorkbook.Worksheets["МСГ_Шаблон"];
             Excel.Worksheet MSGNeedsTemplateWorksheet = MSGTemplateWorkbook.Worksheets["Людские_тех_ресурсы_Шаблон"];
+            MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            MSGNeedsOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            //   MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden; 
             DateTime current_daye_date = DateTime.Now;
 
             MSGOutWorksheet.Cells[TMP_NOW_DATE_ROW, TMP_NOW_DATE_COL] = current_daye_date.ToString("d");
             MSGOutWorksheet.Cells[TMP_CONTRACT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ContractCode;
             MSGOutWorksheet.Cells[TMP_CONSTRUCTION_OBJECT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ContructionObjectCode;
-            
+
             //MSGOutWorksheet.Cells[TMP_WORK_SELECTION_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ConstructionSubObjectCode;
 
             int date_col_index = 0;
             int in_worksheet_number = 18;
             int worked_days_number = (CommonMSGExellModel.WorksEndDate - CommonMSGExellModel.WorksStartDate).Days;
             int last_day_col_index = Convert.ToInt32(Math.Round(WORKDAY_DATE_FIRST_COL + worked_days_number * (1 + 1 / 7.0) + 5));
-          
-           
+
+
 
             Excel.Range tmp_week_col_range = MSGTemplateWorksheet.UsedRange.Columns[TMP_WORKDAY_DATE_FIRST_COL - 1];
             Excel.Range tmp_date_col_range = MSGTemplateWorksheet.UsedRange.Columns[TMP_WORKDAY_DATE_FIRST_COL];
 
-            Excel.Range tmp_needs_week_col_range = MSGNeedsTemplateWorksheet.UsedRange.Columns[NEEDS_WORKDAY_DATE_FIRST_COL +1]; //Столбец недели в шаблоне ресурсов
+            Excel.Range tmp_needs_week_col_range = MSGNeedsTemplateWorksheet.UsedRange.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + 1]; //Столбец недели в шаблоне ресурсов
 
             Excel.Range tmp_needs_date_col_range = MSGNeedsTemplateWorksheet.UsedRange.Columns[NEEDS_WORKDAY_DATE_FIRST_COL];//Столбец дня в шаблоне ресурсов
 
@@ -454,123 +528,146 @@ namespace MSGAddIn
 
             int first_week_day_col;
             int last_week_day_col;
+
+            int week_signatura_first_col = 0;
+            int week_signatura_last_col = 0;
+
+            string last_week_name_signatura = "";
             ///Цикл создающий календарные дни и недели до конца периода..
-            for (DateTime date = CommonMSGExellModel.WorksStartDate; date <= CommonMSGExellModel.WorksEndDate; date = date.AddDays(1))
-            {
-                ///Если текущий день является восскесеньем или является первым днем все ведомости -
-                /// втавляем и заполняем недельный столбец в календарь
-                if (date.DayOfWeek == DayOfWeek.Sunday || date == CommonMSGExellModel.WorksStartDate)
+            if (checkBoxRerightDatePart.Checked == true)
+                for (DateTime date = CommonMSGExellModel.WorksStartDate; date <= CommonMSGExellModel.WorksEndDate; date = date.AddDays(1))
                 {
-                    #region Календраня часть МСГ недельный столбец
-                    ///Вставляем из шаблона МСГ недельный столбец в каледаре ( копируем из шаблона)
-                    tmp_week_col_range.Copy();
-                    Excel.Range week_day_dest = MSGOutWorksheet.UsedRange.Columns[WORKDAY_DATE_FIRST_COL + date_col_index];
-                    week_day_dest.PasteSpecial(XlPasteType.xlPasteAll);
-                  
-                    ///Заполняем из шаблона МСГ недельный столбец в каледаре 
-                    MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index] =
-                      $"неделя\r\n {date.ToString("dd")} - {this.GetLastNotVocationDate(date).ToString("dd")}";
-                    MSGOutWorksheet.Cells[WORKDAY_DATE_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index] = in_worksheet_number++;
-                   
-
-                    first_week_day_col = date_col_index + 1;
-                    last_week_day_col = first_week_day_col + (this.GetLastNotVocationDate(date) - date).Days;
-
-                    Excel.Range project_week_pr_q = MSGOutWorksheet.Range[
-                      MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + date_col_index],
-                      MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + date_col_index]];
-
-                    Excel.Range project_week_q = MSGOutWorksheet.Range[
-                        MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index],
-                        MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index]];
-
-                    Excel.Range project_week_pr_q_first_day = MSGOutWorksheet.Range[
-                         MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + first_week_day_col],
-                         MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + first_week_day_col]];
-
-                    Excel.Range project_week_pr_q_last_day = MSGOutWorksheet.Range[
-                        MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + last_week_day_col],
-                        MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + last_week_day_col]];
-
-                    Excel.Range project_week_q_first_day = MSGOutWorksheet.Range[
-                        MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + first_week_day_col],
-                        MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + first_week_day_col]];
-
-                    Excel.Range project_week_q_last_day = MSGOutWorksheet.Range[
-                        MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col],
-                        MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col]];
-                    ///Вставляем форму для подсчета суммы планового количества работан на  неделю и фактического объема...
-                    project_week_q.Formula = $"=SUM({this.RangeAddress(project_week_q_first_day)}:{this.RangeAddress(project_week_q_last_day)})"; ;
-                    project_week_pr_q.Formula = $"=SUM({this.RangeAddress(project_week_pr_q_first_day)}:{this.RangeAddress(project_week_pr_q_last_day)})"; ;
-                    #endregion
-
-                    #region Календарная часть потребности ресурсов недельный столбец
-                    ///Вставляем из шаблона ресурсов  недельный столбец в каледаре ( копируем из шаблона)
-                    tmp_needs_week_col_range.Copy();
-                    week_day_dest = MSGNeedsOutWorksheet.UsedRange.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index];
-                    week_day_dest.PasteSpecial(XlPasteType.xlPasteAll);
-                    ///Заполняем из шаблона ресурсов  недельный столбец в каледаре ( копируем из шаблона)
-                    MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index] = "Всего";
-                     work_needs_iterator = 0;
-                    while (MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW+ work_needs_iterator,NEEDS_WORKERS_NAME_COL].Value!= "Общее количество")
+                    ///Если текущий день является восскесеньем или является первым днем все ведомости -
+                    /// втавляем и заполняем недельный столбец в календарь
+                    if (date.DayOfWeek == DayOfWeek.Monday || date == CommonMSGExellModel.WorksStartDate)
                     {
-                        Excel.Range needs_first_day = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + first_week_day_col];
-                        Excel.Range needs_last_day = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + last_week_day_col];
+                        #region Календраня часть МСГ недельный столбец
+                        ///Вставляем из шаблона МСГ недельный столбец в каледаре ( копируем из шаблона)
+                        tmp_week_col_range.Copy();
+                        Excel.Range week_day_dest = MSGOutWorksheet.UsedRange.Columns[WORKDAY_DATE_FIRST_COL + date_col_index];
+                        week_day_dest.PasteSpecial(XlPasteType.xlPasteAll);
 
-                        MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index]=
-                           $"=SUM({this.RangeAddress(needs_first_day)}:{this.RangeAddress(needs_last_day)})"; ;
+                        ///Заполняем из шаблона МСГ недельный столбец в каледаре 
+                        string week_name_signatura =
+                          $"неделя\r\n {date.ToString("dd")} - {this.GetLastNotVocationDate(date).AddDays(1).ToString("dd")}";
+                        MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index] = week_name_signatura;
+                        MSGOutWorksheet.Cells[WORKDAY_DATE_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index] = in_worksheet_number++;
 
-                        work_needs_iterator++;
+
+                        first_week_day_col = date_col_index + 1;
+                        last_week_day_col = first_week_day_col + (this.GetLastNotVocationDate(date).AddDays(1) - date).Days;
+
+                        Excel.Range project_week_pr_q = MSGOutWorksheet.Range[
+                          MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + date_col_index],
+                          MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + date_col_index]];
+
+                        Excel.Range project_week_q = MSGOutWorksheet.Range[
+                            MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index],
+                            MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index]];
+
+                        Excel.Range project_week_pr_q_first_day = MSGOutWorksheet.Range[
+                             MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + first_week_day_col],
+                             MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + first_week_day_col]];
+
+                        Excel.Range project_week_pr_q_last_day = MSGOutWorksheet.Range[
+                            MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + last_week_day_col],
+                            MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + last_week_day_col]];
+
+                        Excel.Range project_week_q_first_day = MSGOutWorksheet.Range[
+                            MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + first_week_day_col],
+                            MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + first_week_day_col]];
+
+                        Excel.Range project_week_q_last_day = MSGOutWorksheet.Range[
+                            MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col],
+                            MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col]];
+                        ///Вставляем форму для подсчета суммы планового количества работан на  неделю и фактического объема...
+                        project_week_q.Formula = $"=SUM({this.RangeAddress(project_week_q_first_day)}:{this.RangeAddress(project_week_q_last_day)})"; ;
+                        project_week_pr_q.Formula = $"=SUM({this.RangeAddress(project_week_pr_q_first_day)}:{this.RangeAddress(project_week_pr_q_last_day)})"; ;
+                        #endregion
+
+                        #region Календарная часть потребности ресурсов недельный столбец
+                        ///Вставляем из шаблона ресурсов  недельный столбец в каледаре ( копируем из шаблона)
+                        tmp_needs_week_col_range.Copy();
+                        week_day_dest = MSGNeedsOutWorksheet.UsedRange.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index];
+                        week_day_dest.PasteSpecial(XlPasteType.xlPasteAll);
+                        ///Заполняем из шаблона ресурсов  недельный столбец в каледаре ( копируем из шаблона)
+                        MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index] = "Всего";
+                        if (week_signatura_last_col > 0)
+                        {
+                            Excel.Range week_name_range_first_cell = MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW - 1, NEEDS_WORKDAY_DATE_FIRST_COL + week_signatura_first_col];
+                            Excel.Range week_name_range_last_cell = MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW - 1, NEEDS_WORKDAY_DATE_FIRST_COL + week_signatura_last_col];
+                            Excel.Range week_name_range = MSGNeedsOutWorksheet.get_Range(week_name_range_first_cell, week_name_range_last_cell);
+                            week_name_range.Merge();
+                            week_name_range_first_cell.Value = last_week_name_signatura.Replace("\r\n", " ");
+                        }
+
+                        work_needs_iterator = 0;
+                        while (MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKERS_NAME_COL].Value != "Общее количество")
+                        {
+                            Excel.Range needs_first_day = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + first_week_day_col];
+                            Excel.Range needs_last_day = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + last_week_day_col];
+
+
+                            MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index] =
+                               $"=SUM({this.RangeAddress(needs_first_day)}:{this.RangeAddress(needs_last_day)})"; ;
+
+                            work_needs_iterator++;
+                        }
+
+
+
+                        #endregion
+                        week_signatura_first_col = first_week_day_col - 1;
+                        week_signatura_last_col = last_week_day_col;
+                        last_week_name_signatura = week_name_signatura;
+                        first_week_day_col = 0;
+                        last_week_day_col = 0;
+
+
+                        date_col_index++;
                     }
+                    #region Каледарная часть МСГ рабочие дни
+                    tmp_date_col_range.Copy();
+                    Excel.Range dest = MSGOutWorksheet.UsedRange.Columns[WORKDAY_DATE_FIRST_COL + date_col_index];
+                    dest.PasteSpecial(XlPasteType.xlPasteAll);
+
+                    MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index] = date;
+                    MSGOutWorksheet.Cells[WORKDAY_DATE_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index] = in_worksheet_number++;
+                    if (date.DayOfWeek == DayOfWeek.Sunday)
+                        MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index].Interior.Color
+                                    = XlRgbColor.rgbOrangeRed;
+
                     #endregion
 
-                    last_week_day_col = 0;
-                    first_week_day_col = 0;
+                    #region Календарная часть потребности ресурсов столбец ежедневных потребностей 
+
+                    tmp_needs_date_col_range.Copy();
+                    Excel.Range needs_day_dest = MSGNeedsOutWorksheet.UsedRange.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index];
+                    needs_day_dest.PasteSpecial(XlPasteType.xlPasteAll);
+
+                    MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index].Value = date;
+                    #endregion
 
                     date_col_index++;
                 }
-                #region Каледарная часть МСГ рабочие дни
-                tmp_date_col_range.Copy();
-                Excel.Range dest = MSGOutWorksheet.UsedRange.Columns[WORKDAY_DATE_FIRST_COL + date_col_index];
-                dest.PasteSpecial(XlPasteType.xlPasteAll);
-
-                MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index] = date;
-                MSGOutWorksheet.Cells[WORKDAY_DATE_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index] = in_worksheet_number++;
-                if (date.DayOfWeek == DayOfWeek.Sunday)
-                    MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index].Interior.Color
-                                = XlRgbColor.rgbOrangeRed;
-
-                #endregion
-         
-                #region Календарная часть потребности ресурсов столбец ежедневных потребностей 
-
-                tmp_needs_date_col_range.Copy();
-                Excel.Range needs_day_dest = MSGNeedsOutWorksheet.UsedRange.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index];
-                needs_day_dest.PasteSpecial(XlPasteType.xlPasteAll);
-
-                MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index].Value = date;
-                #endregion
-
-                date_col_index++;
-            }
             #endregion
-        
+
             //Range last_cell = MSGOutWorksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
             Excel.Range tmp_works_selection_range = MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_SELECTION_FIRST_ROW];
-           
+
             // Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, TMP_WORK_NUMBER_COL], MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, MSGOutWorksheet.Columns.Count]];
-             Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW+1]];
+            Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
             //Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, TMP_WORK_NUMBER_COL], MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, last_day_col_index]];
             Excel.Range tmp_dest = MSGTemplateWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, 1];
-             tmp_work_rows_range.Copy();
+            tmp_work_rows_range.Copy();
             tmp_dest.PasteSpecial(XlPasteType.xlPasteAll);
-             tmp_work_rows_range = MSGTemplateWorksheet.Range[MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
-           
+            tmp_work_rows_range = MSGTemplateWorksheet.Range[MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
+
             #region Заполнение формы данными из модели...
             foreach (WorksSection w_section in CommonMSGExellModel.WorksSections)
             {
                 tmp_works_selection_range.Copy();
-                Excel.Range sect_row_dest =  MSGOutWorksheet.Cells[row_index, 1];
+                Excel.Range sect_row_dest = MSGOutWorksheet.Cells[row_index, 1];
                 sect_row_dest.PasteSpecial(XlPasteType.xlPasteAll);
                 MSGOutWorksheet.Cells[row_index, 1] = w_section.Name;
 
@@ -579,13 +676,13 @@ namespace MSGAddIn
                 foreach (MSGWork msg_work in w_section.MSGWorks)
                 {
                     ///Копируем и вставляем строку для работы в МСГ
-                     tmp_work_rows_range.Copy();
+                    tmp_work_rows_range.Copy();
                     // Excel.Range dest = MSGOutWorksheet.Range[MSGOutWorksheet.Cells[row_index + 2, TMP_WORK_NUMBER_COL], MSGOutWorksheet.Cells[row_index + 4, last_day_col_index]];
                     //  Excel.Range dest = MSGOutWorksheet.Range[MSGOutWorksheet.Cells[row_index, TMP_WORK_NUMBER_COL],MSGOutWorksheet.Cells[row_index + 2, MSGOutWorksheet.Columns.Count]];
-                     Excel.Range dest = MSGOutWorksheet.Cells[row_index,1];
-                  //  Excel.Range dest = MSGOutWorksheet.Range[MSGOutWorksheet.Cells[row_index, TMP_WORK_NUMBER_COL], MSGOutWorksheet.Cells[row_index + 1, last_day_col_index]];
+                    Excel.Range dest = MSGOutWorksheet.Cells[row_index, 1];
+                    //  Excel.Range dest = MSGOutWorksheet.Range[MSGOutWorksheet.Cells[row_index, TMP_WORK_NUMBER_COL], MSGOutWorksheet.Cells[row_index + 1, last_day_col_index]];
                     dest.PasteSpecial(XlPasteType.xlPasteAll);
-                   
+
                     ///Заполняем основыне данные работы                
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_NUMBER_COL] = msg_work.Number;
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_NAME_COL] = msg_work.Name;
@@ -594,8 +691,8 @@ namespace MSGAddIn
 
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_START_DATE_COL] = msg_work.WorkSchedules.StartDate;
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_END_DATE_COL] = msg_work.WorkSchedules.EndDate;
-                  
-                    MSGOutWorksheet.Cells[row_index+1, TMP_PREVIOUS_WORK_QUANTITY_COL] = msg_work.PreviousComplatedQuantity;
+
+                    MSGOutWorksheet.Cells[row_index + 1, TMP_PREVIOUS_WORK_QUANTITY_COL] = msg_work.PreviousComplatedQuantity;
                     // MSGOutWorksheet.Cells[row_index, TMP_WORK_DAYS_NUMBER_COL] = (msg_work.WorkSchedules.EndDate - msg_work.WorkSchedules.StartDate)?.Days;
                     ///Заполняем плановые объемы в календарной части
                     foreach (WorkScheduleChunk schedule_chunk in msg_work.WorkSchedules)
@@ -612,7 +709,7 @@ namespace MSGAddIn
 
                                 MSGOutWorksheet.Cells[row_index, TMP_WORKDAY_DATE_FIRST_COL + date_index] =
                                     msg_work.ProjectQuantity / msg_work.GetShedulesAllDaysNumber(checkBoxSandayVocationrStatus.Checked);
-                               
+
                             }
                             date_index++;
                         }
@@ -642,10 +739,8 @@ namespace MSGAddIn
             #endregion
 
             #region Заполняем потребности 
-          
-            
-            
-                 work_needs_iterator = 0;
+
+            work_needs_iterator = 0;
 
             while (MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKERS_NAME_COL].Value != "Общее количество")
             {
@@ -654,8 +749,9 @@ namespace MSGAddIn
                 DateTime.TryParse(MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value, out current_date);
                 string worker_post_name = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKERS_NAME_COL].Value;
                 var current_needs_of_worker = CommonMSGExellModel.WorkersComposition.FirstOrDefault(nw => nw.Name == worker_post_name);
+                var current_worker_consumption = CommonMSGExellModel.WorkerConsumptions.FirstOrDefault(wc => wc.Name == worker_post_name);
 
-                while (work_needs_date_col_index< last_day_col_index && current_needs_of_worker != null)
+                while (work_needs_date_col_index < last_day_col_index && current_needs_of_worker != null)
                 {
                     NeedsOfWorkersDay needsOfWorkersDay = current_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == current_date);
                     if (needsOfWorkersDay != null)
@@ -663,16 +759,27 @@ namespace MSGAddIn
                         MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator,
                             NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = needsOfWorkersDay.Quantity;
                     }
+
+                    WorkerConsumptionDay worker_consumption_day = current_worker_consumption.WorkersConsumptionReportCard.FirstOrDefault(wcd => wcd.Date == current_date);
+                    if (worker_consumption_day != null)
+                    {
+                        MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator + 1,
+                            NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = worker_consumption_day.Quantity;
+                    }
+
                     work_needs_date_col_index++;
                     if (MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value == null) break;
                     DateTime.TryParse(MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value.ToString(), out current_date);
-                    
+
                 }
 
 
                 work_needs_iterator++;
             }
-
+            MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
+            MSGNeedsOutWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
+            MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
+            MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
 
             #endregion
             MSGTemplateWorkbook.SaveAs(@"D:\1234.xlsx");
