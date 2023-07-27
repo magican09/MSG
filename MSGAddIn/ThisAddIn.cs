@@ -34,7 +34,7 @@ namespace MSGAddIn
                 OnActiveWorkbookChanged?.Invoke(last_wbk, _currentActivWorkbook);
             }
         }
-       
+
 
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {

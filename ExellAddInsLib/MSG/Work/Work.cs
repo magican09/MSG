@@ -40,7 +40,7 @@ namespace ExellAddInsLib.MSG
             get { return _quantity; }
             set { SetProperty(ref _quantity, value); }
         }//Выполенный объем работ
-     
+
         private decimal _previousComplatedQuantity;
 
         public decimal PreviousComplatedQuantity

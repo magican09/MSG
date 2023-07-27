@@ -668,7 +668,7 @@ namespace ExellAddInsLib.MSG
                         WorkReportCard report_card = new WorkReportCard();
                         DateTime end_date = DateTime.Parse(registerSheet.Cells[WORKS_END_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
                         report_card.Number = registerSheet.Cells[rowIndex, WRC_NUMBER_COL].Value.ToString();
-                        report_card.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, WRC_NUMBER_COL,this.RegisterSheet));
+                        report_card.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, WRC_NUMBER_COL, this.RegisterSheet));
                         int date_index = 0;
                         while (registerSheet.Cells[WRC_DATE_ROW, WRC_DATE_COL + date_index].Value != null &&
                             DateTime.Parse(registerSheet.Cells[WRC_DATE_ROW, WRC_DATE_COL + date_index].Value.ToString()) < end_date)
@@ -719,12 +719,12 @@ namespace ExellAddInsLib.MSG
                     worker_consumption.CellAddressesMap.Add("Number", Tuple.Create(rowIndex, W_CONSUMPTIONS_NUMBER_COL, this.WorkerConsumptionsSheet));
 
                     worker_consumption.Name = consumtionsSheet.Cells[rowIndex, W_CONSUMPTIONS_NAME_COL].Value;
-                    worker_consumption.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, W_CONSUMPTIONS_NAME_COL,this.WorkerConsumptionsSheet));
+                    worker_consumption.CellAddressesMap.Add("Name", Tuple.Create(rowIndex, W_CONSUMPTIONS_NAME_COL, this.WorkerConsumptionsSheet));
                     worker_consumption.WorkersConsumptionReportCard.Clear();
                     if (!worker_consumption.WorkersConsumptionReportCard.CellAddressesMap.ContainsKey("WorkersConsumptionReportCard"))
-                      worker_consumption.WorkersConsumptionReportCard.CellAddressesMap
-                                    .Add("WorkersConsumptionReportCard", new Tuple<int, int,Excel.Worksheet>(rowIndex, W_CONSUMPTIONS_NUMBER_COL, this.WorkerConsumptionsSheet));
-                  
+                        worker_consumption.WorkersConsumptionReportCard.CellAddressesMap
+                                      .Add("WorkersConsumptionReportCard", new Tuple<int, int, Excel.Worksheet>(rowIndex, W_CONSUMPTIONS_NUMBER_COL, this.WorkerConsumptionsSheet));
+
                     int date_index = 0;
                     if (this.Owner != null)
                         while (consumtionsSheet.Cells[W_CONSUMPTIONS_DATE_RAW, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value != null)
@@ -743,7 +743,7 @@ namespace ExellAddInsLib.MSG
                                 w_consumption_Day.CellAddressesMap.Add("Quantity", Tuple.Create(rowIndex, W_CONSUMPTIONS_FIRST_DATE_COL + date_index, this.WorkerConsumptionsSheet));
                                 this.Register(w_consumption_Day);
                                 worker_consumption.WorkersConsumptionReportCard.Add(w_consumption_Day);
-                                
+
                             }
 
                             this.Register(worker_consumption.WorkersConsumptionReportCard);
@@ -751,7 +751,7 @@ namespace ExellAddInsLib.MSG
                         }
                     this.WorkerConsumptions.Add(worker_consumption);
                     this.Register(worker_consumption);
-                   
+
                 }
                 rowIndex++;
             }
@@ -843,7 +843,7 @@ namespace ExellAddInsLib.MSG
                                 this.RegisterSheet.Cells[ks_work.CellAddressesMap["Number"].Item1,
                                     WRC_NUMBER_COL] = ks_work.Number;
                                 ks_work.ReportCard.CellAddressesMap.Add("ReportCard",
-                                    new Tuple<int, int,Excel.Worksheet>(ks_work.CellAddressesMap["Number"].Item1, WRC_NUMBER_COL,this.RegisterSheet));
+                                    new Tuple<int, int, Excel.Worksheet>(ks_work.CellAddressesMap["Number"].Item1, WRC_NUMBER_COL, this.RegisterSheet));
                                 this.Register(ks_work.ReportCard);
                             }
                             else
@@ -872,7 +872,7 @@ namespace ExellAddInsLib.MSG
                                             curent_w_day.LaborСosts = child_w_day.Quantity * ks_work.Laboriousness;
                                             DateTime end_date = DateTime.Parse(this.RegisterSheet.Cells[WORKS_END_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
 
-                                            foreach (KeyValuePair<string, Tuple<int, int,Excel.Worksheet>> map_item in child_w_day.CellAddressesMap)
+                                            foreach (KeyValuePair<string, Tuple<int, int, Excel.Worksheet>> map_item in child_w_day.CellAddressesMap)
                                             {
                                                 int date_index = 0;
                                                 while (this.RegisterSheet.Cells[WRC_DATE_ROW, WRC_DATE_COL + date_index].Value != null &&
@@ -885,7 +885,7 @@ namespace ExellAddInsLib.MSG
                                                 int curent_wrc_row = ks_work.ReportCard.CellAddressesMap["ReportCard"].Item1;
 
                                                 curent_w_day.CellAddressesMap.Add(map_item.Key,
-                                                    new Tuple<int, int,Excel.Worksheet>(curent_wrc_row, WRC_DATE_COL + date_index,this.WorkerConsumptionsSheet));
+                                                    new Tuple<int, int, Excel.Worksheet>(curent_wrc_row, WRC_DATE_COL + date_index, this.WorkerConsumptionsSheet));
 
                                                 this.RegisterSheet.Cells[curent_wrc_row, WRC_DATE_COL + date_index] =
                                                     curent_w_day.Quantity.ToString();
@@ -954,14 +954,14 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Worksheet consumtionsSheet = this.WorkerConsumptionsSheet;
             int rowIndex = W_CONSUMPTIONS_FIRST_ROW_INDEX;
-           // this.WorkerConsumptions.Clear();
+            // this.WorkerConsumptions.Clear();
             null_str_count = 0;
 
-            
-            if(this.Owner==null)
+
+            if (this.Owner == null)
                 foreach (WorkerConsumption worker_consumption in this.WorkerConsumptions)
                 {
-               
+
                     foreach (MSGExellModel model in this.Children)
                     {
 
@@ -982,10 +982,10 @@ namespace ExellAddInsLib.MSG
                                     this.Register(curent_w_day);
                                     curent_w_day.Date = child_w_day.Date;
                                     curent_w_day.Quantity = child_w_day.Quantity;
- 
+
                                     DateTime end_date = DateTime.Parse(this.RegisterSheet.Cells[WORKS_END_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
 
-                                    foreach (KeyValuePair<string, Tuple<int, int,Excel.Worksheet>> map_item in child_w_day.CellAddressesMap)
+                                    foreach (KeyValuePair<string, Tuple<int, int, Excel.Worksheet>> map_item in child_w_day.CellAddressesMap)
                                     {
                                         int date_index = 0;
                                         while (this.WorkerConsumptionsSheet.Cells[W_CONSUMPTIONS_DATE_RAW, W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value != null &&
@@ -997,7 +997,7 @@ namespace ExellAddInsLib.MSG
                                         }
                                         int curent_w_consumption_row = worker_consumption.WorkersConsumptionReportCard.CellAddressesMap["WorkersConsumptionReportCard"].Item1;
 
-                                        curent_w_day.CellAddressesMap.Add(map_item.Key, new Tuple<int, int,Excel.Worksheet>(curent_w_consumption_row, W_CONSUMPTIONS_FIRST_DATE_COL + date_index,this.WorkerConsumptionsSheet));
+                                        curent_w_day.CellAddressesMap.Add(map_item.Key, new Tuple<int, int, Excel.Worksheet>(curent_w_consumption_row, W_CONSUMPTIONS_FIRST_DATE_COL + date_index, this.WorkerConsumptionsSheet));
 
                                         this.WorkerConsumptionsSheet.Cells[curent_w_consumption_row, W_CONSUMPTIONS_FIRST_DATE_COL + date_index] =
                                             curent_w_day.Quantity.ToString();
@@ -1007,11 +1007,11 @@ namespace ExellAddInsLib.MSG
                                 }
                             }
                         }
-                       
+
                     }
                 }
-                
-            
+
+
         }
         /// <summary>
         /// Вычисление всех вычисляемых величин внутри модели и всех его дочерних моделей.
@@ -1118,11 +1118,11 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public void ClearWorksheetDaysPart()
         {
-        //    Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+            //    Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WRC_DATE_COL], this.RegisterSheet.Cells[10000, 10000]];
             common_area_range.ClearContents();
 
-          //  last_cell = this.WorkerConsumptionsSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+            //  last_cell = this.WorkerConsumptionsSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             common_area_range = this.WorkerConsumptionsSheet.Range[this.WorkerConsumptionsSheet.Cells[W_CONSUMPTIONS_FIRST_ROW_INDEX, W_CONSUMPTIONS_FIRST_DATE_COL],
                 this.WorkerConsumptionsSheet.Cells[10000, 10000]];
             common_area_range.ClearContents();

@@ -1,6 +1,6 @@
 ﻿namespace ExellAddInsLib.MSG
 {
-    public class Person:ExcelBindableBase
+    public class Person : ExcelBindableBase
     {
         private string _number;
 

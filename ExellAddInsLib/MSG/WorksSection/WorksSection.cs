@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 
 namespace ExellAddInsLib.MSG.Section
 {
-    public  class WorksSection: ExcelBindableBase
+    public class WorksSection : ExcelBindableBase
     {
         private string _number;
 

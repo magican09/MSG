@@ -31,8 +31,8 @@ namespace ExellAddInsLib.MSG
         }
         public int? GetShedulesAllDaysNumber(bool is_sunday_vocation)
         {
-          
-           
+
+
             if (WorkSchedules.Count > 0)
             {
                 // var time_span = new TimeSpan(

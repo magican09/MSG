@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ExellAddInsLib.MSG 
+﻿namespace ExellAddInsLib.MSG
 {
-    public  class WorkerConsumption : Post
+    public class WorkerConsumption : Post
     {
         private int _quantity;
 
@@ -27,7 +21,9 @@ namespace ExellAddInsLib.MSG
         public IWork Owner
         {
             get { return _owner; }
-            set { SetProperty(ref _owner, value);
+            set
+            {
+                SetProperty(ref _owner, value);
 
             }
         }
@@ -38,7 +34,7 @@ namespace ExellAddInsLib.MSG
         }
         public WorkerConsumption(string number, string name) : base(number, name)
         {
-          
+
         }
 
     }

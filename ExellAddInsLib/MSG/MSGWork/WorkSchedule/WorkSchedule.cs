@@ -16,13 +16,15 @@ namespace ExellAddInsLib.MSG
 
         public DateTime StartDate
         {
-            get {
+            get
+            {
                 _startDate = DateTime.MaxValue;
                 foreach (WorkScheduleChunk chunk in this)
                     if (_startDate > chunk.StartTime)
                         _startDate = chunk.StartTime;
-                return _startDate; }
-            
+                return _startDate;
+            }
+
         }
         private DateTime _endDate;
 

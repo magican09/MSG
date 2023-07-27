@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ExellAddInsLib.MSG
+﻿namespace ExellAddInsLib.MSG
 {
-    public class WorkersConsumptionReportCard: ExcelNotifyChangedCollection<WorkerConsumptionDay>
+    public class WorkersConsumptionReportCard : ExcelNotifyChangedCollection<WorkerConsumptionDay>
     {
     }
 }
