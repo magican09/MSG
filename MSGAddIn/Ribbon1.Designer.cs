@@ -40,12 +40,14 @@
             this.btnCloseMSGFile = this.Factory.CreateRibbonButton();
             this.groupMSGCommon = this.Factory.CreateRibbonGroup();
             this.btnChangeCommonMSG = this.Factory.CreateRibbonButton();
-            this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.btnCalcQuantities = this.Factory.CreateRibbonButton();
+            this.separator2 = this.Factory.CreateRibbonSeparator();
+            this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
             this.bntChangeEmployerMSG = this.Factory.CreateRibbonButton();
+            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.btnChangeEmployers = this.Factory.CreateRibbonButton();
             this.btnChangePosts = this.Factory.CreateRibbonButton();
             this.btnChangeUOM = this.Factory.CreateRibbonButton();
@@ -54,15 +56,13 @@
             this.btnLoadTeplateFile = this.Factory.CreateRibbonButton();
             this.checkBoxSandayVocationrStatus = this.Factory.CreateRibbonCheckBox();
             this.checkBoxRerightDatePart = this.Factory.CreateRibbonCheckBox();
+            this.separator3 = this.Factory.CreateRibbonSeparator();
             this.btnFillTemlate = this.Factory.CreateRibbonButton();
             this.group2 = this.Factory.CreateRibbonGroup();
             this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.separator1 = this.Factory.CreateRibbonSeparator();
-            this.separator2 = this.Factory.CreateRibbonSeparator();
-            this.separator3 = this.Factory.CreateRibbonSeparator();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -116,19 +116,23 @@
             this.btnChangeCommonMSG.Name = "btnChangeCommonMSG";
             this.btnChangeCommonMSG.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeCommonMSG_Click);
             // 
-            // btnCalcLabournes
-            // 
-            this.btnCalcLabournes.Enabled = false;
-            this.btnCalcLabournes.Label = "Подсчет трудоемкостей";
-            this.btnCalcLabournes.Name = "btnCalcLabournes";
-            this.btnCalcLabournes.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalcLabournes_Click);
-            // 
             // btnCalcQuantities
             // 
             this.btnCalcQuantities.Enabled = false;
             this.btnCalcQuantities.Label = "ПЕРЕСЧЕТ";
             this.btnCalcQuantities.Name = "btnCalcQuantities";
             this.btnCalcQuantities.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalcQuantities_Click);
+            // 
+            // separator2
+            // 
+            this.separator2.Name = "separator2";
+            // 
+            // btnCalcLabournes
+            // 
+            this.btnCalcLabournes.Enabled = false;
+            this.btnCalcLabournes.Label = "Подсчет трудоемкостей";
+            this.btnCalcLabournes.Name = "btnCalcLabournes";
+            this.btnCalcLabournes.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalcLabournes_Click);
             // 
             // btnReloadWorksheets
             // 
@@ -163,6 +167,10 @@
             this.bntChangeEmployerMSG.Label = "Открыть ведомость  ответственного";
             this.bntChangeEmployerMSG.Name = "bntChangeEmployerMSG";
             this.bntChangeEmployerMSG.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.bntChangeEmployerMSG_Click);
+            // 
+            // separator1
+            // 
+            this.separator1.Name = "separator1";
             // 
             // btnChangeEmployers
             // 
@@ -218,6 +226,10 @@
             this.checkBoxRerightDatePart.Name = "checkBoxRerightDatePart";
             this.checkBoxRerightDatePart.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.checkBoxRerightDatePart_Click);
             // 
+            // separator3
+            // 
+            this.separator3.Name = "separator3";
+            // 
             // btnFillTemlate
             // 
             this.btnFillTemlate.Enabled = false;
@@ -252,18 +264,6 @@
             // openMSGTemplateFileDialog
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
-            // 
-            // separator1
-            // 
-            this.separator1.Name = "separator1";
-            // 
-            // separator2
-            // 
-            this.separator2.Name = "separator2";
-            // 
-            // separator3
-            // 
-            this.separator3.Name = "separator3";
             // 
             // Ribbon1
             // 

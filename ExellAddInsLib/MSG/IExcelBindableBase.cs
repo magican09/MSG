@@ -10,7 +10,7 @@ namespace ExellAddInsLib.MSG
     {
         event PropertyChangedEventHandler PropertyChanged;
         void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
-        Dictionary<string, Tuple<int, int, Excel.Worksheet>> CellAddressesMap { get; set; }
+        EventedDictationary<string, Tuple<int, int, Excel.Worksheet>> CellAddressesMap { get; set; }
         //  Excel.Worksheet RegisterSheet { get; set; }
     }
 }

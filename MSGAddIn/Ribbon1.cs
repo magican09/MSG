@@ -370,11 +370,8 @@ namespace MSGAddIn
             foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
             {
                 string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
-                //  string emoloyer_name_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
                 string employer_number;
-                // int.TryParse(emoloyer_namber_str, out employer_number);
                 Employer employer = Employers.Where(em => em.Number == emoloyer_namber_str).FirstOrDefault();
-                // Employer employer = Employers.Where(em => em.Name == emoloyer_name_str).FirstOrDefault();
                 if (employer != null && worksheet.Name.Contains("Ведомость"))
                 {
                     MSGExellModel model = new MSGExellModel();
@@ -391,7 +388,6 @@ namespace MSGAddIn
             foreach (Excel.Worksheet worksheet in EmployerWorkConsumptionsWorksheets)
             {
                 string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
-                string employer_number;
                 Employer employer = Employers.Where(em => em.Number == emoloyer_namber_str).FirstOrDefault();
                 var model = MSGExellModels.FirstOrDefault(m => m.Employer.Number == emoloyer_namber_str);
                 if (model != null && worksheet.Name.Contains("Люди"))
@@ -538,11 +534,16 @@ namespace MSGAddIn
             tmp_work_rows_range = MSGTemplateWorksheet.Range[MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
 
             #region Заполнение формы данными из модели...
+            const int LAST_ROW_MAX_COUNT = 100;
+            int last_not_null_row_index = TMP_WORK_SELECTION_FIRST_ROW;
+            int work_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
+            int saved_iterator = TMP_WORK_SELECTION_FIRST_ROW;
             foreach (WorksSection w_section in CommonMSGExellModel.WorksSections)
             {
                int section_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
                 int section_null_cell_counter = 0;
-                while (section_null_cell_counter < 100)
+              
+                while (section_null_cell_counter <=LAST_ROW_MAX_COUNT)
                 {
                     if (MSGOutWorksheet.Cells[section_local_index_iterator, TMP_WORK_NUMBER_COL].Value == null)
                         section_null_cell_counter++;
@@ -550,84 +551,105 @@ namespace MSGAddIn
                     {
                         section_null_cell_counter = 0;
                         string w_section_name = MSGOutWorksheet.Cells[section_local_index_iterator, TMP_WORK_NUMBER_COL].Value.ToString();
-
                         if (w_section_name == w_section.Name)
-                            row_index = section_local_index_iterator;
-                     
-                        section_local_index_iterator++;
+                        {
+                            saved_iterator = section_local_index_iterator;
+                            break;
+                        }
+                           
+                       
                     }
+                    section_local_index_iterator++;
                 }
-                
+                if (section_null_cell_counter >= LAST_ROW_MAX_COUNT)
+                    section_local_index_iterator = saved_iterator;
 
                 tmp_works_selection_range.Copy();
-                Excel.Range sect_row_dest = MSGOutWorksheet.Cells[row_index, 1];
+                Excel.Range sect_row_dest = MSGOutWorksheet.Cells[section_local_index_iterator, 1];
                 sect_row_dest.PasteSpecial(XlPasteType.xlPasteAll);
-                MSGOutWorksheet.Cells[row_index, 1] = w_section.Name;
-                row_index++;
+                MSGOutWorksheet.Cells[section_local_index_iterator, 1] = w_section.Name;
+
+                //    row_index++;
+                 saved_iterator = section_local_index_iterator+1;
                 foreach (MSGWork msg_work in w_section.MSGWorks)
                 {
                     ///Копируем и вставляем строку для работы в МСГ
-                    int local_index_iterator = TMP_WORK_FIRST_INDEX_ROW;
+                    work_local_index_iterator = section_local_index_iterator+1;
                     int null_cell_counter = 0;
-                
-                    while (null_cell_counter < 100)
+
+                   
+                    while (null_cell_counter <=LAST_ROW_MAX_COUNT)
                     {
-                        if (MSGOutWorksheet.Cells[local_index_iterator, TMP_WORK_NUMBER_COL].Value == null)
-                        {
-                            null_cell_counter++;
-                        }
+                        if (MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value == null)
+                             null_cell_counter++;
                         else
                         {
                             null_cell_counter = 0;
                             string msg_work_number = "";
-                            if (MSGOutWorksheet.Cells[local_index_iterator, TMP_WORK_NUMBER_COL].Value != null)
-                                msg_work_number = MSGOutWorksheet.Cells[local_index_iterator, TMP_WORK_NUMBER_COL].Value.ToString();
+                            if (MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value != null)
+                                msg_work_number = MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value.ToString();
 
-                            if (msg_work.Number == msg_work_number)
-                            {
-                                row_index = local_index_iterator;
-                                break;
-                            }
+                           
 
                             if (CommonMSGExellModel.WorksSections.FirstOrDefault(wc => wc.Name == msg_work_number) != null
                                                  && msg_work_number != w_section.Name)
                             {
-                                row_index++;
+                                saved_iterator = work_local_index_iterator;
                                 tmp_work_rows_range.Copy();
-                                Excel.Range dest = MSGOutWorksheet.Rows[row_index];
+                                Excel.Range dest = MSGOutWorksheet.Rows[saved_iterator];
                                // dest.PasteSpecial(XlPasteType.xlPasteAll);
                                 dest.Insert(Excel.XlInsertShiftDirection.xlShiftDown, Type.Missing);
+                              
                                 break;
                             }
-                            var f = MSGOutWorksheet.Cells[local_index_iterator, TMP_WORK_NUMBER_COL].Value;
-                            var f2 = MSGOutWorksheet.Cells[local_index_iterator+1, TMP_WORK_NUMBER_COL].Value;
+                            //var f = MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value;
+                            //var f2 = MSGOutWorksheet.Cells[work_local_index_iterator + 1, TMP_WORK_NUMBER_COL].Value;
 
-                            if (MSGOutWorksheet.Cells[local_index_iterator, TMP_WORK_NUMBER_COL].Value == null &&
-                                 MSGOutWorksheet.Cells[local_index_iterator +1, TMP_WORK_NUMBER_COL].Value == null )
-                            {
+                            //if (MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value == null &&
+                            //     MSGOutWorksheet.Cells[work_local_index_iterator + 1, TMP_WORK_NUMBER_COL].Value == null )
+                            //{
 
-                                row_index = local_index_iterator;
-                                tmp_work_rows_range.Copy();
-                                Excel.Range dest = MSGOutWorksheet.Rows[row_index];
-                                dest.PasteSpecial(XlPasteType.xlPasteAll);
-                                break;
-                            }
-                           
-                            if (MSGOutWorksheet.Cells[local_index_iterator+2, TMP_WORK_NUMBER_COL].Value == null &&
-                                 MSGOutWorksheet.Cells[local_index_iterator + 3, TMP_WORK_NUMBER_COL].Value == null)
+                            //    row_index = work_local_index_iterator;
+                            //    tmp_work_rows_range.Copy();
+                            //    Excel.Range dest = MSGOutWorksheet.Rows[row_index];
+                            //    dest.PasteSpecial(XlPasteType.xlPasteAll);
+                            //    break;
+                            //}
+                            if (msg_work.Number == msg_work_number)
                             {
-                                row_index +=2;
-                                tmp_work_rows_range.Copy();
-                                Excel.Range dest = MSGOutWorksheet.Rows[row_index];
-                                dest.PasteSpecial(XlPasteType.xlPasteAll);
+                                saved_iterator = work_local_index_iterator;
                                 break;
                             }
+                            if (msg_work.Number != msg_work_number && msg_work_number!="")
+                            {
+                                saved_iterator = work_local_index_iterator + 2;
+                          //      section_local_index_iterator = work_local_index_iterator;
+                              
+                              //  break;
+                            }
+                            //if (MSGOutWorksheet.Cells[local_index_iterator+2, TMP_WORK_NUMBER_COL].Value == null &&
+                            //     MSGOutWorksheet.Cells[local_index_iterator + 3, TMP_WORK_NUMBER_COL].Value == null)
+                            //{
+                            //    row_index +=2;
+                            //    tmp_work_rows_range.Copy();
+                            //    Excel.Range dest = MSGOutWorksheet.Rows[row_index];
+                            //    dest.PasteSpecial(XlPasteType.xlPasteAll);
+                            //    break;
+                            //}
+
                         }
-                        local_index_iterator++;
+                         work_local_index_iterator++;
                     }
-
-
-
+                    row_index = saved_iterator;
+                    if (null_cell_counter >= LAST_ROW_MAX_COUNT)
+                    {
+                      //  row_index = saved_iterator;
+                        tmp_work_rows_range.Copy();
+                        Excel.Range dest = MSGOutWorksheet.Rows[row_index];
+                        dest.PasteSpecial(XlPasteType.xlPasteAll);
+                        saved_iterator += 2;
+                    }
+                   
                     //tmp_work_rows_range.Copy();
                     //Excel.Range dest = MSGOutWorksheet.Rows[row_index];
                     //dest.Insert(Excel.XlInsertShiftDirection.xlShiftDown,Type.Missing);
@@ -683,6 +705,7 @@ namespace MSGAddIn
                             }
                         }
                     //row_index += 2;
+                    work_local_index_iterator += 2;
                 }
             }
             #endregion

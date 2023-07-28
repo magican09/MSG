@@ -11,7 +11,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class MSGExellModel
+    public class MSGExellModel:ExcelBindableBase
     {
         public const int COMMON_PARAMETRS_VALUE_COL = 3;
 
@@ -315,6 +315,10 @@ namespace ExellAddInsLib.MSG
                     bindable_object.CellAddressesMap[e.PropertyName].Item3
                         .Cells[bindable_object.CellAddressesMap[e.PropertyName].Item1,
                    bindable_object.CellAddressesMap[e.PropertyName].Item2] = sender.GetType().GetProperty(e.PropertyName).GetValue(sender).ToString();
+                    bindable_object.CellAddressesMap[e.PropertyName].Item3
+                              .Cells[bindable_object.CellAddressesMap[e.PropertyName].Item1,
+                         bindable_object.CellAddressesMap[e.PropertyName].Item2].Interior.Color
+                                = XlRgbColor.rgbLawnGreen;
                 }
             }
         }
@@ -768,6 +772,13 @@ namespace ExellAddInsLib.MSG
             this.ContractCode = this.CommonSheet.Cells[CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ConstructionSubObjectCode = this.CommonSheet.Cells[CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
+          
+            //this.CellAddressesMap.Add("ContractCode", new Tuple<int, int, Worksheet>(CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL, this.CommonSheet));
+            //this.CellAddressesMap.Add("ContructionObjectCode", new Tuple<int, int, Worksheet>(CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL, this.CommonSheet));
+            //this.CellAddressesMap.Add("ConstructionSubObjectCode", new Tuple<int, int, Worksheet>(CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL, this.CommonSheet));
+          
+            //this.WorksStartDate=   DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
+            //this.CellAddressesMap.Add("WorksStartDate", new Tuple<int, int, Worksheet>(WORKS_START_DATE_ROW, WORKS_END_DATE_COL, this.RegisterSheet));
 
             this.LoadWorksSections();
             this.WorkersComposition.Clear();
@@ -852,6 +863,8 @@ namespace ExellAddInsLib.MSG
                             {
 
                                 KSWork child_ks_work = model.KSWorks.FirstOrDefault(w => w.Number == ks_work.Number);
+                              
+
                                 if (child_ks_work != null && child_ks_work.ReportCard != null)
                                 {
 
@@ -885,16 +898,15 @@ namespace ExellAddInsLib.MSG
                                                 int curent_wrc_row = ks_work.ReportCard.CellAddressesMap["ReportCard"].Item1;
 
                                                 curent_w_day.CellAddressesMap.Add(map_item.Key,
-                                                    new Tuple<int, int, Excel.Worksheet>(curent_wrc_row, WRC_DATE_COL + date_index, this.WorkerConsumptionsSheet));
-
-                                                this.RegisterSheet.Cells[curent_wrc_row, WRC_DATE_COL + date_index] =
-                                                    curent_w_day.Quantity.ToString();
+                                                    new Tuple<int, int, Excel.Worksheet>(curent_wrc_row, WRC_DATE_COL + date_index, this.RegisterSheet));
+                                                curent_w_day.Quantity = curent_w_day.Quantity;
                                                 this.Register(curent_w_day);
                                             }
                                             ks_work.ReportCard.Add(curent_w_day);
                                         }
                                     }
                                 }
+                              
                                 ks_work.PreviousComplatedQuantity += child_ks_work.PreviousComplatedQuantity;
                             }
                             //ks_work.Quantity = ks_work.ReportCard.Quantity;
@@ -947,6 +959,8 @@ namespace ExellAddInsLib.MSG
                     }
 
                 }
+
+             
             }
         }
 
@@ -998,9 +1012,10 @@ namespace ExellAddInsLib.MSG
                                         int curent_w_consumption_row = worker_consumption.WorkersConsumptionReportCard.CellAddressesMap["WorkersConsumptionReportCard"].Item1;
 
                                         curent_w_day.CellAddressesMap.Add(map_item.Key, new Tuple<int, int, Excel.Worksheet>(curent_w_consumption_row, W_CONSUMPTIONS_FIRST_DATE_COL + date_index, this.WorkerConsumptionsSheet));
-
-                                        this.WorkerConsumptionsSheet.Cells[curent_w_consumption_row, W_CONSUMPTIONS_FIRST_DATE_COL + date_index] =
-                                            curent_w_day.Quantity.ToString();
+                                        curent_w_day.Quantity = curent_w_day.Quantity;
+                              //          this.WorkerConsumptionsSheet.Cells[curent_w_consumption_row, W_CONSUMPTIONS_FIRST_DATE_COL + date_index] =
+                                      //      curent_w_day.Quantity.ToString();
+                                     
                                         this.Register(curent_w_day);
                                     }
                                     worker_consumption.WorkersConsumptionReportCard.Add(curent_w_day);
@@ -1121,11 +1136,13 @@ namespace ExellAddInsLib.MSG
             //    Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WRC_DATE_COL], this.RegisterSheet.Cells[10000, 10000]];
             common_area_range.ClearContents();
+         //   common_area_range.Interior.Color =   XlRgbColor.rgbWhite;
 
             //  last_cell = this.WorkerConsumptionsSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             common_area_range = this.WorkerConsumptionsSheet.Range[this.WorkerConsumptionsSheet.Cells[W_CONSUMPTIONS_FIRST_ROW_INDEX, W_CONSUMPTIONS_FIRST_DATE_COL],
                 this.WorkerConsumptionsSheet.Cells[10000, 10000]];
             common_area_range.ClearContents();
+           // common_area_range.Interior.Color = XlRgbColor.rgbWhite;
         }
         /// <summary>
         /// Функия очищает левую часть вдомости с МСГ, ВОВР и КС-2.
@@ -1135,6 +1152,7 @@ namespace ExellAddInsLib.MSG
             Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WSEC_NUMBER_COL], this.RegisterSheet.Cells[10000, WRC_NUMBER_COL - 1]];
             common_area_range.ClearContents();
+          //  common_area_range.Interior.Color = XlRgbColor.rgbWhite;
         }
     }
 }
