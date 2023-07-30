@@ -34,21 +34,40 @@ namespace ExellAddInsLib.MSG
 
         }
         public ObservableCollection<IExcelBindableBase> Owners { get; set; } = new ObservableCollection<IExcelBindableBase>();
-        public ExellCellAddressMapDictationary CellAddressesMap { get; set; } = new ExellCellAddressMapDictationary();
+        public ExellCellAddressMapDictationary CellAddressesMap { get; set; } 
         public ExcelBindableBase()
         {
+            CellAddressesMap = new ExellCellAddressMapDictationary();
+            CellAddressesMap.Owner = this;
             CellAddressesMap.AddEvent += OnCellAdressAdd;
         }
-
-        private void OnCellAdressAdd(ExellCellAddressMapDictationary.AddEventArgs pAddEventArgs)
+        
+        private void OnCellAdressAdd(IExcelBindableBase sender,ExellCellAddressMapDictationary.AddEventArgs pAddEventArgs)
         {
             if (pAddEventArgs != null)
             {
                 Excel.Worksheet worksheet = pAddEventArgs.Value.Worksheet;
-                worksheet.Cells[pAddEventArgs.Value.Row, pAddEventArgs.Value.Column].Interior.Color
-                                = XlRgbColor.rgbAliceBlue;
             }
 
+        }
+
+        public Excel.Range GetRange(Excel.Worksheet worksheet)
+        {
+            Excel.Range range =null;
+            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name);
+            if(cell_maps.Any())
+            {
+                int upper_row = cell_maps.OrderBy(c=>c.Value.Row).First().Value.Row;
+                int lower_row = cell_maps.OrderBy(c => c.Value.Row).Last().Value.Row;
+                int left_col = cell_maps.OrderBy(c => c.Value.Column).First().Value.Column;
+                int right_col = cell_maps.OrderBy(c => c.Value.Column).Last().Value.Column;
+                var left_upper_cell = cell_maps.OrderBy(c=>c.Value.Row).OrderBy(c=>c.Value.Column).First().Value.Cell;
+                var rigth_lower_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).Last().Value.Cell;
+
+                range = worksheet.Range[left_upper_cell, rigth_lower_cell];
+
+            }
+            return range;
         }
 
         public object Clone()

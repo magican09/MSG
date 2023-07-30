@@ -1,8 +1,10 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using ExellAddInsLib.MSG.Section;
+using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -35,11 +37,13 @@ namespace ExellAddInsLib.MSG
 
 
 
-        public ExellCellAddressMapDictationary CellAddressesMap { get; set; } = new ExellCellAddressMapDictationary();
+        public ExellCellAddressMapDictationary CellAddressesMap { get; set; }
 
         public ExcelNotifyChangedCollection()
         {
-            CellAddressesMap.AddEvent += OnCellAdressAdd;
+            CellAddressesMap = new ExellCellAddressMapDictationary();
+            CellAddressesMap.Owner = this;
+          // CellAddressesMap.AddEvent += OnCellAdressAdd;
             CellAddressesMap.OnSetWorksheet += OnCellAddressesMapWorksheet_Change;
             this.CollectionChanged += OnElementCollectionChanged;
         }
@@ -48,15 +52,33 @@ namespace ExellAddInsLib.MSG
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
                 foreach (T element in e.NewItems)
-                {
+                {if (element is MSGWork)
+                        ;
                     if (element is IExcelBindableBase excel_bindable_element && !excel_bindable_element.Owners.Contains(this))
+                    {
                         excel_bindable_element.Owners.Add(this);
+                        foreach (var kvp in excel_bindable_element.CellAddressesMap)
+                        { string key_str = $"{excel_bindable_element.Id.ToString()}_{kvp.Value.ProprertyName}";
+                            if (!this.CellAddressesMap.ContainsKey(key_str))
+                                this.CellAddressesMap.Add(key_str, kvp.Value);
+                        }
+                        excel_bindable_element.CellAddressesMap.AddEvent += OnCellAdressAdd;
+                    }
                 }
             if (e.Action == NotifyCollectionChangedAction.Remove)
                 foreach (T element in e.OldItems)
                 {
                     if (element is IExcelBindableBase excel_bindable_element && excel_bindable_element.Owners.Contains(this))
+                    {
                         excel_bindable_element.Owners.Remove(this);
+                        foreach (var kvp in excel_bindable_element.CellAddressesMap)
+                        {
+                            string key_str = $"{excel_bindable_element.Id.ToString()}_{kvp.Value.ProprertyName}";
+                            if (this.CellAddressesMap.ContainsKey(key_str))
+                                this.CellAddressesMap.Remove(key_str);
+                        }
+                        excel_bindable_element.CellAddressesMap.AddEvent -= OnCellAdressAdd;
+                    }
                 }
         }
 
@@ -70,16 +92,33 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-        private void OnCellAdressAdd(ExellCellAddressMapDictationary.AddEventArgs pAddEventArgs)
+        private void OnCellAdressAdd(IExcelBindableBase sender, ExellCellAddressMapDictationary.AddEventArgs pAddEventArgs)
         {
             if (pAddEventArgs != null)
             {
                 Excel.Worksheet worksheet = pAddEventArgs.Value.Worksheet;
-                worksheet.Cells[pAddEventArgs.Value.Row, pAddEventArgs.Value.Column].Interior.Color
-                                = XlRgbColor.rgbAliceBlue;
+                string key_str = $"{sender.Id.ToString()}_{pAddEventArgs.Value.ProprertyName}";
+                this.CellAddressesMap.Add(key_str, pAddEventArgs.Value);
             }
         }
+        public Excel.Range GetRange(Excel.Worksheet worksheet)
+        {
+            Excel.Range range = null;
+            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name);
+            if (cell_maps.Any())
+            {
+                int upper_row = cell_maps.OrderBy(c => c.Value.Row).First().Value.Row;
+                int lower_row = cell_maps.OrderBy(c => c.Value.Row).Last().Value.Row;
+                int left_col = cell_maps.OrderBy(c => c.Value.Column).First().Value.Column;
+                int right_col = cell_maps.OrderBy(c => c.Value.Column).Last().Value.Column;
+                var left_upper_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).First().Value.Cell;
+                var rigth_lower_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).Last().Value.Cell;
 
+                range = worksheet.Range[left_upper_cell, rigth_lower_cell];
+
+            }
+            return range;
+        }
         public object Clone()
         {
             //var new_collecion = this.MemberwiseClone();

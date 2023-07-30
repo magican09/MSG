@@ -33,14 +33,16 @@ namespace ExellAddInsLib.MSG
                 set { _value = value; }
             }
         }
-        public delegate void AddEventHandler(AddEventArgs pAddEventArgs);
+        public delegate void AddEventHandler(IExcelBindableBase sender, AddEventArgs pAddEventArgs);
         public event AddEventHandler AddEvent;
 
-        public void Add(TKey pKey, TValue pValue)
+        public void Add(IExcelBindableBase sender,TKey pKey, TValue pValue)
         {
             if (this.ContainsKey(pKey)) return;
+           
             if (AddEvent != null)
-                AddEvent(new AddEventArgs(pKey, pValue));
+                AddEvent(sender,new AddEventArgs(pKey, pValue));
+          
             base.Add(pKey, pValue);
         }
 

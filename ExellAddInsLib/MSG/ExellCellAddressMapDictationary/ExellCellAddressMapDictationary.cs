@@ -17,10 +17,19 @@ namespace ExellAddInsLib.MSG
             }
             OnSetWorksheet?.Invoke(worksheet);
         }
+
         public ExellCellAddressMapDictationary()
         {
 
         }
+        private IExcelBindableBase  _owner;
+
+        public IExcelBindableBase  Owner
+        {
+            get { return _owner; }
+            set { _owner = value; }
+        }
+
         //public void UpdateWorksheets()
         //{
         //    foreach(KeyValuePair<string, ExellPropAddress> kvp in this)

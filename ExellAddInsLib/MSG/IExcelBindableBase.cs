@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-
+using Excel = Microsoft.Office.Interop.Excel;
 namespace ExellAddInsLib.MSG
 {
     public interface IExcelBindableBase : ICloneable
@@ -13,5 +13,6 @@ namespace ExellAddInsLib.MSG
         ExellCellAddressMapDictationary CellAddressesMap { get; set; }
         Guid Id { get; }
         ObservableCollection<IExcelBindableBase> Owners { get; set; }
+         Excel.Range GetRange(Excel.Worksheet worksheet);
     }
 }
