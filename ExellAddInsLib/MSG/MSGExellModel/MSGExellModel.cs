@@ -178,6 +178,9 @@ namespace ExellAddInsLib.MSG
         /// <param name="work"></param>
         public void Register(IExcelBindableBase notified_object, string prop_name, int row, int column, Excel.Worksheet worksheet, RelateRecord register = null)
         {
+            if (notified_object is MSGWork)
+                ;
+            var prop_names = prop_name.Split(new char[] { '.' });
 
             RelateRecord local_register = new RelateRecord(notified_object);
             if (register == null)
@@ -185,17 +188,18 @@ namespace ExellAddInsLib.MSG
                 register = local_register;
                 local_register.ExellPropAddress = new ExellPropAddress(row, column, worksheet, prop_name);
                 RegistedObjects.Add(local_register);
+              
                 RegisterTemporalStopList.Clear();
-
-                RegisterTemporalStopList.Add(local_register.Entity, prop_name);
-                local_register.PropertyName = prop_name;
+                RegisterTemporalStopList.Add(local_register.Entity, prop_names[0]);
+              //  local_register.PropertyName = prop_names[0]
+             //   RegisterTemporalStopList.Add(local_register.Entity, prop_names[0]);
+                local_register.PropertyName = prop_names[0];
                 ObjectPropertyNameRegister.Add(local_register);
             }
             else
                 register.Items.Add(local_register);
 
-            var prop_names = prop_name.Split(new char[] { '.' });
-
+            
 
             foreach (string name in prop_names)
             {
@@ -226,24 +230,14 @@ namespace ExellAddInsLib.MSG
             //    case nameof(WorksSection):
             //        {
 
-            //            WorksSection w_section = (WorksSection)obj;
-            //            if (!this.WorksSections.Contains(w_section))
-            //                this.WorksSections.Add(w_section);
+            //          
             //            break;
             //        }
 
             //    case nameof(MSGWork):
             //        {
 
-            //            MSGWork msg_work = (MSGWork)obj;
-            //            if (!this.MSGWorks.Contains(msg_work))
-            //                this.MSGWorks.Add(msg_work);
-
-            //            WorksSection w_section = this.WorksSections.Where(ws => ws.Number.StartsWith(msg_work.Number.Remove(msg_work.Number.LastIndexOf(".")))).FirstOrDefault();
-            //            if (w_section != null)
-            //            {
-            //                w_section.MSGWorks.Add(msg_work);
-            //            }
+            //          
             //            break;
             //        }
             //    case nameof(NeedsOfWorker):
@@ -375,31 +369,75 @@ namespace ExellAddInsLib.MSG
             }
 
         }
+        private void GetRecordsParentChain(RelateRecord child_record, ObservableCollection<Tuple<RelateRecord, string>> parentRecords)
+        {
+            if (child_record.Parent != null)
+                parentRecords.Add(new Tuple<RelateRecord, string>(child_record.Parent, $"{child_record.Parent.PropertyName}.{child_record.PropertyName}"));
+
+        }
+        private object GetValueFromObject(IExcelBindableBase obj, string prop_path)
+        {
+            string rest_prop_name_part = prop_path;
+           
+            if (prop_path.Contains(".")) 
+                rest_prop_name_part = prop_path.Substring(prop_path.IndexOf('.')+1, prop_path.Length- prop_path.IndexOf('.')-1);
+            string prop_name = prop_path.Replace($".{rest_prop_name_part}", "");
+            if (prop_name != "")
+            { var prop_val = obj.GetType().GetProperty(prop_name).GetValue(obj);
+                if (prop_val is IExcelBindableBase ex_n_prop_val)
+                    return GetValueFromObject(ex_n_prop_val, rest_prop_name_part);
+                else
+                {
+                    var prop_non_object_val = obj.GetType().GetProperty(prop_path).GetValue(obj);
+                    return prop_non_object_val;
+                }
+            }
+            
+            return null;
+        }
         private void OnPropertyChange(object sender, PropertyChangedEventArgs e)
         {
             if (sender is IExcelBindableBase bindable_object)
             {
-                var prop_names = e.PropertyName.Split('.'); 
+               
                 var ralated_records = this.RegistedObjects
                     .Where(rr => rr.Entity.Id == bindable_object.Id)
                     .Where(r =>
                     {
-                        foreach (string name in prop_names)
-                            if (name == r.PropertyName)
+                        var prop_names_array = r.PropertyName.Split('.');
+                        foreach (string name in prop_names_array)
+                            if (name == e.PropertyName)
                                 return true;
                         return false;
                     });
 
-                foreach (RelateRecord related_rec in ralated_records)
+                foreach (RelateRecord related_rec in ralated_records) //Находим все зависимые записиыыы
                 {
                     var parent_rrecord = this.GetFirstParentRelateRecord(related_rec);
+                  
                     ObservableCollection<Tuple<RelateRecord, string>> all_children_records = new ObservableCollection<Tuple<RelateRecord, string>>(); ;
-                    this.GetChildrenRelateRecords(parent_rrecord, all_children_records);
-                    var children_for_read_props = all_children_records.Where(ch => ch.Item2 == parent_rrecord.ExellPropAddress.ProprertyName);
+                    this.GetChildrenRelateRecords(parent_rrecord, all_children_records); //Находим все зависяцщие дочерние записи
+                    var children_for_read_props = all_children_records.Where(ch => ch.Item2 == parent_rrecord.ExellPropAddress.ProprertyName); //Находим объект находящийся по зарегисрированному в реестре пути
+
+                    // ObservableCollection<Tuple<RelateRecord, string>> parents_records_chain = new ObservableCollection<Tuple<RelateRecord, string>>(); ;
+                    //  this.GetRecordsParentChain(parent_rrecord,parents_records_chain);
+                    var parent_enetity = parent_rrecord.Entity;
+                   
                     foreach (Tuple<RelateRecord, string> rr_tuple in children_for_read_props)
                     {
-                        RelateRecord child_rr = rr_tuple.Item1;
-                        var val = child_rr.Entity.GetType().GetProperty(child_rr.PropertyName).GetValue(child_rr.Entity).ToString();
+                        //var prop_names_array = rr_tuple.Item2.Split('.');
+                      
+                        //foreach(string prop_name in prop_names_array)
+                        //{
+                        //    var prop_val = parent_enetity.GetType().GetProperty(prop_name).GetValue(parent_enetity);
+                        //    if(!(prop_val is IExcelBindableBase))
+                        //    {
+
+                        //    }
+                        //}
+                        var val = GetValueFromObject(parent_enetity, rr_tuple.Item2);
+                       // RelateRecord child_rr = rr_tuple.Item1;
+                      //  var val = child_rr.Entity.GetType().GetProperty(child_rr.PropertyName).GetValue(child_rr.Entity).ToString();
                         parent_rrecord.ExellPropAddress.Cell.Value = val;
                         parent_rrecord.ExellPropAddress.Cell.Interior.Color = XlRgbColor.rgbGreenYellow;
                     }
@@ -429,9 +467,11 @@ namespace ExellAddInsLib.MSG
 
                     w_section.Number = registerSheet.Cells[rowIndex, WSEC_NUMBER_COL].Value.ToString();
                     w_section.Name = registerSheet.Cells[rowIndex, WSEC_NAME_COL].Value;
+                    this.WorksSections.Add(w_section);
                     this.Register(w_section, "Number", rowIndex, WSEC_NUMBER_COL, registerSheet);
                     this.Register(w_section, "Name", rowIndex, WSEC_NAME_COL, registerSheet);
-                    this.WorksSections.Add(w_section);
+                    if (!this.WorksSections.Contains(w_section))
+                              this.WorksSections.Add(w_section);
 
                 }
                 rowIndex++;
@@ -489,6 +529,12 @@ namespace ExellAddInsLib.MSG
                         registerSheet.Range[registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL], registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL]].Interior.Color
                             = XlRgbColor.rgbRed;
 
+                    this.Register(msg_work, "Number", rowIndex, MSG_NUMBER_COL, this.RegisterSheet);
+                    this.Register(msg_work, "Name", rowIndex, MSG_NAME_COL, this.RegisterSheet);
+                    this.Register(msg_work, "ProjectQuantity", rowIndex, MSG_QUANTITY_COL, this.RegisterSheet);
+                    this.Register(msg_work, "Quantity", rowIndex, MSG_QUANTITY_FACT_COL, this.RegisterSheet);
+                    this.Register(msg_work, "Laboriousness", rowIndex, MSG_LABOURNESS_COL, this.RegisterSheet);
+
                     DateTime start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
                     DateTime end_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_END_DATE_COL].Value.ToString());
                     WorkScheduleChunk work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
@@ -508,12 +554,13 @@ namespace ExellAddInsLib.MSG
                         this.Register(extra_work_sh_chunk, "EndTime", rowIndex, MSG_END_DATE_COL, this.RegisterSheet);
                         msg_work.WorkSchedules.Add(extra_work_sh_chunk);
                     }
-                    this.Register(msg_work, "Number", rowIndex, MSG_NUMBER_COL, this.RegisterSheet);
-                    this.Register(msg_work, "Name", rowIndex, MSG_NAME_COL, this.RegisterSheet);
-                    this.Register(msg_work, "ProjectQuantity", rowIndex, MSG_QUANTITY_COL, this.RegisterSheet);
-                    this.Register(msg_work, "Quantity", rowIndex, MSG_QUANTITY_FACT_COL, this.RegisterSheet);
-                    this.Register(msg_work, "Laboriousness", rowIndex, MSG_LABOURNESS_COL, this.RegisterSheet);
-                    this.MSGWorks.Add(msg_work);
+                  
+                    if (!this.MSGWorks.Contains(msg_work))
+                        this.MSGWorks.Add(msg_work);
+                     WorksSection w_section = this.WorksSections.Where(ws => ws.Number.StartsWith(msg_work.Number.Remove(msg_work.Number.LastIndexOf(".")))).FirstOrDefault();
+                    if (w_section != null)
+                        w_section.MSGWorks.Add(msg_work);
+               
                 }
                 rowIndex++;
             }
@@ -881,7 +928,8 @@ namespace ExellAddInsLib.MSG
             this.LoadMSGWorks();
             // this.LoadMSGWorkerCompositions();
 
-            //this.MSGWorks[0].Name = "dsdsd";
+           //  this.MSGWorks[0].Name = "dsdsd";
+            this.MSGWorks[0].UnitOfMeasurement =new UnitOfMeasurement("dddddddd");
             //this.LoadVOVRWorks();
             //this.LoadKSWorks();
             //this.LoadWorksReportCards();
