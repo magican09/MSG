@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-namespace ExellAddInsLib.MSG.Section
+﻿namespace ExellAddInsLib.MSG.Section
 {
     public class WorksSection : ExcelBindableBase
     {
@@ -21,6 +19,14 @@ namespace ExellAddInsLib.MSG.Section
         /// <summary>
         /// Коллекция с работами типа МСГ модели
         /// </summary>
-        public ObservableCollection<MSGWork> MSGWorks { get; private set; } = new ObservableCollection<MSGWork>();
+        public ExcelNotifyChangedCollection<MSGWork> MSGWorks { get; private set; } = new ExcelNotifyChangedCollection<MSGWork>();
+
+        new public object Clone()
+        {
+            WorksSection new_obj = (WorksSection)this.Clone();
+            new_obj.MSGWorks = (ExcelNotifyChangedCollection<MSGWork>)this.MSGWorks.Clone();
+            return new_obj;
+        }
+
     }
 }

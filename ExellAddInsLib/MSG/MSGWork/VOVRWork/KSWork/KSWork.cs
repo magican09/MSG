@@ -16,5 +16,9 @@
         //    get { return _workReportCard; }
         //    set { SetProperty(ref _workReportCard, value); }
         //}
+        public KSWork() : base()
+        {
+
+        }
     }
 }

@@ -1,17 +1,25 @@
-﻿using System.Collections.ObjectModel;
-
-namespace ExellAddInsLib.MSG
+﻿namespace ExellAddInsLib.MSG
 {
     public class VOVRWork : Work
     {
-        private ObservableCollection<KSWork> _kSWorks = new ObservableCollection<KSWork>();
+        private ExcelNotifyChangedCollection<KSWork> _kSWorks = new ExcelNotifyChangedCollection<KSWork>();
 
-        public ObservableCollection<KSWork> KSWorks
+        public ExcelNotifyChangedCollection<KSWork> KSWorks
         {
             get { return _kSWorks; }
             set { SetProperty(ref _kSWorks, value); }
         }
 
+        public VOVRWork() : base()
+        {
 
+        }
+        new public object Clone()
+        {
+            VOVRWork new_obj = (VOVRWork)this.Clone();
+            new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
+            new_obj.KSWorks = (ExcelNotifyChangedCollection<KSWork>)this.KSWorks.Clone();
+            return new_obj;
+        }
     }
 }

@@ -4,9 +4,7 @@ using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Ribbon;
 using System;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -33,7 +31,7 @@ namespace MSGAddIn
         ObservableCollection<MSGExellModel> MSGExellModels = new ObservableCollection<MSGExellModel>();
 
         ObservableCollection<Employer> Employers { get; set; } = new ObservableCollection<Employer>();
-        ObservableCollection<UnitOfMeasurement> UnitOfMeasurements = new ObservableCollection<UnitOfMeasurement>();
+        ExcelNotifyChangedCollection<UnitOfMeasurement> UnitOfMeasurements = new ExcelNotifyChangedCollection<UnitOfMeasurement>();
 
         Excel._Workbook CurrentWorkbook;
         Excel._Workbook MSGTemplateWorkbook;
@@ -134,7 +132,6 @@ namespace MSGAddIn
             CommonMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_общая"];
             CommonWorkConsumptionsWorksheet = CurrentWorkbook.Worksheets["Люди_общая"];
 
-            //TemplateMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_шаблон"];
             EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
             this.ReloadEmployersList();
             this.ReloadMeasurementsList();
@@ -143,27 +140,17 @@ namespace MSGAddIn
                 if (worksheet.Name.Contains("_"))
                 {
                     string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
-                    //string emoloyer_name_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
-                    //int employer_number;
-                    //int.TryParse(emoloyer_namber_str, out employer_number);
-                    //if (employer_number != 0)
-                    //{
-                    //    EmployerMSGWorksheets.Add(worksheet);
-                    //}
                     if (worksheet.Name.Contains("Ведомость"))
-                    {
                         EmployerMSGWorksheets.Add(worksheet);
-                    }
                     else if (worksheet.Name.Contains("Люди"))
                         EmployerWorkConsumptionsWorksheets.Add(worksheet);
                 }
             }
             this.ReloadAllModels();
             CurrentMSGExellModel = CommonMSGExellModel;
+
             this.ShowWorksheet(CommonMSGWorksheet);
-
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
-
             labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode.Substring(0, 15)}\n" +
                                     $"Объект:{CurrentMSGExellModel.ContructionObjectCode.Substring(0, 15)}\n " +
                                     $"Подобъект:{CurrentMSGExellModel.ConstructionSubObjectCode.Substring(0, 15)}";
@@ -193,6 +180,7 @@ namespace MSGAddIn
         private void btnCalcQuantities_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.CalcAll();
+           // CurrentMSGExellModel.FormatWorkSheetStyle();
         }
 
         private void btnShowAlllHidenWorksheets_Click(object sender, RibbonControlEventArgs e)
@@ -231,6 +219,7 @@ namespace MSGAddIn
                 Range last_dest = new_employer_worksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
                 Excel.Range dest = new_employer_worksheet.Range[new_employer_worksheet.Cells[1, 1], last_dest];
                 dest.PasteSpecial(XlPasteType.xlPasteAll);
+
                 EmployerMSGWorksheets.Add(new_employer_worksheet);
 
 
@@ -370,7 +359,6 @@ namespace MSGAddIn
             foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
             {
                 string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
-                string employer_number;
                 Employer employer = Employers.Where(em => em.Number == emoloyer_namber_str).FirstOrDefault();
                 if (employer != null && worksheet.Name.Contains("Ведомость"))
                 {
@@ -378,7 +366,6 @@ namespace MSGAddIn
                     model.RegisterSheet = worksheet;
                     model.CommonSheet = CommonWorksheet;
                     model.UnitOfMeasurements = UnitOfMeasurements;
-
                     model.Employer = employer;
                     model.Owner = CommonMSGExellModel;
                     CommonMSGExellModel.Children.Add(model);
@@ -391,16 +378,15 @@ namespace MSGAddIn
                 Employer employer = Employers.Where(em => em.Number == emoloyer_namber_str).FirstOrDefault();
                 var model = MSGExellModels.FirstOrDefault(m => m.Employer.Number == emoloyer_namber_str);
                 if (model != null && worksheet.Name.Contains("Люди"))
-                {
                     model.WorkerConsumptionsSheet = worksheet;
-
-                }
             }
+
             foreach (MSGExellModel model in this.MSGExellModels)
             {
-                model.UpdateWorksheetCommonPart();
-                model.RealoadAllSheetsInModel();
+                //    model.UpdateWorksheetCommonPart();
+                //    model.RealoadAllSheetsInModel();
             }
+
         }
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
@@ -540,10 +526,10 @@ namespace MSGAddIn
             int saved_iterator = TMP_WORK_SELECTION_FIRST_ROW;
             foreach (WorksSection w_section in CommonMSGExellModel.WorksSections)
             {
-               int section_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
+                int section_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
                 int section_null_cell_counter = 0;
-              
-                while (section_null_cell_counter <=LAST_ROW_MAX_COUNT)
+
+                while (section_null_cell_counter <= LAST_ROW_MAX_COUNT)
                 {
                     if (MSGOutWorksheet.Cells[section_local_index_iterator, TMP_WORK_NUMBER_COL].Value == null)
                         section_null_cell_counter++;
@@ -556,8 +542,8 @@ namespace MSGAddIn
                             saved_iterator = section_local_index_iterator;
                             break;
                         }
-                           
-                       
+
+
                     }
                     section_local_index_iterator++;
                 }
@@ -570,18 +556,18 @@ namespace MSGAddIn
                 MSGOutWorksheet.Cells[section_local_index_iterator, 1] = w_section.Name;
 
                 //    row_index++;
-                 saved_iterator = section_local_index_iterator+1;
+                saved_iterator = section_local_index_iterator + 1;
                 foreach (MSGWork msg_work in w_section.MSGWorks)
                 {
                     ///Копируем и вставляем строку для работы в МСГ
-                    work_local_index_iterator = section_local_index_iterator+1;
+                    work_local_index_iterator = section_local_index_iterator + 1;
                     int null_cell_counter = 0;
 
-                   
-                    while (null_cell_counter <=LAST_ROW_MAX_COUNT)
+
+                    while (null_cell_counter <= LAST_ROW_MAX_COUNT)
                     {
                         if (MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value == null)
-                             null_cell_counter++;
+                            null_cell_counter++;
                         else
                         {
                             null_cell_counter = 0;
@@ -589,7 +575,7 @@ namespace MSGAddIn
                             if (MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value != null)
                                 msg_work_number = MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value.ToString();
 
-                           
+
 
                             if (CommonMSGExellModel.WorksSections.FirstOrDefault(wc => wc.Name == msg_work_number) != null
                                                  && msg_work_number != w_section.Name)
@@ -597,9 +583,9 @@ namespace MSGAddIn
                                 saved_iterator = work_local_index_iterator;
                                 tmp_work_rows_range.Copy();
                                 Excel.Range dest = MSGOutWorksheet.Rows[saved_iterator];
-                               // dest.PasteSpecial(XlPasteType.xlPasteAll);
+                                // dest.PasteSpecial(XlPasteType.xlPasteAll);
                                 dest.Insert(Excel.XlInsertShiftDirection.xlShiftDown, Type.Missing);
-                              
+
                                 break;
                             }
                             //var f = MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value;
@@ -620,12 +606,12 @@ namespace MSGAddIn
                                 saved_iterator = work_local_index_iterator;
                                 break;
                             }
-                            if (msg_work.Number != msg_work_number && msg_work_number!="")
+                            if (msg_work.Number != msg_work_number && msg_work_number != "")
                             {
                                 saved_iterator = work_local_index_iterator + 2;
-                          //      section_local_index_iterator = work_local_index_iterator;
-                              
-                              //  break;
+                                //      section_local_index_iterator = work_local_index_iterator;
+
+                                //  break;
                             }
                             //if (MSGOutWorksheet.Cells[local_index_iterator+2, TMP_WORK_NUMBER_COL].Value == null &&
                             //     MSGOutWorksheet.Cells[local_index_iterator + 3, TMP_WORK_NUMBER_COL].Value == null)
@@ -638,18 +624,18 @@ namespace MSGAddIn
                             //}
 
                         }
-                         work_local_index_iterator++;
+                        work_local_index_iterator++;
                     }
                     row_index = saved_iterator;
                     if (null_cell_counter >= LAST_ROW_MAX_COUNT)
                     {
-                      //  row_index = saved_iterator;
+                        //  row_index = saved_iterator;
                         tmp_work_rows_range.Copy();
                         Excel.Range dest = MSGOutWorksheet.Rows[row_index];
                         dest.PasteSpecial(XlPasteType.xlPasteAll);
                         saved_iterator += 2;
                     }
-                   
+
                     //tmp_work_rows_range.Copy();
                     //Excel.Range dest = MSGOutWorksheet.Rows[row_index];
                     //dest.Insert(Excel.XlInsertShiftDirection.xlShiftDown,Type.Missing);

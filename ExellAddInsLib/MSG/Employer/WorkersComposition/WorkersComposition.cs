@@ -1,8 +1,6 @@
-﻿using System.Collections.ObjectModel;
-
-namespace ExellAddInsLib.MSG
+﻿namespace ExellAddInsLib.MSG
 {
-    public class WorkersComposition : ObservableCollection<NeedsOfWorker>
+    public class WorkersComposition : ExcelNotifyChangedCollection<NeedsOfWorker>
     {
     }
 }

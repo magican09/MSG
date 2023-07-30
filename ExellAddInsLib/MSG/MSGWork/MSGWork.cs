@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 
 namespace ExellAddInsLib.MSG
 {
@@ -22,9 +21,9 @@ namespace ExellAddInsLib.MSG
             set { _workSchedules = value; }
         }
 
-        private ObservableCollection<VOVRWork> _vOVRWorks = new ObservableCollection<VOVRWork>();
+        private ExcelNotifyChangedCollection<VOVRWork> _vOVRWorks = new ExcelNotifyChangedCollection<VOVRWork>();
 
-        public ObservableCollection<VOVRWork> VOVRWorks
+        public ExcelNotifyChangedCollection<VOVRWork> VOVRWorks
         {
             get { return _vOVRWorks; }
             set { _vOVRWorks = value; }
@@ -52,7 +51,17 @@ namespace ExellAddInsLib.MSG
             else
                 return 0;
         }
+        public MSGWork() : base()
+        {
 
+        }
+        new public object Clone()
+        {
+            MSGWork new_obj = (MSGWork)this.Clone();
+            new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
+            new_obj.VOVRWorks = (ExcelNotifyChangedCollection<VOVRWork>)this.VOVRWorks.Clone();
 
+            return new_obj;
+        }
     }
 }

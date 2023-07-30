@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ExellAddInsLib</RootNamespace>
     <AssemblyName>ExellAddInsLib</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -70,6 +71,10 @@
     <Compile Include="MSG\Employer\WorkerConsumptions\WorkerConsumptionDay\WorkerConsumptionDay.cs" />
     <Compile Include="MSG\ExcelBindableBase.cs" />
     <Compile Include="MSG\ExcelNotifyChangedCollection.cs" />
+    <Compile Include="MSG\ExellCellAddressMapDictationary\ExellCellAddressMapDictationary.cs" />
+    <Compile Include="MSG\ExellCellAddressMapDictationary\ExellPropAddress.cs" />
+    <Compile Include="MSG\ExellCellAddressMapDictationary\RelateRecord.cs" />
+    <Compile Include="MSG\ExellCellAddressMapDictationary\RelateRecordItemCollection.cs" />
     <Compile Include="MSG\IExcelBindableBase.cs" />
     <Compile Include="MSG\Interface1.cs" />
     <Compile Include="MSG\MSGExellModel\MSGExellModel.cs" />
@@ -84,6 +89,7 @@
     <Compile Include="MSG\MSGWork\WorkSchedule\WorkSchedule.cs" />
     <Compile Include="MSG\Work\Work.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\WorkReportCard\WorkReportCard.cs" />
+    <Compile Include="MSG\Work\WorkColletion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class WorkSchedule : ObservableCollection<WorkScheduleChunk>
+    public class WorkSchedule : ExcelNotifyChangedCollection<WorkScheduleChunk>
     {
         private int _workerNumber;
 

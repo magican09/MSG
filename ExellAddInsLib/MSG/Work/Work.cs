@@ -7,7 +7,6 @@ namespace ExellAddInsLib.MSG
     public abstract class Work : ExcelBindableBase, IWork
     {
 
-
         private int _rowIndex;
 
         public int RowIndex
@@ -71,7 +70,7 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _laboriousness, value); }
         }//Трудоемкость  чел.час/ед.изм
 
-        private WorkReportCard _reportCard;
+        private WorkReportCard _reportCard = new WorkReportCard();
 
         public WorkReportCard ReportCard
         {

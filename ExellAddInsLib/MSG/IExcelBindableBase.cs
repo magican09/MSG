@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public interface IExcelBindableBase
+    public interface IExcelBindableBase : ICloneable
     {
         event PropertyChangedEventHandler PropertyChanged;
+        void PropertyChange(object sender, string property_name);
         void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
-        EventedDictationary<string, Tuple<int, int, Excel.Worksheet>> CellAddressesMap { get; set; }
-        //  Excel.Worksheet RegisterSheet { get; set; }
+        ExellCellAddressMapDictationary CellAddressesMap { get; set; }
+        Guid Id { get; }
+        ObservableCollection<IExcelBindableBase> Owners { get; set; }
     }
 }

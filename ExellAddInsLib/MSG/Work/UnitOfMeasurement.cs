@@ -1,6 +1,6 @@
 ﻿namespace ExellAddInsLib.MSG
 {
-    public class UnitOfMeasurement : BindableBase, INameable
+    public class UnitOfMeasurement : ExcelBindableBase, INameable
     {
         private int _number;
 
@@ -26,6 +26,10 @@
         public UnitOfMeasurement(int number, string name) : this(name)
         {
             Number = number;
+        }
+        public UnitOfMeasurement() : base()
+        {
+
         }
 
     }
