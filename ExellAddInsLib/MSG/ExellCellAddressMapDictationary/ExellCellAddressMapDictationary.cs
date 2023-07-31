@@ -18,17 +18,11 @@ namespace ExellAddInsLib.MSG
             OnSetWorksheet?.Invoke(worksheet);
         }
 
-        public ExellCellAddressMapDictationary()
+        public ExellCellAddressMapDictationary() : base()
         {
 
         }
-        private IExcelBindableBase  _owner;
 
-        public IExcelBindableBase  Owner
-        {
-            get { return _owner; }
-            set { _owner = value; }
-        }
 
         //public void UpdateWorksheets()
         //{

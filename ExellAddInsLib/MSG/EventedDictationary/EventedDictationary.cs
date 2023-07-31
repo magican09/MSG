@@ -35,16 +35,33 @@ namespace ExellAddInsLib.MSG
         }
         public delegate void AddEventHandler(IExcelBindableBase sender, AddEventArgs pAddEventArgs);
         public event AddEventHandler AddEvent;
+        private IExcelBindableBase _owner;
 
-        public void Add(IExcelBindableBase sender,TKey pKey, TValue pValue)
+        public IExcelBindableBase Owner
+        {
+            get { return _owner; }
+            set { _owner = value; }
+        }
+        new public void Add(TKey pKey, TValue pValue)
         {
             if (this.ContainsKey(pKey)) return;
-           
+
             if (AddEvent != null)
-                AddEvent(sender,new AddEventArgs(pKey, pValue));
-          
+                AddEvent(Owner, new AddEventArgs(pKey, pValue));
+
             base.Add(pKey, pValue);
         }
+
+
+        //public void Add(IExcelBindableBase sender, TKey pKey, TValue pValue)
+        //{
+        //    if (this.ContainsKey(pKey)) return;
+
+        //    if (AddEvent != null)
+        //        AddEvent(sender, new AddEventArgs(pKey, pValue));
+
+        //    base.Add(pKey, pValue);
+        //}
 
     }
 }

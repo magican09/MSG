@@ -70,7 +70,7 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _laboriousness, value); }
         }//Трудоемкость  чел.час/ед.изм
 
-        private WorkReportCard _reportCard = new WorkReportCard();
+        private WorkReportCard _reportCard;
 
         public WorkReportCard ReportCard
         {
@@ -96,12 +96,12 @@ namespace ExellAddInsLib.MSG
             set { _owner = value; }
         }
 
-        private WorkersComposition _workersComposition = new WorkersComposition();
+        private WorkersComposition _workersComposition;
 
         public WorkersComposition WorkersComposition
         {
             get { return _workersComposition; }
-            set { _workersComposition = value; }
+            set { SetProperty(ref _workersComposition, value); }
         }
 
 
@@ -115,7 +115,10 @@ namespace ExellAddInsLib.MSG
         }
         public Work()
         {
+            WorkersComposition = new WorkersComposition();
+            ReportCard = new WorkReportCard();
             Children.CollectionChanged += OnChildrenAdd;
+
         }
 
         private void OnChildrenAdd(object sender, NotifyCollectionChangedEventArgs e)

@@ -13,6 +13,8 @@ namespace ExellAddInsLib.MSG
         ExellCellAddressMapDictationary CellAddressesMap { get; set; }
         Guid Id { get; }
         ObservableCollection<IExcelBindableBase> Owners { get; set; }
-         Excel.Range GetRange(Excel.Worksheet worksheet);
+        Excel.Range GetRange(Excel.Worksheet worksheet);
+        Excel.Range GetRange(Excel.Worksheet worksheet, int right_border = 100000000, int low_borde = 1000000000, int left_border = 0, int up_border = 0)
+       ;
     }
 }

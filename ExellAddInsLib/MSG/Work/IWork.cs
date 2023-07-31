@@ -2,7 +2,7 @@
 
 namespace ExellAddInsLib.MSG
 {
-    public interface IWork: IExcelBindableBase
+    public interface IWork : IExcelBindableBase
     {
         ObservableCollection<IWork> Children { get; set; }
         decimal Laboriousness { get; set; }
@@ -15,6 +15,6 @@ namespace ExellAddInsLib.MSG
         WorkReportCard ReportCard { get; set; }
         int RowIndex { get; set; }
         UnitOfMeasurement UnitOfMeasurement { get; set; }
-      
+
     }
 }

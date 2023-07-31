@@ -26,6 +26,13 @@
 
         }//Выполенный объем работ
 
+        private decimal _previousComplatedQuantity;
+
+        public decimal PreviousComplatedQuantity
+        {
+            get { return _previousComplatedQuantity; }
+            set { SetProperty(ref _previousComplatedQuantity, value); }
+        }//Ранее выполненые объемы
         private IWork _owner;
 
         public IWork Owner

@@ -9,32 +9,23 @@
             get { return _quantity; }
             set { SetProperty(ref _quantity, value); }
         }
-        private NeedsOfWorkersReportCard _needsOfWorkersReportCard = new NeedsOfWorkersReportCard();
+        private NeedsOfWorkersReportCard _needsOfWorkersReportCard;
 
         public NeedsOfWorkersReportCard NeedsOfWorkersReportCard
         {
             get { return _needsOfWorkersReportCard; }
-            set { _needsOfWorkersReportCard = value; }
-        }
-        private IWork _owner;
-
-        public IWork Owner
-        {
-            get { return _owner; }
-            set
-            {
-                SetProperty(ref _owner, value);
-
-            }
+            set { SetProperty(ref _needsOfWorkersReportCard, value); }
         }
 
-        public NeedsOfWorker()
-        {
+        public IWork Owner { get; set; }
 
+        public NeedsOfWorker() : base()
+        {
+            NeedsOfWorkersReportCard = new NeedsOfWorkersReportCard();
         }
         public NeedsOfWorker(string number, string name) : base(number, name)
         {
-
+            NeedsOfWorkersReportCard = new NeedsOfWorkersReportCard();
         }
 
     }

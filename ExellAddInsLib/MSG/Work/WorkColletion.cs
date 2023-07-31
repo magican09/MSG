@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 
-namespace ExellAddInsLib.MSG 
+namespace ExellAddInsLib.MSG
 {
-    public class WorkColletion:ObservableCollection<IWork>
+    public class WorkColletion : ObservableCollection<IWork>
     {
         protected override void ClearItems()
         {
@@ -23,7 +18,7 @@ namespace ExellAddInsLib.MSG
         }
         protected override void RemoveItem(int index)
         {
-           // this[index].Parent = null;
+            // this[index].Parent = null;
             base.RemoveItem(index);
         }
     }

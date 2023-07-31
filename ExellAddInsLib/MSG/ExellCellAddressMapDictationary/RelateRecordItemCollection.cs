@@ -37,5 +37,6 @@ namespace ExellAddInsLib.MSG
             this[index].Parent = null;
             base.RemoveItem(index);
         }
+
     }
 }

@@ -180,7 +180,7 @@ namespace MSGAddIn
         private void btnCalcQuantities_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.CalcAll();
-           // CurrentMSGExellModel.FormatWorkSheetStyle();
+            // CurrentMSGExellModel.FormatWorkSheetStyle();
         }
 
         private void btnShowAlllHidenWorksheets_Click(object sender, RibbonControlEventArgs e)
@@ -208,8 +208,6 @@ namespace MSGAddIn
             if (empl_model == null) //Если оаботник новый и на него нет еще модель и листы в книге - создаем их
             {
                 Excel.Worksheet new_employer_worksheet = CurrentWorkbook.Worksheets.Add(CommonMSGWorksheet, Type.Missing, Type.Missing, Type.Missing);
-
-                //  this.ShowWorksheet(new_employer_worksheet);
                 string new_worksheet_name = CommonMSGWorksheet.Name.Substring(0, CommonMSGWorksheet.Name.IndexOf('_') + 1) + SelectedEmloeyer.Number.ToString();
                 new_employer_worksheet.Name = new_worksheet_name;
 
@@ -391,10 +389,12 @@ namespace MSGAddIn
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
         {
+
             CurrentMSGExellModel.UpdateWorksheetCommonPart();
-            CurrentMSGExellModel.RealoadAllSheetsInModel();
+            CurrentMSGExellModel.ReloadSheetModel();
+
         }
-        private string Template_path;
+
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
             //  string solutionpath = Directory.GetParent(Globals.ThisAddIn.Application.Path).Parent.Parent.Parent.FullName; 
