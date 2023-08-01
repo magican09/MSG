@@ -1128,7 +1128,7 @@ namespace ExellAddInsLib.MSG
                             }
                             this.SetBordersBoldLine(ks_work_range,  XlLineStyle.xlLineStyleNone);
 
-                        }
+                        } 
                         vovr_work_col++;
                     }
                 }
