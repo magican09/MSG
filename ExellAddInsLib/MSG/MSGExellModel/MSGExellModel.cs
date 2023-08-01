@@ -1123,7 +1123,7 @@ namespace ExellAddInsLib.MSG
                                     var cr_range = ks_work.ReportCard.GetRange(this.RegisterSheet, WRC_PC_QUANTITY_COL);
                                     this.SetBordersBoldLine(cr_range);
                                     if (cr_range != null) cr_range.Interior.ColorIndex = ks_work_col;
-
+                                     
                                 }
                             }
                             this.SetBordersBoldLine(ks_work_range,  XlLineStyle.xlLineStyleNone);
