@@ -71,13 +71,15 @@ namespace ExellAddInsLib.MSG
         }//Трудоемкость  чел.час/ед.изм
 
         private WorkReportCard _reportCard;
-
+        
+        [NonRegisterInUpCellAddresMap]
         public WorkReportCard ReportCard
         {
             get { return _reportCard; }
             set { SetProperty(ref _reportCard, value); }
         }
-
+      
+        //public WorkReportCard ReportCard { get; set; }
         private MSGExellModel _ownerExellModel;
 
 

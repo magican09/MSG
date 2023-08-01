@@ -44,6 +44,7 @@
             this.separator2 = this.Factory.CreateRibbonSeparator();
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
+            this.buttonReplaceWorks = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
             this.bntChangeEmployerMSG = this.Factory.CreateRibbonButton();
@@ -106,6 +107,7 @@
             this.groupMSGCommon.Items.Add(this.separator2);
             this.groupMSGCommon.Items.Add(this.btnCalcLabournes);
             this.groupMSGCommon.Items.Add(this.btnReloadWorksheets);
+            this.groupMSGCommon.Items.Add(this.buttonReplaceWorks);
             this.groupMSGCommon.Label = "Общие данные";
             this.groupMSGCommon.Name = "groupMSGCommon";
             // 
@@ -140,6 +142,13 @@
             this.btnReloadWorksheets.Label = "Обновить";
             this.btnReloadWorksheets.Name = "btnReloadWorksheets";
             this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
+            // 
+            // buttonReplaceWorks
+            // 
+            this.buttonReplaceWorks.Enabled = false;
+            this.buttonReplaceWorks.Label = "Переформатировать";
+            this.buttonReplaceWorks.Name = "buttonReplaceWorks";
+            this.buttonReplaceWorks.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonReplaceWorks_Click);
             // 
             // grpInChargePersons
             // 
@@ -318,6 +327,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator2;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator1;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonReplaceWorks;
     }
 
     partial class ThisRibbonCollection

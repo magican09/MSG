@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MSG\Attributes.cs" />
     <Compile Include="MSG\BindableBase.cs" />
     <Compile Include="MSG\EventedDictationary\EventedDictationary.cs" />
     <Compile Include="MSG\Employer\Employer.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="MSG\MSGExellModel\MSGExellModel.cs" />
     <Compile Include="MSG\MSGWork\MSGWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\KSWork\KSWork.cs" />
+    <Compile Include="MSG\MSGWork\VOVRWork\KSWork\RCWork\RCWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\VOVRWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\WorkReportCard\WorkDay\WorkDay.cs" />
     <Compile Include="MSG\WorksSection\WorksSection.cs" />

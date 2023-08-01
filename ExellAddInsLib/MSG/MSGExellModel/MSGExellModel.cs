@@ -59,10 +59,19 @@ namespace ExellAddInsLib.MSG
         public const int KS_QUANTITY_FACT_COL = KS_NUMBER_COL + 5;
         public const int KS_LABOURNESS_COL = KS_NUMBER_COL + 6;
 
+        public const int RC_NUMBER_COL = KS_LABOURNESS_COL + 1;
+        public const int RC_CODE_COL = RC_NUMBER_COL + 1;
+        public const int RC_NAME_COL = RC_NUMBER_COL + 2;
+        public const int RC_MEASURE_COL = RC_NUMBER_COL + 3;
+        public const int RC_QUANTITY_COL = RC_NUMBER_COL + 4;
+        public const int RC_QUANTITY_FACT_COL = RC_NUMBER_COL + 5;
+        public const int RC_LABOURNESS_COEFFICIENT_COL = RC_NUMBER_COL + 6;
+        public const int RC_LABOURNESS_COL = RC_NUMBER_COL + 7;
+
 
         public const int WRC_DATE_ROW = 6;
 
-        public const int WRC_NUMBER_COL = 28;
+        public const int WRC_NUMBER_COL = RC_LABOURNESS_COL+1;
         public const int WRC_PC_QUANTITY_COL = WRC_NUMBER_COL + 1;
         public const int WRC_DATE_COL = WRC_PC_QUANTITY_COL + 1;
 
@@ -138,6 +147,17 @@ namespace ExellAddInsLib.MSG
         {
             get { return _kSWorks; }
             set { SetProperty(ref _kSWorks, value); }
+        }
+        /// <summary>
+        /// Коллекция с работами типа ждя учета модели
+        /// </summary>
+
+        private ExcelNotifyChangedCollection<KSWork> _rCWorks;
+
+        public ExcelNotifyChangedCollection<KSWork> RCWorks
+        {
+            get { return _rCWorks; }
+            set { SetProperty(ref _rCWorks, value); }
         }
         /// <summary>
         /// Коллекция  табелей выполненных работ
@@ -219,6 +239,7 @@ namespace ExellAddInsLib.MSG
             MSGWorks = new ExcelNotifyChangedCollection<MSGWork>();
             VOVRWorks = new ExcelNotifyChangedCollection<VOVRWork>();
             KSWorks = new ExcelNotifyChangedCollection<KSWork>();
+            RCWorks = new ExcelNotifyChangedCollection<KSWork>();
             WorkReportCards = new ExcelNotifyChangedCollection<WorkReportCard>();
             WorkersComposition = new WorkersComposition();
             WorkerConsumptions = new WorkerConsumptions();
@@ -759,6 +780,7 @@ namespace ExellAddInsLib.MSG
                 rowIndex++;
             }
         }
+       
         /// <summary>
         /// Функция из части КС-2 листа Worksheet создает и помещает в модель работы типа KSWork 
         /// </summary>
@@ -824,6 +846,71 @@ namespace ExellAddInsLib.MSG
             }
         }
         /// <summary>
+        /// Функция из части КС-2 листа Worksheet создает и помещает в модель работы типа KSWork 
+        /// </summary>
+        public void LoadRCWorks()
+        {
+            Excel.Worksheet registerSheet = this.RegisterSheet;
+            int rowIndex = FIRST_ROW_INDEX;
+            foreach (var work in this.RCWorks)
+                this.Unregister(work);
+            this.RCWorks.Clear();
+            null_str_count = 0;
+            while (null_str_count < 100)
+            {
+                if (registerSheet.Cells[rowIndex, RC_NUMBER_COL].Value == null) null_str_count++;
+                else
+                {
+                    null_str_count = 0;
+                    RCWork rc_work = new RCWork();
+
+
+                    rc_work.Number = registerSheet.Cells[rowIndex, RC_NUMBER_COL].Value.ToString();
+                    rc_work.Code = registerSheet.Cells[rowIndex, RC_CODE_COL].Value.ToString();
+                    rc_work.Name = registerSheet.Cells[rowIndex, RC_NAME_COL].Value.ToString();
+
+                    if (registerSheet.Cells[rowIndex, RC_MEASURE_COL].Value != null)
+                    {
+                        rc_work.UnitOfMeasurement = new UnitOfMeasurement(registerSheet.Cells[rowIndex, RC_MEASURE_COL].Value);
+                        this.Register(rc_work, "UnitOfMeasurement.Name", rowIndex, RC_MEASURE_COL, this.RegisterSheet);
+                    }
+                    else
+                        registerSheet.Range[registerSheet.Cells[rowIndex, RC_MEASURE_COL], registerSheet.Cells[rowIndex, RC_MEASURE_COL]].Interior.Color
+                            = XlRgbColor.rgbRed;
+
+                    if (registerSheet.Cells[rowIndex, RC_QUANTITY_COL].Value != null)
+                        rc_work.ProjectQuantity = Decimal.Parse(registerSheet.Cells[rowIndex, RC_QUANTITY_COL].Value.ToString());
+                    else
+                        registerSheet.Range[registerSheet.Cells[rowIndex, RC_QUANTITY_COL], registerSheet.Cells[rowIndex, RC_QUANTITY_COL]].Interior.Color
+                            = XlRgbColor.rgbRed;
+                 
+                    if (registerSheet.Cells[rowIndex, RC_LABOURNESS_COEFFICIENT_COL].Value != null)
+                        rc_work.Laboriousness = Decimal.Parse(registerSheet.Cells[rowIndex, RC_LABOURNESS_COEFFICIENT_COL].Value.ToString());
+                    else
+                        registerSheet.Range[registerSheet.Cells[rowIndex, RC_LABOURNESS_COEFFICIENT_COL], registerSheet.Cells[rowIndex, RC_LABOURNESS_COEFFICIENT_COL]].Interior.Color
+                            = XlRgbColor.rgbRed;
+
+
+                    this.Register(rc_work, "Number", rowIndex, RC_NUMBER_COL, this.RegisterSheet);
+                    this.Register(rc_work, "Code", rowIndex, RC_CODE_COL, this.RegisterSheet);
+                    this.Register(rc_work, "Name", rowIndex, RC_NAME_COL, this.RegisterSheet);
+                    this.Register(rc_work, "ProjectQuantity", rowIndex, RC_QUANTITY_COL, this.RegisterSheet);
+                    this.Register(rc_work, "Quantity", rowIndex, RC_QUANTITY_FACT_COL, this.RegisterSheet);
+                    this.Register(rc_work, "LabournessCoefficient", rowIndex, RC_LABOURNESS_COEFFICIENT_COL, this.RegisterSheet);
+                    this.Register(rc_work, "Laboriousness", rowIndex, RC_LABOURNESS_COL, this.RegisterSheet);
+
+
+
+                    if (!this.KSWorks.Contains(rc_work))
+                        this.KSWorks.Add(rc_work);
+                    KSWork ks_work = this.KSWorks.Where(w => w.Number.StartsWith(rc_work.Number.Remove(rc_work.Number.LastIndexOf(".")))).FirstOrDefault();
+                    if (ks_work != null)
+                        ks_work.RCWorks.Add(rc_work);
+                }
+                rowIndex++;
+            }
+        }
+        /// <summary>
         /// Функция из календарной части (левой части) листа Worksheet создает и помещает в соответсвующие  
         /// работы типа KSWork табели выполненных работ ReportCard с объектами типа WorkDay с даной и количеством 
         /// выполенной работы
@@ -847,9 +934,9 @@ namespace ExellAddInsLib.MSG
                         null_str_count = 0;
                         string rc_number = registerSheet.Cells[rowIndex, WRC_NUMBER_COL].Value.ToString();
                         WorkReportCard report_card = new WorkReportCard();
-                        KSWork ks_work = this.KSWorks.FirstOrDefault(w => w.Number == rc_number);
-                        if (ks_work != null)
-                            report_card = ks_work.ReportCard;
+                        //KSWork ks_work = this.KSWorks.FirstOrDefault(w => w.Number == rc_number);
+                        //if (ks_work != null)
+                        //    report_card = ks_work.ReportCard;
 
                         // KSWork ks_work = KSWorks.Where(w => w.Number == report_card.Number).FirstOrDefault();
                         //ks_work.ReportCard = report_card;
@@ -881,6 +968,10 @@ namespace ExellAddInsLib.MSG
                             }
                             date_index++;
                         }
+                        KSWork ks_work = this.KSWorks.FirstOrDefault(w => w.Number == rc_number);
+                        if (ks_work != null)
+                            ks_work.ReportCard = report_card;
+
                         if (!this.WorkReportCards.Contains(report_card))
                             this.WorkReportCards.Add(report_card);
 
@@ -955,7 +1046,7 @@ namespace ExellAddInsLib.MSG
                 model.ReloadSheetModel();
 
             }
-            this.ClearWorksheetCommonPart();
+            this.ClearWorksheetCommonPart(false);
             this.ReloadSheetModel();
 
 
@@ -978,11 +1069,15 @@ namespace ExellAddInsLib.MSG
             this.LoadMSGWorkerCompositions();
             this.LoadVOVRWorks();
             this.LoadKSWorks();
+            this.LoadRCWorks();
+          
             this.LoadWorksReportCards();
             this.LoadWorkerConsumptions();
             this.SetStyleFormats();
 
         }
+        
+
         public void SetStyleFormats()
         {
             int selectin_col = 33;
@@ -1011,12 +1106,28 @@ namespace ExellAddInsLib.MSG
                     {
                         var vovr_work_range = vovr_work.GetRange(this.RegisterSheet);
                         vovr_work_range.Interior.ColorIndex = vovr_work_col;
-                        this.SetBordersBoldLine(vovr_work.KSWorks.GetRange(this.RegisterSheet, KS_LABOURNESS_COL));
+                        this.SetBordersBoldLine(vovr_work.KSWorks.GetRange(this.RegisterSheet));
                         int ks_work_col = vovr_work_col;
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
-                            var ks_work_range = ks_work.GetRange(this.RegisterSheet, KS_LABOURNESS_COL);
+                            var ks_work_range = ks_work.GetRange(this.RegisterSheet);
                             ks_work_range.Interior.ColorIndex = ks_work_col;
+                          
+                            this.SetBordersBoldLine(ks_work.RCWorks.GetRange(this.RegisterSheet, RC_LABOURNESS_COL));
+                            foreach (RCWork rc_work in ks_work.RCWorks)
+                            {
+                                var rc_work_range = rc_work.GetRange(this.RegisterSheet, RC_LABOURNESS_COL);
+                                rc_work_range.Interior.ColorIndex = ks_work_col;
+                                if (rc_work.ReportCard.CellAddressesMap.Count > 0)
+                                {
+                                    var cr_range = ks_work.ReportCard.GetRange(this.RegisterSheet, WRC_PC_QUANTITY_COL);
+                                    this.SetBordersBoldLine(cr_range);
+                                    if (cr_range != null) cr_range.Interior.ColorIndex = ks_work_col;
+
+                                }
+                            }
+                            this.SetBordersBoldLine(ks_work_range,  XlLineStyle.xlLineStyleNone);
+
                         }
                         vovr_work_col++;
                     }
@@ -1030,14 +1141,40 @@ namespace ExellAddInsLib.MSG
                 consumption.GetRange(this.WorkerConsumptionsSheet).Interior.ColorIndex = w_consumption_col++;
             }
         }
-
         private void SetBordersBoldLine(Excel.Range range)
         {
-            range.Borders.LineStyle = Excel.XlLineStyle.xlDot;
+            if (range == null) return;
+            //range.Borders.LineStyle = Excel.XlLineStyle.xlDot;
             range.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Excel.XlLineStyle.xlDouble;
             range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = Excel.XlLineStyle.xlDouble;
             range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlDouble;
             range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlDouble;
+        }
+        private void SetBordersBoldLine(Excel.Range range, bool right= true,bool left=true,bool top = true, bool bottom =true)
+        {
+            if (range == null) return;
+           
+            if(left)  range.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Excel.XlLineStyle.xlDouble;
+            else range.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+            if (top) range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = Excel.XlLineStyle.xlDouble;
+            else range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+            if (bottom) range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlDouble;
+            else range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+            if (right) range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlDouble;
+            else range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+        }
+        private void SetBordersBoldLine(Excel.Range range , 
+            Excel.XlLineStyle right = Excel.XlLineStyle.xlDouble, 
+            Excel.XlLineStyle left = Excel.XlLineStyle.xlDouble, 
+            Excel.XlLineStyle top = Excel.XlLineStyle.xlDouble,
+            Excel.XlLineStyle bottom = Excel.XlLineStyle.xlDouble)
+        {
+            if (range == null) return;
+
+            range.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = left;
+            range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = top;
+            range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = bottom;
+            range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = right;
         }
         private void ClearStyleFormatsByObjects()
         {
@@ -1304,7 +1441,7 @@ namespace ExellAddInsLib.MSG
             this.ReloadSheetModel();
             this.CalcLabourness();
             this.CalcQuantity();
-            this.LoadWorksReportCards();
+            //this.LoadWorksReportCards();
             this.CalcWorkerConsumptions();
         }
 
@@ -1333,38 +1470,63 @@ namespace ExellAddInsLib.MSG
         /// Функция обновляет разделы МСГ, ВОВР и КС-2 ведомости если модель является дочерней ( у нее есть владелец) 
         /// или если ведомость сама общая, то просто очищает у нее каледарную часть с записями выполенных объемов
         /// </summary>
-        public void UpdateWorksheetCommonPart()
+        public void UpdateWorksheetCommonPart(bool erase_common_part)
         {
-            if (this.Owner != null)
+            int rc_row = FIRST_ROW_INDEX;
+            int ks_row = FIRST_ROW_INDEX;
+            int vovr_row = FIRST_ROW_INDEX;
+            int msg_row = FIRST_ROW_INDEX;
+            int section_row = FIRST_ROW_INDEX;
+
+
+            if (erase_common_part)
             {
 
-                this.WorksSections = (ExcelNotifyChangedCollection<WorksSection>)this.Owner.WorksSections.Clone();
+               if(this.Owner!=null) this.WorksSections = (ExcelNotifyChangedCollection<WorksSection>)this.Owner.WorksSections.Clone();
                 this.UpdateCellAddressMapsWorkSheets();
-                this.ClearWorksheetCommonPart();
+                this.ClearWorksheetCommonPart(erase_common_part);
+
                 foreach (WorksSection w_section in this.WorksSections)
                 {
+                    w_section.ChangeTopRow(section_row);
                     this.UpdateExellBindableObject(w_section);
                     foreach (MSGWork msg_work in w_section.MSGWorks)
                     {
+                        msg_work.ChangeTopRow(msg_row);
                         this.UpdateExellBindableObject(msg_work);
+                 
                         foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
                             this.UpdateExellBindableObject(w_ch);
                         foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
                             this.UpdateExellBindableObject(n_w);
+                        vovr_row = section_row;
                         foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
                         {
+                            vovr_work.ChangeTopRow(vovr_row);
                             this.UpdateExellBindableObject(vovr_work);
+                            ks_row = vovr_row;
                             foreach (KSWork ks_work in vovr_work.KSWorks)
                             {
-                                ks_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == ks_work.Number).FirstOrDefault();
+                                ks_work.ChangeTopRow(ks_row);
                                 this.UpdateExellBindableObject(ks_work);
+                                rc_row = ks_row;
+                                foreach (RCWork rc_work in ks_work.RCWorks)
+                                {
+                                    rc_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).FirstOrDefault();
+                                    rc_work.ChangeTopRow(rc_row);
+                                    this.UpdateExellBindableObject(rc_work);
+                                    rc_row++;
+                                }
+                                ks_row = rc_row;
+                                rc_row = ks_row ;
                             }
+                          
+                            vovr_row = ks_row;
                         }
+                        msg_row = vovr_row;
                     }
-
+                    section_row = msg_row+1;
                 }
-
-                //this.ResetCalculatesFields();
 
             }
 
@@ -1389,8 +1551,12 @@ namespace ExellAddInsLib.MSG
                         vovr_work.CellAddressesMap.SetWorksheet(this.RegisterSheet);
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
-                            ks_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == ks_work.Number).FirstOrDefault();
-                            ks_work.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                           foreach (RCWork rc_work in ks_work.RCWorks)
+                            {
+                                rc_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).FirstOrDefault();
+                                rc_work.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                                
+                            }
                         }
                     }
                 }
@@ -1414,6 +1580,7 @@ namespace ExellAddInsLib.MSG
             }
         }
 
+        
         private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
         {
             string[] prop_names = full_prop_name.Split('.');
@@ -1480,7 +1647,7 @@ namespace ExellAddInsLib.MSG
         /// <summary>
         /// Функия очищает левую часть вдомости с МСГ, ВОВР и КС-2.
         /// </summary>
-        public void ClearWorksheetCommonPart()
+        public void ClearWorksheetCommonPart(bool erase_common_part)
         {
             Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WSEC_NUMBER_COL],
@@ -1488,7 +1655,7 @@ namespace ExellAddInsLib.MSG
             common_area_range.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
             common_area_range.Interior.ColorIndex = 0;
 
-            if (this.Owner != null)
+            if (erase_common_part)
                 common_area_range.ClearContents();
 
 

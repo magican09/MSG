@@ -110,7 +110,7 @@ namespace MSGAddIn
             btnReloadWorksheets.Enabled = state;
             btnChangeCommonMSG.Enabled = state;
             btnLoadTeplateFile.Enabled = state;
-
+            buttonReplaceWorks.Enabled = true;
 
         }
         private void AjastBtnsState()
@@ -389,12 +389,17 @@ namespace MSGAddIn
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
         {
-
-            CurrentMSGExellModel.UpdateWorksheetCommonPart();
+            bool erase_common_part =false;
+            if (CurrentMSGExellModel.Owner != null) erase_common_part = true;
+            CurrentMSGExellModel.UpdateWorksheetCommonPart(erase_common_part);
             CurrentMSGExellModel.ReloadSheetModel();
 
         }
-
+        private void buttonReplaceWorks_Click(object sender, RibbonControlEventArgs e)
+        {
+            CurrentMSGExellModel.UpdateWorksheetCommonPart(true);
+            CurrentMSGExellModel.ReloadSheetModel();
+        }
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
             //  string solutionpath = Directory.GetParent(Globals.ThisAddIn.Application.Path).Parent.Parent.Parent.FullName; 
@@ -912,5 +917,7 @@ namespace MSGAddIn
         {
 
         }
+
+       
     }
 }

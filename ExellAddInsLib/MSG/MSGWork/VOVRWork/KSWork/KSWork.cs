@@ -9,13 +9,13 @@
             get { return _code; }
             set { SetProperty(ref _code, value); }
         }
-        //private WorkReportCard _workReportCard = new WorkReportCard();
+        private ExcelNotifyChangedCollection<RCWork> _rCWorks = new ExcelNotifyChangedCollection<RCWork>();
 
-        //public WorkReportCard WorkReportCard
-        //{
-        //    get { return _workReportCard; }
-        //    set { SetProperty(ref _workReportCard, value); }
-        //}
+        public ExcelNotifyChangedCollection<RCWork> RCWorks
+        {
+            get { return _rCWorks; }
+            set { SetProperty(ref _rCWorks, value); }
+        }
         public KSWork() : base()
         {
 

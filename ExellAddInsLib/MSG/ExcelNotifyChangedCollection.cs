@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -28,13 +29,18 @@ namespace ExellAddInsLib.MSG
             if (new_val is IExcelBindableBase excell_bindable_new_val && !excell_bindable_new_val.Owners.Contains(this))
             {
                 excell_bindable_new_val.Owners.Add(this);
-                foreach (var kvp in excell_bindable_new_val.CellAddressesMap)
+                var non_reg_in_upper_attribute = this.GetType().GetProperty(property_name).GetCustomAttribute(typeof(NonRegisterInUpCellAddresMapAttribute));
+                if (non_reg_in_upper_attribute == null)
                 {
-                    string key_str = $"{excell_bindable_new_val.Id.ToString()}_{kvp.Value.ProprertyName}";
-                    if (!this.CellAddressesMap.ContainsKey(key_str))
-                        this.CellAddressesMap.Add(key_str, kvp.Value);
+                    excell_bindable_new_val.Owners.Add(this);
+                    foreach (var kvp in excell_bindable_new_val.CellAddressesMap)
+                    {
+                        string key_str = $"{excell_bindable_new_val.Id.ToString()}_{kvp.Value.ProprertyName}";
+                        if (!this.CellAddressesMap.ContainsKey(key_str))
+                            this.CellAddressesMap.Add(key_str, kvp.Value);
+                    }
+                    excell_bindable_new_val.CellAddressesMap.AddEvent += OnCellAdressAdd;
                 }
-                excell_bindable_new_val.CellAddressesMap.AddEvent += OnCellAdressAdd;
             }
             if (member is IExcelBindableBase excell_bindable_member && excell_bindable_member.Owners.Contains(this))
             {
@@ -194,6 +200,22 @@ namespace ExellAddInsLib.MSG
                 range = worksheet.Range[left_upper_cell, rigth_lower_cell];
             }
             return range;
+        }
+        public void ChangeTopRow(int row)
+        {
+            var top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
+            int row_delta = top_row - row;
+            if (row_delta <= 0) row_delta = 0;
+            foreach (var kvp in this.CellAddressesMap)
+            {
+                kvp.Value.Row += row_delta;
+            }
+        }
+        public int GetRowsCount()
+        {
+            int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
+            int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
+            return bottom_row - top_row;
         }
         public object Clone()
         {
