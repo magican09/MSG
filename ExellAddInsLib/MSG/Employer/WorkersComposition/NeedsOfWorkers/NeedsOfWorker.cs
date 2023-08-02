@@ -16,8 +16,8 @@
             get { return _needsOfWorkersReportCard; }
             set { SetProperty(ref _needsOfWorkersReportCard, value); }
         }
-
-        public IWork Owner { get; set; }
+        //[DontClone]
+       // public IWork Owner { get; set; }
 
         public NeedsOfWorker() : base()
         {

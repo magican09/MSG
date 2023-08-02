@@ -110,7 +110,9 @@ namespace MSGAddIn
             btnReloadWorksheets.Enabled = state;
             btnChangeCommonMSG.Enabled = state;
             btnLoadTeplateFile.Enabled = state;
-            buttonReplaceWorks.Enabled = true;
+            btnLabournessCoefficients.Enabled = true;
+
+
 
         }
         private void AjastBtnsState()
@@ -121,6 +123,7 @@ namespace MSGAddIn
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
             LoadMSG_File();
+            CurrentMSGExellModel.SetStyleFormats();
         }
         private void LoadMSG_File()
         {
@@ -177,6 +180,10 @@ namespace MSGAddIn
         {
             CurrentMSGExellModel.CalcLabourness();
         }
+        private void btnLabournessCoefficients_Click(object sender, RibbonControlEventArgs e)
+        {
+         //   CurrentMSGExellModel.CalcLabournessCoefficiens();
+        }
         private void btnCalcQuantities_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.CalcAll();
@@ -212,14 +219,15 @@ namespace MSGAddIn
                 new_employer_worksheet.Name = new_worksheet_name;
 
                 Range last_source = CommonMSGWorksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
-                Excel.Range source = CommonMSGWorksheet.Range[CommonMSGWorksheet.Cells[1, 1], last_source];
+                
+                Excel.Range source = CommonMSGWorksheet.Range[CommonMSGWorksheet.Rows[1], 
+                    CommonMSGWorksheet.Rows[MSGExellModel.FIRST_ROW_INDEX-1]];
                 source.Copy();
                 Range last_dest = new_employer_worksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
                 Excel.Range dest = new_employer_worksheet.Range[new_employer_worksheet.Cells[1, 1], last_dest];
                 dest.PasteSpecial(XlPasteType.xlPasteAll);
 
                 EmployerMSGWorksheets.Add(new_employer_worksheet);
-
 
                 Excel.Worksheet employer_worker_consumption_worksheet = CurrentWorkbook.Worksheets.Add(CommonWorkConsumptionsWorksheet, Type.Missing, Type.Missing, Type.Missing);
 
@@ -237,9 +245,10 @@ namespace MSGAddIn
                 this.ReloadAllModels();
 
                 empl_model = MSGExellModels.FirstOrDefault(m => m.Employer.Name == SelectedEmloeyer.Name);
-                empl_model.ClearWorksheetDaysPart();
+                //  empl_model.ClearWorksheetDaysPart();
             }
             CurrentMSGExellModel = empl_model;
+
 
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             this.ShowWorksheet(empl_model.RegisterSheet);
@@ -389,17 +398,11 @@ namespace MSGAddIn
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
         {
-            bool erase_common_part =false;
-            if (CurrentMSGExellModel.Owner != null) erase_common_part = true;
-            CurrentMSGExellModel.UpdateWorksheetCommonPart(erase_common_part);
-            CurrentMSGExellModel.ReloadSheetModel();
+           
+            CurrentMSGExellModel.Update();
 
         }
-        private void buttonReplaceWorks_Click(object sender, RibbonControlEventArgs e)
-        {
-            CurrentMSGExellModel.UpdateWorksheetCommonPart(true);
-            CurrentMSGExellModel.ReloadSheetModel();
-        }
+        
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
             //  string solutionpath = Directory.GetParent(Globals.ThisAddIn.Application.Path).Parent.Parent.Parent.FullName; 
@@ -918,6 +921,15 @@ namespace MSGAddIn
 
         }
 
-       
+        private void buttonCreateBasedOnSection_Click(object sender, RibbonControlEventArgs e)
+        {
+            WorksSection base_section =  CurrentMSGExellModel.WorksSections[0];
+            WorksSection new_section =(WorksSection) base_section.Clone();
+            CurrentMSGExellModel.WorksSections.Add(new_section);
+            new_section.SetNumber("2");
+            CurrentMSGExellModel.UpdateWorksheetCommonPart(false,40);
+            CurrentMSGExellModel.SetStyleFormats();
+
+        }
     }
 }

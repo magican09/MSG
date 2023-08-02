@@ -26,13 +26,13 @@ namespace ExellAddInsLib.MSG
         }
         public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "")
         {
-            if (new_val is IExcelBindableBase excell_bindable_new_val && !excell_bindable_new_val.Owners.Contains(this))
+            if (new_val is IExcelBindableBase excell_bindable_new_val/* && !excell_bindable_new_val.Owners.Contains(this)*/)
             {
-                excell_bindable_new_val.Owners.Add(this);
+                //    excell_bindable_new_val.Owners.Add(this);
                 var non_reg_in_upper_attribute = this.GetType().GetProperty(property_name).GetCustomAttribute(typeof(NonRegisterInUpCellAddresMapAttribute));
                 if (non_reg_in_upper_attribute == null)
                 {
-                    excell_bindable_new_val.Owners.Add(this);
+                    //  excell_bindable_new_val.Owners.Add(this);
                     foreach (var kvp in excell_bindable_new_val.CellAddressesMap)
                     {
                         string key_str = $"{excell_bindable_new_val.Id.ToString()}_{kvp.Value.ProprertyName}";
@@ -42,9 +42,9 @@ namespace ExellAddInsLib.MSG
                     excell_bindable_new_val.CellAddressesMap.AddEvent += OnCellAdressAdd;
                 }
             }
-            if (member is IExcelBindableBase excell_bindable_member && excell_bindable_member.Owners.Contains(this))
+            if (member is IExcelBindableBase excell_bindable_member /*&& excell_bindable_member.Owners.Contains(this)*/)
             {
-                excell_bindable_member.Owners.Remove(this);
+                //     excell_bindable_member.Owners.Remove(this);
                 foreach (var kvp in excell_bindable_member.CellAddressesMap)
                 {
                     string key_str = $"{excell_bindable_member.Id.ToString()}_{kvp.Value.ProprertyName}";
@@ -117,9 +117,9 @@ namespace ExellAddInsLib.MSG
         }
         protected override void InsertItem(int index, T item)
         {
-            if (item is IExcelBindableBase excel_bindable_element && !excel_bindable_element.Owners.Contains(this))
+            if (item is IExcelBindableBase excel_bindable_element/* && !excel_bindable_element.Owners.Contains(this)*/)
             {
-                excel_bindable_element.Owners.Add(this);
+                // excel_bindable_element.Owners.Add(this);
                 foreach (var kvp in excel_bindable_element.CellAddressesMap)
                 {
                     string key_str = $"{excel_bindable_element.Id.ToString()}_{kvp.Value.ProprertyName}";
@@ -134,9 +134,9 @@ namespace ExellAddInsLib.MSG
         }
         protected override void RemoveItem(int index)
         {
-            if (this[index] is IExcelBindableBase excel_bindable_element && excel_bindable_element.Owners.Contains(this))
+            if (this[index] is IExcelBindableBase excel_bindable_element/* && excel_bindable_element.Owners.Contains(this)*/)
             {
-                excel_bindable_element.Owners.Remove(this);
+                // excel_bindable_element.Owners.Remove(this);
                 foreach (var kvp in excel_bindable_element.CellAddressesMap)
                 {
                     string key_str = $"{excel_bindable_element.Id.ToString()}_{kvp.Value.ProprertyName}";
@@ -203,9 +203,9 @@ namespace ExellAddInsLib.MSG
         }
         public void ChangeTopRow(int row)
         {
-            var top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
-            int row_delta = top_row - row;
-            if (row_delta <= 0) row_delta = 0;
+            int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
+            int row_delta = row - top_row;
+            if (top_row + row_delta <= 0) row_delta = 0;
             foreach (var kvp in this.CellAddressesMap)
             {
                 kvp.Value.Row += row_delta;
@@ -221,9 +221,50 @@ namespace ExellAddInsLib.MSG
         {
             //var new_collecion = this.MemberwiseClone();
             var new_collecion = new ExcelNotifyChangedCollection<T>();
+
+
+           
+            var prop_infoes = new_collecion.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
+                                                                 && pr.CanWrite
+                                                                && pr.GetValue(this) != null);
+            foreach (PropertyInfo prop_info in prop_infoes)
+            {
+                var this_prop_value = prop_info.GetValue(this);
+                var new_obj_prop_value = prop_info.GetValue(new_collecion);
+                if (prop_info.Name == "WorkReportCard")
+                    ;
+                if (prop_info.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null)
+                {
+                    if (!prop_info.PropertyType.FullName.Contains("System."))
+                    {
+                        if (this_prop_value is ICloneable clonable_prop_value && prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) == null)
+                        {
+                            new_obj_prop_value = clonable_prop_value.Clone();
+                        }
+                        else if (prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) != null)
+                        {
+                            new_obj_prop_value = this_prop_value;
+                        }
+                        else
+                        {
+                            var constr_method = new_obj_prop_value.GetType().GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
+                            new_obj_prop_value = constr_method.Invoke(null);
+                        }
+                    }
+                    else
+                    {
+                        if (prop_info.CanWrite)
+                            prop_info.SetValue(new_collecion, this_prop_value);
+                    }
+                }
+                else
+                    ;
+            }
+
             foreach (T element in this)
                 if (element is ICloneable clanable_element)
                     new_collecion.Add((T)clanable_element.Clone());
+
             return new_collecion;
         }
     }

@@ -28,5 +28,9 @@ namespace ExellAddInsLib.MSG
             get { return _workersNumber; }
             set { SetProperty(ref _workersNumber, value); }
         }
+        public WorkScheduleChunk()
+        {
+
+        }
     }
 }

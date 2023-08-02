@@ -16,6 +16,7 @@ namespace ExellAddInsLib.MSG
 
         public Guid Id
         {
+
             get { return _id; }
         }
         public void PropertyChange(object sender, string property_name)
@@ -25,13 +26,13 @@ namespace ExellAddInsLib.MSG
         public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "")
         {
 
-            if (new_val is IExcelBindableBase excell_bindable_new_val && !excell_bindable_new_val.Owners.Contains(this))
+            if (new_val is IExcelBindableBase excell_bindable_new_val /*&& !excell_bindable_new_val.Owners.Contains(this)*/)
             {
-                excell_bindable_new_val.Owners.Add(this);
+            //    excell_bindable_new_val.Owners.Add(this);
                 var non_reg_in_upper_attribute = this.GetType().GetProperty(property_name).GetCustomAttribute(typeof(NonRegisterInUpCellAddresMapAttribute));
                 if (non_reg_in_upper_attribute == null)
                 {
-                    excell_bindable_new_val.Owners.Add(this);
+                  //  excell_bindable_new_val.Owners.Add(this);
                     foreach (var kvp in excell_bindable_new_val.CellAddressesMap)
                     {
                         string key_str = $"{excell_bindable_new_val.Id.ToString()}_{kvp.Value.ProprertyName}";
@@ -42,9 +43,9 @@ namespace ExellAddInsLib.MSG
                 }
        
             }
-            if (member is IExcelBindableBase excell_bindable_member && excell_bindable_member.Owners.Contains(this))
+            if (member is IExcelBindableBase excell_bindable_member /*&& excell_bindable_member.Owners.Contains(this)*/)
             {
-                excell_bindable_member.Owners.Remove(this);
+            //    excell_bindable_member.Owners.Remove(this);
                 foreach (var kvp in excell_bindable_member.CellAddressesMap)
                 {
                     string key_str = $"{excell_bindable_member.Id.ToString()}_{kvp.Value.ProprertyName}";
@@ -58,7 +59,9 @@ namespace ExellAddInsLib.MSG
             PropertyChange(this, property_name);
 
         }
-        public ObservableCollection<IExcelBindableBase> Owners { get; set; } = new ObservableCollection<IExcelBindableBase>();
+        // public ObservableCollection<IExcelBindableBase> Owners { get; set; } = new ObservableCollection<IExcelBindableBase>();
+        [DontClone]
+        [NonGettinInReflection]
         public ExellCellAddressMapDictationary CellAddressesMap { get; set; }
         public ExcelBindableBase()
         {
@@ -134,31 +137,48 @@ namespace ExellAddInsLib.MSG
         }
         public object Clone()
         {
-            var new_obj = this.MemberwiseClone();
+            if (this is UnitOfMeasurement)
+                ;
+            if (this is RCWork)
+                ;
+            if (this is WorkReportCard)
+                ;
+            var new_obj =  Activator.CreateInstance(this.GetType());
             var prop_infoes = new_obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
-                                                                && !pr.PropertyType.FullName.Contains("System.")
+                                                                 && pr.CanWrite
                                                                 && pr.GetValue(this) != null);
-            //foreach(PropertyInfo prop_info in prop_infoes)
-            //  {
-            //      var prop_val = prop_info.GetValue(this);
-            //     if(prop_val is ICloneable clonable_prop_val)
-            //      {
-            //         prop_val = clonable_prop_val.Clone();
-            //      }
-            //     else
-            //      {
-            //          var constr_method = prop_val.GetType().GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
-            //          prop_val = constr_method.Invoke(null);
-            //      }
-
-            //  }
-
             foreach (PropertyInfo prop_info in prop_infoes)
             {
-                var prop_val = prop_info.GetValue(this);
-                var constr_method = prop_val.GetType().GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
-                prop_val = constr_method.Invoke(null);
-
+                var this_prop_value = prop_info.GetValue(this);
+                var new_obj_prop_value = prop_info.GetValue(new_obj);
+                if (prop_info.Name == "WorkReportCard")
+                    ;
+                if (prop_info.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null)
+                {
+                    if (!prop_info.PropertyType.FullName.Contains("System."))
+                    {
+                        if(this_prop_value is ICloneable clonable_prop_value && prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) == null)
+                        {
+                            new_obj_prop_value = clonable_prop_value.Clone();
+                        }
+                        else if (prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) != null)
+                        {
+                            new_obj_prop_value = this_prop_value;
+                        }
+                        else
+                        {
+                            var constr_method = new_obj_prop_value.GetType().GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
+                            new_obj_prop_value = constr_method.Invoke(null);
+                        }
+                    }
+                    else
+                    {
+                       if(prop_info.CanWrite)
+                            prop_info.SetValue(new_obj, this_prop_value);
+                    }
+                }
+                else
+                    ;
             }
 
             return new_obj;

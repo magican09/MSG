@@ -23,10 +23,17 @@
 
         new public object Clone()
         {
-            WorksSection new_obj = (WorksSection)this.Clone();
-            new_obj.MSGWorks = (ExcelNotifyChangedCollection<MSGWork>)this.MSGWorks.Clone();
+            WorksSection new_obj = (WorksSection)base.Clone();
+       //     new_obj.MSGWorks = (ExcelNotifyChangedCollection<MSGWork>)this.MSGWorks.Clone();
             return new_obj;
         }
-
+        public void SetNumber(string section_number)
+        {
+            this.Number = section_number;
+            foreach(MSGWork msg_work in this.MSGWorks)
+            {
+                msg_work.SetSectionNumber(section_number);
+            }
+        }
     }
 }

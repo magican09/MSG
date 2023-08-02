@@ -6,14 +6,21 @@ using System.Threading.Tasks;
 
 namespace ExellAddInsLib.MSG
 {
-    public  class RCWork:KSWork
+    public  class RCWork: Work
     {
-		private decimal _labournessCoefficient;
+        private string _code;
+
+        public string Code
+        {
+            get { return _code; }
+            set { SetProperty(ref _code, value); }
+        }
+        private decimal _labournessCoefficient;
 
 		public decimal LabournessCoefficient
         {
 			get { return _labournessCoefficient; }
-			set { _labournessCoefficient = value; }
+			set { SetProperty(ref _labournessCoefficient, value); }
 		}
 
 	}

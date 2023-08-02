@@ -20,5 +20,24 @@
         {
 
         }
+        public override void SetSectionNumber(string section_number)
+        {
+            base.SetSectionNumber(section_number);
+            foreach (RCWork work in this.RCWorks)
+            {
+                work.SetSectionNumber(section_number);
+               if (work.ReportCard!=null)
+                    work.ReportCard.Number = work.Number;
+            }
+
+        }
+        new public object Clone()
+        {
+            KSWork new_obj = (KSWork)base.Clone();
+        //    new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
+          //  new_obj.RCWorks = (ExcelNotifyChangedCollection<RCWork>)this.RCWorks.Clone();
+
+            return new_obj;
+        }
     }
 }

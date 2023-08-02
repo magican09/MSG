@@ -12,7 +12,7 @@
         }//Номер работы
 
         private decimal _quantity;
-
+        [NonGettinInReflection]
         public decimal Quantity
         {
             get

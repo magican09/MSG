@@ -43,8 +43,8 @@
             this.btnCalcQuantities = this.Factory.CreateRibbonButton();
             this.separator2 = this.Factory.CreateRibbonSeparator();
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
+            this.btnLabournessCoefficients = this.Factory.CreateRibbonButton();
             this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
-            this.buttonReplaceWorks = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
             this.bntChangeEmployerMSG = this.Factory.CreateRibbonButton();
@@ -64,6 +64,8 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.menuCreateCommand = this.Factory.CreateRibbonMenu();
+            this.buttonCreateBasedOnSection = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -106,8 +108,9 @@
             this.groupMSGCommon.Items.Add(this.btnCalcQuantities);
             this.groupMSGCommon.Items.Add(this.separator2);
             this.groupMSGCommon.Items.Add(this.btnCalcLabournes);
+            this.groupMSGCommon.Items.Add(this.btnLabournessCoefficients);
             this.groupMSGCommon.Items.Add(this.btnReloadWorksheets);
-            this.groupMSGCommon.Items.Add(this.buttonReplaceWorks);
+            this.groupMSGCommon.Items.Add(this.menuCreateCommand);
             this.groupMSGCommon.Label = "Общие данные";
             this.groupMSGCommon.Name = "groupMSGCommon";
             // 
@@ -136,19 +139,19 @@
             this.btnCalcLabournes.Name = "btnCalcLabournes";
             this.btnCalcLabournes.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalcLabournes_Click);
             // 
+            // btnLabournessCoefficients
+            // 
+            this.btnLabournessCoefficients.Enabled = false;
+            this.btnLabournessCoefficients.Label = "Пересчет нулевых коэф.";
+            this.btnLabournessCoefficients.Name = "btnLabournessCoefficients";
+            this.btnLabournessCoefficients.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLabournessCoefficients_Click);
+            // 
             // btnReloadWorksheets
             // 
             this.btnReloadWorksheets.Enabled = false;
             this.btnReloadWorksheets.Label = "Обновить";
             this.btnReloadWorksheets.Name = "btnReloadWorksheets";
             this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
-            // 
-            // buttonReplaceWorks
-            // 
-            this.buttonReplaceWorks.Enabled = false;
-            this.buttonReplaceWorks.Label = "Переформатировать";
-            this.buttonReplaceWorks.Name = "buttonReplaceWorks";
-            this.buttonReplaceWorks.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonReplaceWorks_Click);
             // 
             // grpInChargePersons
             // 
@@ -274,6 +277,19 @@
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
             // 
+            // menuCreateCommand
+            // 
+            this.menuCreateCommand.Items.Add(this.buttonCreateBasedOnSection);
+            this.menuCreateCommand.Label = "Создать";
+            this.menuCreateCommand.Name = "menuCreateCommand";
+            // 
+            // buttonCreateBasedOnSection
+            // 
+            this.buttonCreateBasedOnSection.Label = "Рзадел на основании";
+            this.buttonCreateBasedOnSection.Name = "buttonCreateBasedOnSection";
+            this.buttonCreateBasedOnSection.ShowImage = true;
+            this.buttonCreateBasedOnSection.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonCreateBasedOnSection_Click);
+            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -327,7 +343,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator2;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator1;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonReplaceWorks;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLabournessCoefficients;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuCreateCommand;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonCreateBasedOnSection;
     }
 
     partial class ThisRibbonCollection

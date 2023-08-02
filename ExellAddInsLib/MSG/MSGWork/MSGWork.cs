@@ -55,9 +55,19 @@ namespace ExellAddInsLib.MSG
         {
 
         }
+        public override void SetSectionNumber(string section_number)
+        {
+            base.SetSectionNumber(section_number);
+            foreach (VOVRWork work in this.VOVRWorks)
+            {
+                work.SetSectionNumber(section_number);
+
+            }
+
+        }
         new public object Clone()
         {
-            MSGWork new_obj = (MSGWork)this.Clone();
+            MSGWork new_obj = (MSGWork)base.Clone();
             new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
             new_obj.VOVRWorks = (ExcelNotifyChangedCollection<VOVRWork>)this.VOVRWorks.Clone();
 

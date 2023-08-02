@@ -14,11 +14,21 @@
         {
 
         }
+       
+        public override void SetSectionNumber(string section_number)
+        {
+            base.SetSectionNumber(section_number);
+            foreach (KSWork work in this.KSWorks)
+            {
+                work.SetSectionNumber(section_number);
+            }
+
+        }
         new public object Clone()
         {
-            VOVRWork new_obj = (VOVRWork)this.Clone();
-            new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
-            new_obj.KSWorks = (ExcelNotifyChangedCollection<KSWork>)this.KSWorks.Clone();
+            VOVRWork new_obj = (VOVRWork)base.Clone();
+          //  new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
+          //  new_obj.KSWorks = (ExcelNotifyChangedCollection<KSWork>)this.KSWorks.Clone();
             return new_obj;
         }
     }

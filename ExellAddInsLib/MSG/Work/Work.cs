@@ -57,7 +57,7 @@ namespace ExellAddInsLib.MSG
         }//Проектный объем работ
 
         private UnitOfMeasurement _unitOfMeasurement;
-
+        [DontClone]
         public UnitOfMeasurement UnitOfMeasurement
         {
             get { return _unitOfMeasurement; }
@@ -70,8 +70,10 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _laboriousness, value); }
         }//Трудоемкость  чел.час/ед.изм
 
-        private WorkReportCard _reportCard;
-        
+        private WorkReportCard _reportCard ;
+      
+        [NonGettinInReflection]
+        [DontClone]
         [NonRegisterInUpCellAddresMap]
         public WorkReportCard ReportCard
         {
@@ -92,11 +94,11 @@ namespace ExellAddInsLib.MSG
 
         private IWork _owner;
 
-        public IWork Owner
-        {
-            get { return _owner; }
-            set { _owner = value; }
-        }
+        //public IWork Owner
+        //{
+        //    get { return _owner; }
+        //    set { _owner = value; }
+        //}
 
         private WorkersComposition _workersComposition;
 
@@ -127,14 +129,31 @@ namespace ExellAddInsLib.MSG
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                foreach (IWork child in e.NewItems)
-                    child.Owner = this;
+                //foreach (IWork child in e.NewItems)
+                //    child.Owner = this;
             }
             if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                foreach (IWork child in e.OldItems)
-                    child.Owner = null;
+            //    foreach (IWork child in e.OldItems)
+            //        child.Owner = null;
             }
+        }
+        public  virtual  void SetSectionNumber(string section_number)
+        {
+            Number = Number.Substring(Number.IndexOf('.'), Number.Length - Number.IndexOf('.'));
+            Number = section_number + Number;
+        }
+
+      new  public object Clone()
+        {
+            var new_work =(IWork)this.MemberwiseClone();
+            foreach(var kvp in this.CellAddressesMap)
+            {
+                new_work.CellAddressesMap.Add(kvp.Key, new ExellPropAddress(kvp.Value));
+            }
+
+
+            return new_work; 
         }
 
         public void ClearCalculatesFields()
