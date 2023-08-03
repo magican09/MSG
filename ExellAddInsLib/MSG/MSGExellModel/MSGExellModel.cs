@@ -1,9 +1,12 @@
 ﻿using ExellAddInsLib.MSG.Section;
 using Microsoft.Office.Interop.Excel;
+using Microsoft.Office.Tools.Excel;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -82,6 +85,8 @@ namespace ExellAddInsLib.MSG
         public const int W_CONSUMPTIONS_NAME_COL = 2;
         public const int W_CONSUMPTIONS_DATE_RAW = 3;
         public const int W_CONSUMPTIONS_FIRST_DATE_COL = 3;
+
+        public const int _SECTIONS_GAP = 3;
 
 
         private int null_str_count = 0;
@@ -275,13 +280,14 @@ namespace ExellAddInsLib.MSG
                 {
                     register = local_register;
                     local_register.ExellPropAddress = new ExellPropAddress(row, column, worksheet, prop_name);
-                    notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
-                    RegistedObjects.Add(local_register);
+                    if (!notified_object.CellAddressesMap.ContainsKey(prop_name))
+                        notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
+                    this.RegistedObjects.Add(local_register);
 
                     RegisterTemporalStopList.Clear();
                     RegisterTemporalStopList.Add(local_register.Entity, prop_names[0]);
                     local_register.PropertyName = prop_names[0];
-                    ObjectPropertyNameRegister.Add(local_register);
+                    this.ObjectPropertyNameRegister.Add(local_register);
                 }
                 else
                     register.Items.Add(local_register);
@@ -311,110 +317,7 @@ namespace ExellAddInsLib.MSG
             {
                 MessageBox.Show($"Ошибка при геристрации объектов в MSGExelModel: {ex.Message}");
             }
-
-
-            //switch (notified_object.GetType().Name)
-            //{
-
-            //    case nameof(WorksSection):
-            //        {
-
-            //          
-            //            break;
-            //        }
-
-            //    case nameof(MSGWork):
-            //        {
-
-            //          
-            //            break;
-            //        }
-            //    case nameof(NeedsOfWorker):
-            //        {
-            //            NeedsOfWorker needs_of_workers = (NeedsOfWorker)obj;
-
-            //            MSGWork msg_work = this.MSGWorks.Where(w => w.Number.StartsWith(needs_of_workers.Number.Remove(needs_of_workers.Number.LastIndexOf(".")))).FirstOrDefault();
-            //            if (msg_work != null)
-            //            {
-            //                msg_work.WorkersComposition.Add(needs_of_workers);
-            //                needs_of_workers.Owner = msg_work;
-            //                foreach (WorkScheduleChunk chunk in msg_work.WorkSchedules)
-            //                {
-            //                    for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1))
-            //                    {
-            //                        NeedsOfWorkersDay needsOfWorkersDay = new NeedsOfWorkersDay();
-            //                        needsOfWorkersDay.Date = date;
-            //                        needsOfWorkersDay.Quantity = needs_of_workers.Quantity;
-            //                        needs_of_workers.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
-            //                    }
-            //                }
-            //            }
-
-            //            NeedsOfWorker global_needs_of_worker = this.WorkersComposition.FirstOrDefault(nw => nw.Name == needs_of_workers.Name);
-            //            if (global_needs_of_worker == null)
-            //            {
-            //                global_needs_of_worker = new NeedsOfWorker();
-            //                global_needs_of_worker.Number = needs_of_workers.Number;
-            //                global_needs_of_worker.Name = needs_of_workers.Name;
-            //                foreach (NeedsOfWorkersDay needsOfWorkersDay in needs_of_workers.NeedsOfWorkersReportCard)
-            //                    global_needs_of_worker.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
-            //                this.WorkersComposition.Add(global_needs_of_worker);
-            //            }
-            //            else
-            //            {
-            //                foreach (NeedsOfWorkersDay needsOfWorkersDay in needs_of_workers.NeedsOfWorkersReportCard)
-            //                {
-            //                    var nw_day = global_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == needsOfWorkersDay.Date);
-            //                    if (nw_day != null)
-            //                    {
-            //                        nw_day.Quantity += needsOfWorkersDay.Quantity;
-            //                    }
-            //                    else
-            //                    {
-            //                        NeedsOfWorkersDay new_nw_day = new NeedsOfWorkersDay(needsOfWorkersDay);
-            //                        global_needs_of_worker.NeedsOfWorkersReportCard.Add(new_nw_day);
-            //                    }
-            //                }
-
-            //            }
-
-            //            break;
-            //        }
-            //    case nameof(VOVRWork):
-            //        {
-            //           
-
-            //            break;
-            //        }
-            //    case nameof(KSWork):
-            //        {
-            //            KSWork ks_work = (KSWork)obj;
-            //            if (!this.KSWorks.Contains(ks_work))
-            //                this.KSWorks.Add(ks_work);
-
-            //            VOVRWork vovr_work = VOVRWorks.Where(w => w.Number.StartsWith(ks_work.Number.Remove(ks_work.Number.LastIndexOf(".")))).FirstOrDefault();
-            //            if (vovr_work != null)
-            //                vovr_work.KSWorks.Add(ks_work);
-
-            //            break;
-            //        }
-
-            //    case nameof(WorkReportCard):
-            //        {
-            //            WorkReportCard report_card = (WorkReportCard)obj;
-            //           
-
-            //            break;
-            //        }
-            //    case nameof(WorkerConsumption):
-            //        {
-
-            //            WorkerConsumption w_consumption = (WorkerConsumption)obj;
-            //            if (!this.WorkerConsumptions.Contains(w_consumption))
-            //                this.WorkerConsumptions.Add(w_consumption);
-            //            break;
-            //        }
-            //}
+           
         }
         public void Unregister(IExcelBindableBase notified_object)
         {
@@ -424,6 +327,63 @@ namespace ExellAddInsLib.MSG
             foreach (var rr in all_object_prop_names_registed_rrecords)
                 this.ObjectPropertyNameRegister.Remove(rr);
         }
+
+        ObservableCollection<IExcelBindableBase> registed_objects = new ObservableCollection<IExcelBindableBase>();
+        public void RegisterObjectInObjectPropertyNameRegister(IExcelBindableBase obj, bool firt_itaration =true)
+        {
+            if (firt_itaration == true) registed_objects.Clear();
+           
+            if (!registed_objects.Contains(obj))
+            {
+                var cell_eddr_maps = obj.CellAddressesMap.Where(kvp => !kvp.Key.Contains('_'));
+                foreach (var kvp in cell_eddr_maps)
+                {
+                    string prop_name = kvp.Key;
+                    this.Register(obj, prop_name, kvp.Value.Row, kvp.Value.Column, kvp.Value.Worksheet);
+
+                }
+                registed_objects.Add(obj);
+                var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
+                                                                            && pr.GetValue(obj) is IExcelBindableBase);
+                foreach (PropertyInfo prop_info in prop_infoes)
+                {
+                    var prop_val = prop_info.GetValue(obj) as IExcelBindableBase;
+                    if(prop_val is IList list_prop_val)
+                    { 
+                      foreach(var elm in list_prop_val)
+                            if(elm is IExcelBindableBase exb_elm)
+                                this.RegisterObjectInObjectPropertyNameRegister(exb_elm, false);
+                    }
+                    else
+                        this.RegisterObjectInObjectPropertyNameRegister(prop_val, false);
+                    
+                }
+              
+            }
+            //if (firt_itaration == true) registed_objects.Clear();
+            //if(!registed_objects.Contains(obj))
+            //{
+            //    var cell_eddr_maps = obj.CellAddressesMap.Where(kvp => !kvp.Key.Contains('_'));
+            //    foreach (var kvp in cell_eddr_maps)
+            //    {
+            //        RelateRecord local_register = new RelateRecord(obj);
+            //        local_register.ExellPropAddress = kvp.Value;
+            //        local_register.PropertyName = kvp.Key.Split('.')[0];
+            //        obj.PropertyChanged += OnPropertyChange;
+            //        this.ObjectPropertyNameRegister.Add(local_register);
+
+            //    }
+            //    registed_objects.Add(obj);
+            //    var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
+            //                                                                && pr.GetValue(obj) is IExcelBindableBase);
+            //    foreach (PropertyInfo prop_info in prop_infoes)
+            //    {
+            //        var prop_val = prop_info.GetValue(obj) as IExcelBindableBase;
+            //        this.RegisterObjectInObjectPropertyNameRegister(prop_val, false);
+            //    }
+            //}
+        }
+
         private RelateRecord GetFirstParentRelateRecord(RelateRecord relateRecord)
         {
             if (relateRecord.Parent != null)
@@ -497,6 +457,7 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
+
 
         /// <summary>
         /// Функция из части РАЗДЕЛЫ  листа Worksheet создает и помещает в модель  разделы работ
@@ -668,7 +629,7 @@ namespace ExellAddInsLib.MSG
                     if (msg_work != null)
                     {
                         msg_work.WorkersComposition.Add(msg_needs_of_workers);
-                    //    msg_needs_of_workers.Owner = msg_work;
+                        //    msg_needs_of_workers.Owner = msg_work;
                         foreach (WorkScheduleChunk chunk in msg_work.WorkSchedules)
                         {
                             for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1))
@@ -1077,11 +1038,13 @@ namespace ExellAddInsLib.MSG
         {
             int selectin_col = 33;
             this.SetBordersBoldLine(this.WorksSections.GetRange(this.RegisterSheet));
+            int first_row = 0;
+            int last_row = 0;
             foreach (WorksSection section in this.WorksSections)
             {
                 var section_range = section.GetRange(this.RegisterSheet);
                 section_range.Interior.ColorIndex = selectin_col;
-
+                first_row = section_range.Row;
                 this.SetBordersBoldLine(section.MSGWorks.GetRange(this.RegisterSheet));
                 int msg_work_col = selectin_col + 1;
                 foreach (MSGWork msg_work in section.MSGWorks)
@@ -1109,6 +1072,7 @@ namespace ExellAddInsLib.MSG
                             ks_work_range.Interior.ColorIndex = ks_work_col;
 
                             this.SetBordersBoldLine(ks_work.RCWorks.GetRange(this.RegisterSheet, RC_LABOURNESS_COL));
+
                             int rc_works_top_row = ks_work.RCWorks.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
                             int rc_works_bottom_row = ks_work.RCWorks.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
 
@@ -1132,8 +1096,12 @@ namespace ExellAddInsLib.MSG
                                     this.SetBordersBoldLine(days_row_range,
                                         XlLineStyle.xlLineStyleNone, XlLineStyle.xlContinuous,
                                         XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+
+
                                 }
+                                if (last_row < rc_work_range.Row) last_row = rc_work_range.Row;
                             }
+
                             var report_cards_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[rc_works_top_row, WRC_NUMBER_COL],
                                                                             this.RegisterSheet.Cells[rc_works_bottom_row, WRC_PC_QUANTITY_COL]];
                             this.SetBordersBoldLine(report_cards_range, XlLineStyle.xlLineStyleNone);
@@ -1142,6 +1110,10 @@ namespace ExellAddInsLib.MSG
                         vovr_work_col++;
                     }
                 }
+
+                Excel.Range range = this.RegisterSheet.Range[this.RegisterSheet.Rows[first_row + 1],
+                     this.RegisterSheet.Rows[last_row + 1]];
+                range.Group();
             }
 
             this.SetBordersBoldLine(this.WorkerConsumptions.GetRange(this.WorkerConsumptionsSheet));
@@ -1280,7 +1252,7 @@ namespace ExellAddInsLib.MSG
                                 if (this.Owner != null && rc_work.ReportCard != null)
                                 {
                                     rc_work.Quantity = rc_work.ReportCard.Quantity + rc_work.ReportCard.PreviousComplatedQuantity;
-                                   
+
                                 }
                                 else
                                 {
@@ -1503,102 +1475,182 @@ namespace ExellAddInsLib.MSG
         /// Функция обновляет разделы МСГ, ВОВР и КС-2 ведомости если модель является дочерней ( у нее есть владелец) 
         /// или если ведомость сама общая, то просто очищает у нее каледарную часть с записями выполенных объемов
         /// </summary>
-        public void UpdateWorksheetCommonPart(bool erase_common_part,int top_row = FIRST_ROW_INDEX)
+        public void UpdateWorksheetCommonPart(bool erase_common_part)
+        {
+            // if (erase_common_part)
+            {
+
+                if (this.Owner != null)
+                {
+                    this.WorksSections = (ExcelNotifyChangedCollection<WorksSection>)this.Owner.WorksSections.Clone();
+                    foreach(var section in this.WorksSections)
+                        this.RegisterObjectInObjectPropertyNameRegister(section);
+                }
+                    // if (this.Owner != null)
+                //    this.WorksSections = this.Owner.WorksSections;
+                this.UpdateCellAddressMapsWorkSheets();
+                this.ClearWorksheetCommonPart(erase_common_part);
+                int last_row = FIRST_ROW_INDEX;
+                foreach (WorksSection w_section in this.WorksSections.OrderBy(s => s.Number))
+                {
+                    last_row = this.UpdateSectionWorksheetCommonPart(w_section, last_row) + _SECTIONS_GAP;
+                }
+
+            }
+
+        }
+        public int UpdateSectionWorksheetCommonPart(WorksSection w_section, int top_row = FIRST_ROW_INDEX)
         {
             int section_row = top_row;
             int rc_row = top_row;
             int ks_row = top_row;
             int vovr_row = top_row;
             int msg_row = top_row;
-            
-
-            // if (erase_common_part)
+            w_section.ChangeTopRow(section_row);
+            this.UpdateExellBindableObject(w_section);
+            foreach (MSGWork msg_work in w_section.MSGWorks)
             {
-
-                if (this.Owner != null)
-                    this.WorksSections = (ExcelNotifyChangedCollection<WorksSection>)this.Owner.WorksSections.Clone();
-                // if (this.Owner != null)
-                //    this.WorksSections = this.Owner.WorksSections;
-                this.UpdateCellAddressMapsWorkSheets();
-                this.ClearWorksheetCommonPart(erase_common_part);
-
-                foreach (WorksSection w_section in this.WorksSections)
+                msg_work.ChangeTopRow(msg_row);
+                this.UpdateExellBindableObject(msg_work);
+                int sh_ch_row_iterator = 0;
+                foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
                 {
-                    w_section.ChangeTopRow(section_row);
-                    this.UpdateExellBindableObject(w_section);
-                    foreach (MSGWork msg_work in w_section.MSGWorks)
+                    w_ch.ChangeTopRow(msg_row + sh_ch_row_iterator);
+                    this.UpdateExellBindableObject(w_ch);
+                    sh_ch_row_iterator++;
+                }
+                int nw_row_iterator = 0;
+                foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
+                {
+                    n_w.ChangeTopRow(msg_row + nw_row_iterator);
+                    this.UpdateExellBindableObject(n_w);
+                    nw_row_iterator++;
+                }
+                vovr_row = section_row;
+                foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
+                {
+                    vovr_work.ChangeTopRow(vovr_row);
+                    this.UpdateExellBindableObject(vovr_work);
+                    ks_row = vovr_row;
+                    foreach (KSWork ks_work in vovr_work.KSWorks)
                     {
-                        msg_work.ChangeTopRow(msg_row);
-                        this.UpdateExellBindableObject(msg_work);
-                        int sh_ch_row_iterator = 0;
-                        foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
+                        ks_work.ChangeTopRow(ks_row);
+                        this.UpdateExellBindableObject(ks_work);
+                        rc_row = ks_row;
+                        foreach (RCWork rc_work in ks_work.RCWorks)
                         {
-                            w_ch.ChangeTopRow(msg_row+ sh_ch_row_iterator);
-                            this.UpdateExellBindableObject(w_ch);
-                            sh_ch_row_iterator++;
-                        }
-                        int nw_row_iterator = 0;
-                        foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
-                        {
-                            n_w.ChangeTopRow(msg_row + nw_row_iterator);
-                            this.UpdateExellBindableObject(n_w);
-                            nw_row_iterator++;
-                        }
-                        vovr_row = section_row;
-                        foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
-                        {
-                            vovr_work.ChangeTopRow(vovr_row);
-                            this.UpdateExellBindableObject(vovr_work);
-                            ks_row = vovr_row;
-                            foreach (KSWork ks_work in vovr_work.KSWorks)
+                            rc_work.ChangeTopRow(rc_row);
+                            this.UpdateExellBindableObject(rc_work);
+
+                            rc_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).FirstOrDefault();
+                            if (rc_work.ReportCard != null)
                             {
-                                ks_work.ChangeTopRow(ks_row);
-                                this.UpdateExellBindableObject(ks_work);
-                                rc_row = ks_row;
-                                foreach (RCWork rc_work in ks_work.RCWorks)
+                                rc_work.ReportCard.ChangeTopRow(rc_row);
+                                this.UpdateExellBindableObject(rc_work.ReportCard);
+                                foreach (WorkDay w_day in rc_work.ReportCard)
                                 {
-                                    rc_work.ChangeTopRow(rc_row);
-                                    this.UpdateExellBindableObject(rc_work);
-
-                                    rc_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).FirstOrDefault();
-                                    if (rc_work.ReportCard != null)
-                                    {
-                                        rc_work.ReportCard.ChangeTopRow(rc_row);
-                                        this.UpdateExellBindableObject(rc_work.ReportCard);
-                                        foreach (WorkDay w_day in rc_work.ReportCard)
-                                        {
-                                            w_day.ChangeTopRow(rc_row);
-                                            this.UpdateExellBindableObject(w_day);
-                                        }
-                                    }
-
-
-                                    rc_row++;
+                                    w_day.ChangeTopRow(rc_work.CellAddressesMap["Number"].Row);
+                                    this.UpdateExellBindableObject(w_day);
                                 }
-                                ks_row = rc_row;
-                                rc_row = ks_row;
                             }
 
-                            vovr_row = ks_row;
+
+                            rc_row++;
                         }
-                        msg_row = vovr_row;
+                        ks_row = rc_row;
+                        rc_row = ks_row;
                     }
-                    section_row = msg_row + 1;
+
+                    vovr_row = ks_row;
                 }
-
+                msg_row = vovr_row;
             }
-
+            section_row = msg_row + 1;
+            return rc_row;
         }
+        public void UpdateSectionWorksheetCommonPart_backup(WorksSection w_section, int top_row = FIRST_ROW_INDEX)
+        {
+            int section_row = top_row;
+            int rc_row = top_row;
+            int ks_row = top_row;
+            int vovr_row = top_row;
+            int msg_row = top_row;
+            w_section.ChangeTopRow(section_row);
+            this.UpdateExellBindableObject(w_section);
+            foreach (MSGWork msg_work in w_section.MSGWorks)
+            {
+                msg_work.ChangeTopRow(msg_row);
+                this.UpdateExellBindableObject(msg_work);
+                int sh_ch_row_iterator = 0;
+                foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
+                {
+                    w_ch.ChangeTopRow(msg_row + sh_ch_row_iterator);
+                    this.UpdateExellBindableObject(w_ch);
+                    sh_ch_row_iterator++;
+                }
+                int nw_row_iterator = 0;
+                foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
+                {
+                    n_w.ChangeTopRow(msg_row + nw_row_iterator);
+                    this.UpdateExellBindableObject(n_w);
+                    nw_row_iterator++;
+                }
+                vovr_row = section_row;
+                foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
+                {
+                    vovr_work.ChangeTopRow(vovr_row);
+                    this.UpdateExellBindableObject(vovr_work);
+                    ks_row = vovr_row;
+                    foreach (KSWork ks_work in vovr_work.KSWorks)
+                    {
+                        ks_work.ChangeTopRow(ks_row);
+                        this.UpdateExellBindableObject(ks_work);
+                        rc_row = ks_row;
+                        foreach (RCWork rc_work in ks_work.RCWorks)
+                        {
+                            rc_work.ChangeTopRow(rc_row);
+                            this.UpdateExellBindableObject(rc_work);
 
+                            rc_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).FirstOrDefault();
+                            if (rc_work.ReportCard != null)
+                            {
+                                rc_work.ReportCard.ChangeTopRow(rc_row);
+                                this.UpdateExellBindableObject(rc_work.ReportCard);
+                                foreach (WorkDay w_day in rc_work.ReportCard)
+                                {
+                                    w_day.ChangeTopRow(rc_row);
+                                    this.UpdateExellBindableObject(w_day);
+                                }
+                            }
+
+
+                            rc_row++;
+                        }
+                        ks_row = rc_row;
+                        rc_row = ks_row;
+                    }
+
+                    vovr_row = ks_row;
+                }
+                msg_row = vovr_row;
+            }
+            section_row = msg_row + 1;
+        }
         public void Update()
         {
             bool erase_common_part = false;
-            if(this.Owner != null) erase_common_part = true;
+
+            if (this.Owner != null)
+            {
+                erase_common_part = true;
+
+            }
+            
             this.ReloadSheetModel();
             this.UpdateWorksheetCommonPart(erase_common_part);
             this.SetStyleFormats();
         }
-       
+
         public void UpdateCellAddressMapsWorkSheets()
         {
 
@@ -1611,7 +1663,7 @@ namespace ExellAddInsLib.MSG
                 {
                     msg_work.CellAddressesMap.SetWorksheet(this.RegisterSheet);
                     if (!this.MSGWorks.Contains(msg_work)) this.MSGWorks.Add(msg_work);
-              
+
                     foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
                         w_ch.CellAddressesMap.SetWorksheet(this.RegisterSheet);
                     foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
@@ -1648,7 +1700,7 @@ namespace ExellAddInsLib.MSG
         {
             var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
 
-            foreach (var kvp in obj.CellAddressesMap)
+            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
             {
                 var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
                 if (val != null)
@@ -1740,7 +1792,16 @@ namespace ExellAddInsLib.MSG
             record_cards_area_range.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
             record_cards_area_range.Interior.ColorIndex = 0;
 
+            Excel.Range all_rows = this.RegisterSheet.Cells.Rows;
+            try
+            {
+                all_rows.Ungroup();
 
+            }
+            catch
+            {
+
+            }
             if (true)
             {
                 common_area_range.ClearContents();
@@ -1756,6 +1817,26 @@ namespace ExellAddInsLib.MSG
 
 
 
+        }
+
+
+        public IExcelBindableBase GetObjectBySelection(Excel.Range section, Type object_type)
+        {
+            ObservableCollection<Tuple<double, IExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IExcelBindableBase>>();
+            foreach (var kvp in this.RegistedObjects)
+            {
+                int obj_row = kvp.ExellPropAddress.Row;
+                int obj_col = kvp.ExellPropAddress.Column;
+                var dist = Math.Sqrt((obj_row = section.Row) ^ 2 + (obj_col = section.Column) ^ 2);
+                objects_distation.Add(new Tuple<double, IExcelBindableBase>(dist, kvp.Entity));
+            }
+            IExcelBindableBase finded_obj = null;
+            var tuple = objects_distation.Where(tp => tp.Item2.GetType() == object_type).OrderBy(el => el.Item1).FirstOrDefault();
+
+            if (tuple != null)
+                finded_obj = tuple.Item2 as IExcelBindableBase;
+
+            return finded_obj;
         }
     }
 }

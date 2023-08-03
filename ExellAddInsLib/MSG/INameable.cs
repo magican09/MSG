@@ -1,6 +1,6 @@
 ﻿namespace ExellAddInsLib.MSG
 {
-    internal interface INameable
+    public  interface INameable
     {
         string Name { get; set; }
     }

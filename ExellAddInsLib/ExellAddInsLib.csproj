@@ -77,8 +77,10 @@
     <Compile Include="MSG\ExellCellAddressMapDictationary\ExellPropAddress.cs" />
     <Compile Include="MSG\ExellCellAddressMapDictationary\RelateRecord.cs" />
     <Compile Include="MSG\ExellCellAddressMapDictationary\RelateRecordItemCollection.cs" />
+    <Compile Include="MSG\Func.cs" />
     <Compile Include="MSG\IExcelBindableBase.cs" />
-    <Compile Include="MSG\Interface1.cs" />
+    <Compile Include="MSG\IExcelNotifyChangedCollection.cs" />
+    <Compile Include="MSG\INameable.cs" />
     <Compile Include="MSG\MSGExellModel\MSGExellModel.cs" />
     <Compile Include="MSG\MSGWork\MSGWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\KSWork\KSWork.cs" />

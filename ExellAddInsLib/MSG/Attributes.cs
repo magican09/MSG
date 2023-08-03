@@ -18,7 +18,7 @@ namespace ExellAddInsLib.MSG
 
     }
     [AttributeUsage(AttributeTargets.Property)]
-    public class DontCloneAttribute : Attribute
+    public class DoNotCloneAttribute : Attribute
     {
 
     }

@@ -14,7 +14,8 @@ namespace ExellAddInsLib.MSG
         }
 
         private WorkSchedule _workSchedules = new WorkSchedule();
-
+       
+        [NonRegisterInUpCellAddresMap]
         public WorkSchedule WorkSchedules
         {
             get { return _workSchedules; }
@@ -22,7 +23,8 @@ namespace ExellAddInsLib.MSG
         }
 
         private ExcelNotifyChangedCollection<VOVRWork> _vOVRWorks = new ExcelNotifyChangedCollection<VOVRWork>();
-
+      
+        [NonRegisterInUpCellAddresMap]
         public ExcelNotifyChangedCollection<VOVRWork> VOVRWorks
         {
             get { return _vOVRWorks; }
@@ -65,12 +67,11 @@ namespace ExellAddInsLib.MSG
             }
 
         }
-        new public object Clone()
+        public override object Clone()
         {
             MSGWork new_obj = (MSGWork)base.Clone();
-            new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
+            new_obj.WorkSchedules = (WorkSchedule)this.WorkSchedules.Clone();
             new_obj.VOVRWorks = (ExcelNotifyChangedCollection<VOVRWork>)this.VOVRWorks.Clone();
-
             return new_obj;
         }
     }

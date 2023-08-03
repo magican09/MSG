@@ -37,7 +37,7 @@ namespace ExellAddInsLib.MSG
         public event AddEventHandler AddEvent;
         private IExcelBindableBase _owner;
 
-        [DontClone]
+     
         public IExcelBindableBase Owner
         {
             get { return _owner; }

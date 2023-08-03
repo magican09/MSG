@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace ExellAddInsLib.MSG
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public string Name { get; set; }
         private Guid _id = Guid.NewGuid();
 
         public Guid Id
@@ -26,42 +28,50 @@ namespace ExellAddInsLib.MSG
         public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "")
         {
 
-            if (new_val is IExcelBindableBase excell_bindable_new_val /*&& !excell_bindable_new_val.Owners.Contains(this)*/)
+            if (new_val is IExcelBindableBase excell_bindable_new_val/* && !excell_bindable_new_val.Owners.Contains(this)*/)
             {
-            //    excell_bindable_new_val.Owners.Add(this);
-                var non_reg_in_upper_attribute = this.GetType().GetProperty(property_name).GetCustomAttribute(typeof(NonRegisterInUpCellAddresMapAttribute));
-                if (non_reg_in_upper_attribute == null)
-                {
-                  //  excell_bindable_new_val.Owners.Add(this);
-                    foreach (var kvp in excell_bindable_new_val.CellAddressesMap)
-                    {
-                        string key_str = $"{excell_bindable_new_val.Id.ToString()}_{kvp.Value.ProprertyName}";
-                        if (!this.CellAddressesMap.ContainsKey(key_str))
-                            this.CellAddressesMap.Add(key_str, kvp.Value);
-                    }
-                    excell_bindable_new_val.CellAddressesMap.AddEvent += OnCellAdressAdd;
-                }
-       
+                this.RegisterNewValInCellAddresMap(excell_bindable_new_val, property_name);
             }
             if (member is IExcelBindableBase excell_bindable_member /*&& excell_bindable_member.Owners.Contains(this)*/)
             {
-            //    excell_bindable_member.Owners.Remove(this);
-                foreach (var kvp in excell_bindable_member.CellAddressesMap)
-                {
-                    string key_str = $"{excell_bindable_member.Id.ToString()}_{kvp.Value.ProprertyName}";
-                    if (this.CellAddressesMap.ContainsKey(key_str))
-                        this.CellAddressesMap.Remove(key_str);
-                }
-
-                excell_bindable_member.CellAddressesMap.AddEvent -= OnCellAdressAdd;
+                this.UnregisterMemberValInCellAddresMap(excell_bindable_member, property_name);
             }
             member = new_val;
             PropertyChange(this, property_name);
 
         }
         // public ObservableCollection<IExcelBindableBase> Owners { get; set; } = new ObservableCollection<IExcelBindableBase>();
-        [DontClone]
-        [NonGettinInReflection]
+        
+        private void RegisterNewValInCellAddresMap(IExcelBindableBase excell_bindable_new_val, string property_name)
+        {
+            //    excell_bindable_new_val.Owners.Add(this);
+            var non_reg_in_upper_attribute = this.GetType().GetProperty(property_name).GetCustomAttribute(typeof(NonRegisterInUpCellAddresMapAttribute));
+            if (non_reg_in_upper_attribute == null)
+            {
+                //  excell_bindable_new_val.Owners.Add(this);
+                foreach (var kvp in excell_bindable_new_val.CellAddressesMap)
+                {
+                    string key_str = $"{excell_bindable_new_val.Id.ToString()}_{kvp.Value.ProprertyName}";
+                    if (!this.CellAddressesMap.ContainsKey(key_str))
+                        this.CellAddressesMap.Add(key_str, kvp.Value);
+                }
+                excell_bindable_new_val.CellAddressesMap.AddEvent += OnCellAdressAdd;
+            }
+        }
+        private void UnregisterMemberValInCellAddresMap(IExcelBindableBase excell_bindable_member, string property_name)
+        {
+            //     excell_bindable_member.Owners.Remove(this);
+            foreach (var kvp in excell_bindable_member.CellAddressesMap)
+            {
+                string key_str = $"{excell_bindable_member.Id.ToString()}_{kvp.Value.ProprertyName}";
+                if (this.CellAddressesMap.ContainsKey(key_str))
+                    this.CellAddressesMap.Remove(key_str);
+            }
+
+            excell_bindable_member.CellAddressesMap.AddEvent -= OnCellAdressAdd;
+        }
+
+
         public ExellCellAddressMapDictationary CellAddressesMap { get; set; }
         public ExcelBindableBase()
         {
@@ -121,12 +131,13 @@ namespace ExellAddInsLib.MSG
 
         public void ChangeTopRow(int row)
         {
-            int top_row = this.CellAddressesMap.OrderBy(kvp=>kvp.Value.Row).First().Value.Row;
-            int row_delta = row-top_row;
-            if (top_row+ row_delta <= 0) row_delta = 0;
-            foreach(var kvp in this.CellAddressesMap)
+            int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
+            int row_delta = row - top_row;
+            if (top_row + row_delta <= 0) row_delta = 0;
+            //  foreach(var kvp in this.CellAddressesMap.Where(k=>k.Key.Contains('_')))
+            foreach (var kvp in this.CellAddressesMap)
             {
-               kvp.Value.Row += row_delta;
+                kvp.Value.Row += row_delta;
             }
         }
         public int GetRowsCount()
@@ -135,54 +146,80 @@ namespace ExellAddInsLib.MSG
             int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
             return bottom_row - top_row;
         }
-        public object Clone()
+        public virtual object Clone()
         {
-            if (this is UnitOfMeasurement)
-                ;
-            if (this is RCWork)
-                ;
-            if (this is WorkReportCard)
-                ;
-            var new_obj =  Activator.CreateInstance(this.GetType());
+            IExcelBindableBase new_obj = (IExcelBindableBase)Activator.CreateInstance(this.GetType());
+            new_obj.CellAddressesMap = new ExellCellAddressMapDictationary();
+            new_obj.CellAddressesMap.Owner = new_obj;
+            foreach (var kvp in this.CellAddressesMap.Where(k => !k.Key.Contains('_')))
+            {
+                new_obj.CellAddressesMap.Add(kvp.Key, new ExellPropAddress(kvp.Value));
+            }
+
             var prop_infoes = new_obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
-                                                                 && pr.CanWrite
-                                                                && pr.GetValue(this) != null);
+                                                                           && pr.CanWrite
+                                                                           && pr.PropertyType.FullName.Contains("System.")
+                                                                          && pr.GetValue(this) != null
+                                                                            && !(pr.GetValue(this) is IList));
             foreach (PropertyInfo prop_info in prop_infoes)
             {
-                var this_prop_value = prop_info.GetValue(this);
-                var new_obj_prop_value = prop_info.GetValue(new_obj);
-                if (prop_info.Name == "WorkReportCard")
-                    ;
-                if (prop_info.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null)
-                {
-                    if (!prop_info.PropertyType.FullName.Contains("System."))
-                    {
-                        if(this_prop_value is ICloneable clonable_prop_value && prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) == null)
-                        {
-                            new_obj_prop_value = clonable_prop_value.Clone();
-                        }
-                        else if (prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) != null)
-                        {
-                            new_obj_prop_value = this_prop_value;
-                        }
-                        else
-                        {
-                            var constr_method = new_obj_prop_value.GetType().GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
-                            new_obj_prop_value = constr_method.Invoke(null);
-                        }
-                    }
-                    else
-                    {
-                       if(prop_info.CanWrite)
-                            prop_info.SetValue(new_obj, this_prop_value);
-                    }
-                }
-                else
-                    ;
+                var this_obj_prop_value = prop_info.GetValue(this);
+                if (prop_info.CanWrite)
+                    prop_info.SetValue(new_obj, this_obj_prop_value);
             }
+
 
             return new_obj;
 
         }
+        //public object Clone()
+        //{
+        //    if (this is UnitOfMeasurement)
+        //        ;
+        //    if (this is RCWork)
+        //        ;
+        //    if (this is WorkReportCard)
+        //        ;
+        //    var new_obj =  Activator.CreateInstance(this.GetType());
+        //    var prop_infoes = new_obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
+        //                                                         && pr.CanWrite
+        //                                                        && pr.GetValue(this) != null);
+        //    foreach (PropertyInfo prop_info in prop_infoes)
+        //    {
+        //        var this_prop_value = prop_info.GetValue(this);
+        //        var new_obj_prop_value = prop_info.GetValue(new_obj);
+        //        if (prop_info.Name == "WorkReportCard")
+        //            ;
+        //        if (prop_info.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null)
+        //        {
+        //            if (!prop_info.PropertyType.FullName.Contains("System."))
+        //            {
+        //                if(this_prop_value is ICloneable clonable_prop_value && prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) == null)
+        //                {
+        //                    new_obj_prop_value = clonable_prop_value.Clone();
+        //                }
+        //                else if (prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) != null)
+        //                {
+        //                    new_obj_prop_value = this_prop_value;
+        //                }
+        //                else
+        //                {
+        //                    var constr_method = new_obj_prop_value.GetType().GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
+        //                    new_obj_prop_value = constr_method.Invoke(null);
+        //                }
+        //            }
+        //            else
+        //            {
+        //               if(prop_info.CanWrite)
+        //                    prop_info.SetValue(new_obj, this_prop_value);
+        //            }
+        //        }
+        //        else
+        //            ;
+        //    }
+
+        //    return new_obj;
+
+        //}
     }
 }

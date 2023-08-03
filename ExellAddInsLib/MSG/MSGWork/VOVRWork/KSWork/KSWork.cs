@@ -10,7 +10,8 @@
             set { SetProperty(ref _code, value); }
         }
         private ExcelNotifyChangedCollection<RCWork> _rCWorks = new ExcelNotifyChangedCollection<RCWork>();
-
+       
+        [NonRegisterInUpCellAddresMap]
         public ExcelNotifyChangedCollection<RCWork> RCWorks
         {
             get { return _rCWorks; }
@@ -31,13 +32,13 @@
             }
 
         }
-        new public object Clone()
+      
+        public override object Clone()
         {
-            KSWork new_obj = (KSWork)base.Clone();
-        //    new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
-          //  new_obj.RCWorks = (ExcelNotifyChangedCollection<RCWork>)this.RCWorks.Clone();
-
-            return new_obj;
+            KSWork new_work = (KSWork)base.Clone();
+            new_work.Code = Code;
+            new_work.RCWorks = (ExcelNotifyChangedCollection<RCWork>)this.RCWorks.Clone();
+            return new_work;
         }
     }
 }

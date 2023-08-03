@@ -45,6 +45,9 @@
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.btnLabournessCoefficients = this.Factory.CreateRibbonButton();
             this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
+            this.groupCommands = this.Factory.CreateRibbonGroup();
+            this.buttonCopy = this.Factory.CreateRibbonButton();
+            this.buttonPaste = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
             this.bntChangeEmployerMSG = this.Factory.CreateRibbonButton();
@@ -64,11 +67,10 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.menuCreateCommand = this.Factory.CreateRibbonMenu();
-            this.buttonCreateBasedOnSection = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
+            this.groupCommands.SuspendLayout();
             this.grpInChargePersons.SuspendLayout();
             this.groupMSG_OUT.SuspendLayout();
             this.group2.SuspendLayout();
@@ -78,6 +80,7 @@
             // 
             this.tab1.Groups.Add(this.groupFileLaod);
             this.tab1.Groups.Add(this.groupMSGCommon);
+            this.tab1.Groups.Add(this.groupCommands);
             this.tab1.Groups.Add(this.grpInChargePersons);
             this.tab1.Groups.Add(this.groupMSG_OUT);
             this.tab1.Groups.Add(this.group2);
@@ -110,7 +113,6 @@
             this.groupMSGCommon.Items.Add(this.btnCalcLabournes);
             this.groupMSGCommon.Items.Add(this.btnLabournessCoefficients);
             this.groupMSGCommon.Items.Add(this.btnReloadWorksheets);
-            this.groupMSGCommon.Items.Add(this.menuCreateCommand);
             this.groupMSGCommon.Label = "Общие данные";
             this.groupMSGCommon.Name = "groupMSGCommon";
             // 
@@ -152,6 +154,28 @@
             this.btnReloadWorksheets.Label = "Обновить";
             this.btnReloadWorksheets.Name = "btnReloadWorksheets";
             this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
+            // 
+            // groupCommands
+            // 
+            this.groupCommands.Items.Add(this.buttonCopy);
+            this.groupCommands.Items.Add(this.buttonPaste);
+            this.groupCommands.Label = "_______";
+            this.groupCommands.Name = "groupCommands";
+            // 
+            // buttonCopy
+            // 
+            this.buttonCopy.Label = "Копировать";
+            this.buttonCopy.Name = "buttonCopy";
+            this.buttonCopy.ShowImage = true;
+            this.buttonCopy.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonCopy_Click);
+            // 
+            // buttonPaste
+            // 
+            this.buttonPaste.Enabled = false;
+            this.buttonPaste.Label = "Вставить";
+            this.buttonPaste.Name = "buttonPaste";
+            this.buttonPaste.ShowImage = true;
+            this.buttonPaste.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonPaste_Click);
             // 
             // grpInChargePersons
             // 
@@ -277,19 +301,6 @@
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
             // 
-            // menuCreateCommand
-            // 
-            this.menuCreateCommand.Items.Add(this.buttonCreateBasedOnSection);
-            this.menuCreateCommand.Label = "Создать";
-            this.menuCreateCommand.Name = "menuCreateCommand";
-            // 
-            // buttonCreateBasedOnSection
-            // 
-            this.buttonCreateBasedOnSection.Label = "Рзадел на основании";
-            this.buttonCreateBasedOnSection.Name = "buttonCreateBasedOnSection";
-            this.buttonCreateBasedOnSection.ShowImage = true;
-            this.buttonCreateBasedOnSection.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonCreateBasedOnSection_Click);
-            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -302,6 +313,8 @@
             this.groupFileLaod.PerformLayout();
             this.groupMSGCommon.ResumeLayout(false);
             this.groupMSGCommon.PerformLayout();
+            this.groupCommands.ResumeLayout(false);
+            this.groupCommands.PerformLayout();
             this.grpInChargePersons.ResumeLayout(false);
             this.grpInChargePersons.PerformLayout();
             this.groupMSG_OUT.ResumeLayout(false);
@@ -344,8 +357,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator1;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLabournessCoefficients;
-        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuCreateCommand;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonCreateBasedOnSection;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonCopy;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupCommands;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonPaste;
     }
 
     partial class ThisRibbonCollection

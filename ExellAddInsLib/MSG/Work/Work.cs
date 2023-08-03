@@ -57,7 +57,7 @@ namespace ExellAddInsLib.MSG
         }//Проектный объем работ
 
         private UnitOfMeasurement _unitOfMeasurement;
-        [DontClone]
+      
         public UnitOfMeasurement UnitOfMeasurement
         {
             get { return _unitOfMeasurement; }
@@ -73,7 +73,6 @@ namespace ExellAddInsLib.MSG
         private WorkReportCard _reportCard ;
       
         [NonGettinInReflection]
-        [DontClone]
         [NonRegisterInUpCellAddresMap]
         public WorkReportCard ReportCard
         {
@@ -138,22 +137,24 @@ namespace ExellAddInsLib.MSG
             //        child.Owner = null;
             }
         }
-        public  virtual  void SetSectionNumber(string section_number)
+        public  virtual void SetSectionNumber(string section_number)
         {
-            Number = Number.Substring(Number.IndexOf('.'), Number.Length - Number.IndexOf('.'));
-            Number = section_number + Number;
+            Number = setSectionNumber(section_number,Number);
+
+            foreach (var nw in this.WorkersComposition)
+                nw.Number = setSectionNumber(section_number, nw.Number);
         }
-
-      new  public object Clone()
+        private string  setSectionNumber(string section_number, string number)
         {
-            var new_work =(IWork)this.MemberwiseClone();
-            foreach(var kvp in this.CellAddressesMap)
-            {
-                new_work.CellAddressesMap.Add(kvp.Key, new ExellPropAddress(kvp.Value));
-            }
-
-
-            return new_work; 
+            number = number.Substring(number.IndexOf('.'), number.Length - number.IndexOf('.'));
+         return section_number + number;
+        }
+        public override object Clone()
+        {
+            var new_work = (Work) base.Clone();
+            new_work.UnitOfMeasurement = this.UnitOfMeasurement;
+            new_work.WorkersComposition = (WorkersComposition)this.WorkersComposition.Clone();
+            return new_work;
         }
 
         public void ClearCalculatesFields()

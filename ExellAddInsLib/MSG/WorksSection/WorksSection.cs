@@ -21,10 +21,10 @@
         /// </summary>
         public ExcelNotifyChangedCollection<MSGWork> MSGWorks { get; private set; } = new ExcelNotifyChangedCollection<MSGWork>();
 
-        new public object Clone()
+        public override  object Clone()
         {
             WorksSection new_obj = (WorksSection)base.Clone();
-       //     new_obj.MSGWorks = (ExcelNotifyChangedCollection<MSGWork>)this.MSGWorks.Clone();
+            new_obj.MSGWorks = (ExcelNotifyChangedCollection<MSGWork>)this.MSGWorks.Clone();
             return new_obj;
         }
         public void SetNumber(string section_number)

@@ -182,7 +182,7 @@ namespace MSGAddIn
         }
         private void btnLabournessCoefficients_Click(object sender, RibbonControlEventArgs e)
         {
-         //   CurrentMSGExellModel.CalcLabournessCoefficiens();
+            //   CurrentMSGExellModel.CalcLabournessCoefficiens();
         }
         private void btnCalcQuantities_Click(object sender, RibbonControlEventArgs e)
         {
@@ -219,9 +219,9 @@ namespace MSGAddIn
                 new_employer_worksheet.Name = new_worksheet_name;
 
                 Range last_source = CommonMSGWorksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
-                
-                Excel.Range source = CommonMSGWorksheet.Range[CommonMSGWorksheet.Rows[1], 
-                    CommonMSGWorksheet.Rows[MSGExellModel.FIRST_ROW_INDEX-1]];
+
+                Excel.Range source = CommonMSGWorksheet.Range[CommonMSGWorksheet.Rows[1],
+                    CommonMSGWorksheet.Rows[MSGExellModel.FIRST_ROW_INDEX - 1]];
                 source.Copy();
                 Range last_dest = new_employer_worksheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell, Type.Missing);
                 Excel.Range dest = new_employer_worksheet.Range[new_employer_worksheet.Cells[1, 1], last_dest];
@@ -398,11 +398,11 @@ namespace MSGAddIn
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
         {
-           
+
             CurrentMSGExellModel.Update();
 
         }
-        
+
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
             //  string solutionpath = Directory.GetParent(Globals.ThisAddIn.Application.Path).Parent.Parent.Parent.FullName; 
@@ -920,15 +920,63 @@ namespace MSGAddIn
         {
 
         }
-
-        private void buttonCreateBasedOnSection_Click(object sender, RibbonControlEventArgs e)
+        private IExcelBindableBase CopyedObject;
+        private string commands_group_label = "";
+        private void buttonCopy_Click(object sender, RibbonControlEventArgs e)
         {
-            WorksSection base_section =  CurrentMSGExellModel.WorksSections[0];
-            WorksSection new_section =(WorksSection) base_section.Clone();
-            CurrentMSGExellModel.WorksSections.Add(new_section);
-            new_section.SetNumber("2");
-            CurrentMSGExellModel.UpdateWorksheetCommonPart(false,40);
-            CurrentMSGExellModel.SetStyleFormats();
+
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_object = CurrentMSGExellModel.GetObjectBySelection(selection, typeof(WorksSection));
+            switch (sected_object?.GetType().Name)
+            {
+                case nameof(WorksSection):
+                    {
+                        CopyedObject = (WorksSection)sected_object.Clone();
+                        buttonPaste.Enabled = true;
+                        commands_group_label = $"Разадел {CopyedObject.Name} скопирован.\n Выбрерите ячеку с номеров нового раздела.";
+
+                        break;
+                    }
+                default:
+                    {
+                        buttonPaste.Enabled = true;
+                        break;
+                    }
+            }
+            groupCommands.Label = commands_group_label;
+            //Excel.Dialog dlg = Globals.ThisAddIn.Application.Dialogs[Excel.XlBuiltInDialog.xlDialogFont];
+            //dlg.Show();
+
+
+        }
+
+        private void buttonPaste_Click(object sender, RibbonControlEventArgs e)
+        {
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            string cell_val = selection.Value.ToString();
+            switch (CopyedObject?.GetType().Name)
+            {
+                case nameof(WorksSection):
+                    {
+                        if (cell_val != null)
+                        {
+                            WorksSection section = CopyedObject as WorksSection;
+                            CurrentMSGExellModel.WorksSections.Add(section);
+                            section.SetNumber(cell_val);
+                            CurrentMSGExellModel.UpdateSectionWorksheetCommonPart(section, selection.Row);
+                            CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
+                            CurrentMSGExellModel.SetStyleFormats();
+                            commands_group_label = "";
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
+            }
+
+
 
         }
     }

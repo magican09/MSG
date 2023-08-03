@@ -3,7 +3,8 @@
     public class VOVRWork : Work
     {
         private ExcelNotifyChangedCollection<KSWork> _kSWorks = new ExcelNotifyChangedCollection<KSWork>();
-
+       
+        [NonRegisterInUpCellAddresMap]
         public ExcelNotifyChangedCollection<KSWork> KSWorks
         {
             get { return _kSWorks; }
@@ -24,12 +25,11 @@
             }
 
         }
-        new public object Clone()
+        public override object Clone()
         {
-            VOVRWork new_obj = (VOVRWork)base.Clone();
-          //  new_obj.UnitOfMeasurement = (UnitOfMeasurement)UnitOfMeasurement.Clone();
-          //  new_obj.KSWorks = (ExcelNotifyChangedCollection<KSWork>)this.KSWorks.Clone();
-            return new_obj;
+            VOVRWork new_work = (VOVRWork)base.Clone();
+            new_work.KSWorks = (ExcelNotifyChangedCollection<KSWork>)this.KSWorks.Clone();
+            return new_work;
         }
     }
 }

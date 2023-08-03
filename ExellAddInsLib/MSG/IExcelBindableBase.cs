@@ -5,8 +5,9 @@ using System.Runtime.CompilerServices;
 using Excel = Microsoft.Office.Interop.Excel;
 namespace ExellAddInsLib.MSG
 {
-    public interface IExcelBindableBase : ICloneable
+    public interface IExcelBindableBase : ICloneable,INameable
     {
+       
         event PropertyChangedEventHandler PropertyChanged;
         void PropertyChange(object sender, string property_name);
         void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");

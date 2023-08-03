@@ -39,6 +39,15 @@ namespace ExellAddInsLib.MSG
             }
 
         }
+        public override object Clone()
+        {
+       //     var new_works_shedules = new WorkSchedule();
+        
+          var  new_ob = (WorkSchedule) base.Clone();
+         //    new_works_shedules. = new ExcelNotifyChangedCollection<WorkScheduleChunk>();
 
+         //   new_ob.WorkerNumber = this.WorkerNumber;
+            return new_ob;
+        }
     }
 }

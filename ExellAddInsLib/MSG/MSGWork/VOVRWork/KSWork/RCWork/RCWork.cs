@@ -23,5 +23,12 @@ namespace ExellAddInsLib.MSG
 			set { SetProperty(ref _labournessCoefficient, value); }
 		}
 
-	}
+        public override object Clone()
+        {
+            RCWork new_work = (RCWork)base.Clone();
+            new_work.Code = Code;
+            new_work.LabournessCoefficient = LabournessCoefficient;
+            return new_work;
+        }
+    }
 }
