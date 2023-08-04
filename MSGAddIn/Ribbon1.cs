@@ -106,14 +106,11 @@ namespace MSGAddIn
         private void SetBtnsState(bool state)
         {
             btnCalcLabournes.Enabled = state;
-            btnCalcQuantities.Enabled = state;
+            btnCalcAll.Enabled = state;
             btnReloadWorksheets.Enabled = state;
             btnChangeCommonMSG.Enabled = state;
             btnLoadTeplateFile.Enabled = state;
-            btnLabournessCoefficients.Enabled = true;
-
-
-
+            buttonCalc.Enabled = state;
         }
         private void AjastBtnsState()
         {
@@ -136,6 +133,7 @@ namespace MSGAddIn
             CommonWorkConsumptionsWorksheet = CurrentWorkbook.Worksheets["Люди_общая"];
 
             EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
+
             this.ReloadEmployersList();
             this.ReloadMeasurementsList();
             foreach (Excel.Worksheet worksheet in Globals.ThisAddIn.Application.ActiveWorkbook.Worksheets)
@@ -149,6 +147,7 @@ namespace MSGAddIn
                         EmployerWorkConsumptionsWorksheets.Add(worksheet);
                 }
             }
+           
             this.ReloadAllModels();
             CurrentMSGExellModel = CommonMSGExellModel;
 
@@ -172,7 +171,7 @@ namespace MSGAddIn
             this.ShowWorksheet(CommonWorkConsumptionsWorksheet);
             CommonMSGWorksheet.Activate();
             btnCalcLabournes.Enabled = true;
-            btnCalcQuantities.Enabled = true;
+            btnCalcAll.Enabled = true;
             btnReloadWorksheets.Enabled = true;
             labelCurrentEmployerName.Label = $"ОБЩИЕ ДАННЫЕ";
         }
@@ -180,14 +179,17 @@ namespace MSGAddIn
         {
             CurrentMSGExellModel.CalcLabourness();
         }
-        private void btnLabournessCoefficients_Click(object sender, RibbonControlEventArgs e)
-        {
-            //   CurrentMSGExellModel.CalcLabournessCoefficiens();
-        }
-        private void btnCalcQuantities_Click(object sender, RibbonControlEventArgs e)
+      
+        private void btnCalcAll_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.CalcAll();
             // CurrentMSGExellModel.FormatWorkSheetStyle();
+        }
+        private void buttonCalc_Click(object sender, RibbonControlEventArgs e)
+        {
+            CurrentMSGExellModel.CalcQuantity();
+            CurrentMSGExellModel.SetStyleFormats();
+           // CurrentMSGExellModel.SetFormulas();
         }
 
         private void btnShowAlllHidenWorksheets_Click(object sender, RibbonControlEventArgs e)
@@ -255,7 +257,7 @@ namespace MSGAddIn
             this.ShowWorksheet(empl_model.WorkerConsumptionsSheet);
             empl_model.RegisterSheet.Activate();
             labelCurrentEmployerName.Label = $"ОТВЕСТВЕННЫЙ: {empl_model.Employer.Name}";
-            CurrentMSGExellModel.ResetCalculatesFields();
+     //       CurrentMSGExellModel.ResetCalculatesFields();
         }
         private void bntChangeEmployerWorkersConsumption_Click(object sender, RibbonControlEventArgs e)
         {
@@ -361,8 +363,7 @@ namespace MSGAddIn
             CommonMSGExellModel.WorkerConsumptionsSheet = CommonWorkConsumptionsWorksheet;
             CommonMSGExellModel.CommonSheet = CommonWorksheet;
             CommonMSGExellModel.UnitOfMeasurements = UnitOfMeasurements;
-            CommonMSGExellModel.RealoadAllSheetsInModel();
-
+            
             foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
             {
                 string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
@@ -387,13 +388,13 @@ namespace MSGAddIn
                 if (model != null && worksheet.Name.Contains("Люди"))
                     model.WorkerConsumptionsSheet = worksheet;
             }
-
+            CommonMSGExellModel.ReloadAllSheetsInModel();
             foreach (MSGExellModel model in this.MSGExellModels)
             {
-                //    model.UpdateWorksheetCommonPart();
-                //    model.RealoadAllSheetsInModel();
+                model.CopyOwnerObjectModels();
+               // model.LoadWorksReportCards();
             }
-
+           
         }
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
@@ -826,8 +827,8 @@ namespace MSGAddIn
                             MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col],
                             MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col]];
                         ///Вставляем форму для подсчета суммы планового количества работан на  неделю и фактического объема...
-                        project_week_q.Formula = $"=SUM({this.RangeAddress(project_week_q_first_day)}:{this.RangeAddress(project_week_q_last_day)})"; ;
-                        project_week_pr_q.Formula = $"=SUM({this.RangeAddress(project_week_pr_q_first_day)}:{this.RangeAddress(project_week_pr_q_last_day)})"; ;
+                        project_week_q.Formula = $"=SUM({Func.RangeAddress(project_week_q_first_day)}:{Func.RangeAddress(project_week_q_last_day)})"; ;
+                        project_week_pr_q.Formula = $"=SUM({Func.RangeAddress(project_week_pr_q_first_day)}:{Func.RangeAddress(project_week_pr_q_last_day)})"; ;
                         #endregion
 
                         #region Календарная часть потребности ресурсов недельный столбец
@@ -854,7 +855,7 @@ namespace MSGAddIn
 
 
                             MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index] =
-                               $"=SUM({this.RangeAddress(needs_first_day)}:{this.RangeAddress(needs_last_day)})"; ;
+                               $"=SUM({Func.RangeAddress(needs_first_day)}:{Func.RangeAddress(needs_last_day)})"; ;
 
                             work_needs_iterator++;
                         }
@@ -910,11 +911,7 @@ namespace MSGAddIn
                 out_date = out_date.AddDays(1);
             return out_date;
         }
-        public string RangeAddress(Excel.Range rng)
-        {
-            return rng.get_AddressLocal(false, false, Excel.XlReferenceStyle.xlA1,
-                   Type.Missing, Type.Missing);
-        }
+        
 
         private void checkBoxRerightDatePart_Click(object sender, RibbonControlEventArgs e)
         {
@@ -979,5 +976,7 @@ namespace MSGAddIn
 
 
         }
+
+       
     }
 }

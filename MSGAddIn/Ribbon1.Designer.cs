@@ -37,20 +37,20 @@
             this.tab1 = this.Factory.CreateRibbonTab();
             this.groupFileLaod = this.Factory.CreateRibbonGroup();
             this.btnLoadMSGFile = this.Factory.CreateRibbonButton();
-            this.btnCloseMSGFile = this.Factory.CreateRibbonButton();
-            this.groupMSGCommon = this.Factory.CreateRibbonGroup();
+            this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
+            this.separator4 = this.Factory.CreateRibbonSeparator();
             this.btnChangeCommonMSG = this.Factory.CreateRibbonButton();
-            this.btnCalcQuantities = this.Factory.CreateRibbonButton();
+            this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
+            this.bntChangeEmployerMSG = this.Factory.CreateRibbonButton();
+            this.groupMSGCommon = this.Factory.CreateRibbonGroup();
+            this.btnCalcAll = this.Factory.CreateRibbonButton();
+            this.buttonCalc = this.Factory.CreateRibbonButton();
             this.separator2 = this.Factory.CreateRibbonSeparator();
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
-            this.btnLabournessCoefficients = this.Factory.CreateRibbonButton();
-            this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
             this.groupCommands = this.Factory.CreateRibbonGroup();
             this.buttonCopy = this.Factory.CreateRibbonButton();
             this.buttonPaste = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
-            this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
-            this.bntChangeEmployerMSG = this.Factory.CreateRibbonButton();
             this.separator1 = this.Factory.CreateRibbonSeparator();
             this.btnChangeEmployers = this.Factory.CreateRibbonButton();
             this.btnChangePosts = this.Factory.CreateRibbonButton();
@@ -90,7 +90,11 @@
             // groupFileLaod
             // 
             this.groupFileLaod.Items.Add(this.btnLoadMSGFile);
-            this.groupFileLaod.Items.Add(this.btnCloseMSGFile);
+            this.groupFileLaod.Items.Add(this.btnReloadWorksheets);
+            this.groupFileLaod.Items.Add(this.separator4);
+            this.groupFileLaod.Items.Add(this.btnChangeCommonMSG);
+            this.groupFileLaod.Items.Add(this.comboBoxEmployerName);
+            this.groupFileLaod.Items.Add(this.bntChangeEmployerMSG);
             this.groupFileLaod.Label = "Загрузка";
             this.groupFileLaod.Name = "groupFileLaod";
             // 
@@ -100,21 +104,16 @@
             this.btnLoadMSGFile.Name = "btnLoadMSGFile";
             this.btnLoadMSGFile.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadMSGFile_Click);
             // 
-            // btnCloseMSGFile
+            // btnReloadWorksheets
             // 
-            this.btnCloseMSGFile.Label = "Закрыть";
-            this.btnCloseMSGFile.Name = "btnCloseMSGFile";
+            this.btnReloadWorksheets.Enabled = false;
+            this.btnReloadWorksheets.Label = "ОБНОВИТЬ";
+            this.btnReloadWorksheets.Name = "btnReloadWorksheets";
+            this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
             // 
-            // groupMSGCommon
+            // separator4
             // 
-            this.groupMSGCommon.Items.Add(this.btnChangeCommonMSG);
-            this.groupMSGCommon.Items.Add(this.btnCalcQuantities);
-            this.groupMSGCommon.Items.Add(this.separator2);
-            this.groupMSGCommon.Items.Add(this.btnCalcLabournes);
-            this.groupMSGCommon.Items.Add(this.btnLabournessCoefficients);
-            this.groupMSGCommon.Items.Add(this.btnReloadWorksheets);
-            this.groupMSGCommon.Label = "Общие данные";
-            this.groupMSGCommon.Name = "groupMSGCommon";
+            this.separator4.Name = "separator4";
             // 
             // btnChangeCommonMSG
             // 
@@ -123,12 +122,43 @@
             this.btnChangeCommonMSG.Name = "btnChangeCommonMSG";
             this.btnChangeCommonMSG.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeCommonMSG_Click);
             // 
-            // btnCalcQuantities
+            // comboBoxEmployerName
             // 
-            this.btnCalcQuantities.Enabled = false;
-            this.btnCalcQuantities.Label = "ПЕРЕСЧЕТ";
-            this.btnCalcQuantities.Name = "btnCalcQuantities";
-            this.btnCalcQuantities.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalcQuantities_Click);
+            this.comboBoxEmployerName.Label = "Выбор ответственного";
+            this.comboBoxEmployerName.Name = "comboBoxEmployerName";
+            this.comboBoxEmployerName.ShowLabel = false;
+            this.comboBoxEmployerName.Text = null;
+            this.comboBoxEmployerName.TextChanged += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.comboBoxEmployerName_TextChanged);
+            // 
+            // bntChangeEmployerMSG
+            // 
+            this.bntChangeEmployerMSG.Enabled = false;
+            this.bntChangeEmployerMSG.Label = "Открыть ведомость  ответственного";
+            this.bntChangeEmployerMSG.Name = "bntChangeEmployerMSG";
+            this.bntChangeEmployerMSG.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.bntChangeEmployerMSG_Click);
+            // 
+            // groupMSGCommon
+            // 
+            this.groupMSGCommon.Items.Add(this.btnCalcAll);
+            this.groupMSGCommon.Items.Add(this.buttonCalc);
+            this.groupMSGCommon.Items.Add(this.separator2);
+            this.groupMSGCommon.Items.Add(this.btnCalcLabournes);
+            this.groupMSGCommon.Label = "Расчеты";
+            this.groupMSGCommon.Name = "groupMSGCommon";
+            // 
+            // btnCalcAll
+            // 
+            this.btnCalcAll.Enabled = false;
+            this.btnCalcAll.Label = "ПЕРЕСЧИТАТЬ ВСЕ";
+            this.btnCalcAll.Name = "btnCalcAll";
+            this.btnCalcAll.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalcAll_Click);
+            // 
+            // buttonCalc
+            // 
+            this.buttonCalc.Enabled = false;
+            this.buttonCalc.Label = "ПЕРЕСЧИТАТЬ";
+            this.buttonCalc.Name = "buttonCalc";
+            this.buttonCalc.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonCalc_Click);
             // 
             // separator2
             // 
@@ -140,20 +170,6 @@
             this.btnCalcLabournes.Label = "Подсчет трудоемкостей";
             this.btnCalcLabournes.Name = "btnCalcLabournes";
             this.btnCalcLabournes.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalcLabournes_Click);
-            // 
-            // btnLabournessCoefficients
-            // 
-            this.btnLabournessCoefficients.Enabled = false;
-            this.btnLabournessCoefficients.Label = "Пересчет нулевых коэф.";
-            this.btnLabournessCoefficients.Name = "btnLabournessCoefficients";
-            this.btnLabournessCoefficients.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLabournessCoefficients_Click);
-            // 
-            // btnReloadWorksheets
-            // 
-            this.btnReloadWorksheets.Enabled = false;
-            this.btnReloadWorksheets.Label = "Обновить";
-            this.btnReloadWorksheets.Name = "btnReloadWorksheets";
-            this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
             // 
             // groupCommands
             // 
@@ -179,8 +195,6 @@
             // 
             // grpInChargePersons
             // 
-            this.grpInChargePersons.Items.Add(this.comboBoxEmployerName);
-            this.grpInChargePersons.Items.Add(this.bntChangeEmployerMSG);
             this.grpInChargePersons.Items.Add(this.separator1);
             this.grpInChargePersons.Items.Add(this.btnChangeEmployers);
             this.grpInChargePersons.Items.Add(this.btnChangePosts);
@@ -188,21 +202,6 @@
             this.grpInChargePersons.Items.Add(this.btnSelectPerson);
             this.grpInChargePersons.Label = "Отвественные";
             this.grpInChargePersons.Name = "grpInChargePersons";
-            // 
-            // comboBoxEmployerName
-            // 
-            this.comboBoxEmployerName.Label = "Выбор ответственного";
-            this.comboBoxEmployerName.Name = "comboBoxEmployerName";
-            this.comboBoxEmployerName.ShowLabel = false;
-            this.comboBoxEmployerName.Text = null;
-            this.comboBoxEmployerName.TextChanged += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.comboBoxEmployerName_TextChanged);
-            // 
-            // bntChangeEmployerMSG
-            // 
-            this.bntChangeEmployerMSG.Enabled = false;
-            this.bntChangeEmployerMSG.Label = "Открыть ведомость  ответственного";
-            this.bntChangeEmployerMSG.Name = "bntChangeEmployerMSG";
-            this.bntChangeEmployerMSG.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.bntChangeEmployerMSG_Click);
             // 
             // separator1
             // 
@@ -330,7 +329,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupMSGCommon;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCalcLabournes;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCalcQuantities;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCalcAll;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup grpInChargePersons;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnSelectPerson;
         internal Microsoft.Office.Tools.Ribbon.RibbonComboBox comboBoxEmployerName;
@@ -350,16 +349,16 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupFileLaod;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadMSGFile;
         internal Microsoft.Office.Tools.Ribbon.RibbonLabel labelConractCode;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCloseMSGFile;
         internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox checkBoxRerightDatePart;
         internal Microsoft.Office.Tools.Ribbon.RibbonLabel labelCurrentEmployerName;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator2;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator1;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLabournessCoefficients;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonCopy;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupCommands;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonPaste;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonCalc;
+        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator4;
     }
 
     partial class ThisRibbonCollection
