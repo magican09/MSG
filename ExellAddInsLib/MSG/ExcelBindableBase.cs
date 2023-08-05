@@ -16,12 +16,12 @@ namespace ExellAddInsLib.MSG
 
         public string Name { get; set; }
         private Guid _id = Guid.NewGuid();
-        private bool _isValide = true;
-        public bool IsValide
-        {
-            get { return _isValide; }
-            set { _isValide = value; }
-        }
+        //private bool _isValide = true;
+        //public bool IsValide
+        //{
+        //    get { return _isValide; }
+        //    set { _isValide = value; }
+        //}
         public Guid Id
         {
 

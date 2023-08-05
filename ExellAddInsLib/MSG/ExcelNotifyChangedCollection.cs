@@ -18,11 +18,11 @@ namespace ExellAddInsLib.MSG
         public event PropertyChangedEventHandler PropertyChanged;
         private bool _isValide = true;
 
-        public bool IsValide
-        {
-            get { return _isValide; }
-            set { _isValide = value; }
-        }
+        //public bool IsValide
+        //{
+        //    get { return _isValide; }
+        //    set { _isValide = value; }
+        //}
 
         public string Name { get; set; }
         private Guid _id = Guid.NewGuid();

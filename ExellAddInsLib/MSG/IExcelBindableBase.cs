@@ -20,6 +20,6 @@ namespace ExellAddInsLib.MSG
         void SetInvalidateCellsColor(XlRgbColor color);
         void ChangeTopRow(int row);
        int GetRowsCount();
-        bool IsValide { get; set; }
+       // bool IsValide { get; set; }
     }
 }

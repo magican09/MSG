@@ -147,7 +147,7 @@ namespace MSGAddIn
                         EmployerWorkConsumptionsWorksheets.Add(worksheet);
                 }
             }
-           
+
             this.ReloadAllModels();
             CurrentMSGExellModel = CommonMSGExellModel;
 
@@ -179,7 +179,7 @@ namespace MSGAddIn
         {
             CurrentMSGExellModel.CalcLabourness();
         }
-      
+
         private void btnCalcAll_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.CalcAll();
@@ -187,9 +187,10 @@ namespace MSGAddIn
         }
         private void buttonCalc_Click(object sender, RibbonControlEventArgs e)
         {
+            CurrentMSGExellModel.CalcLabourness();
             CurrentMSGExellModel.CalcQuantity();
             CurrentMSGExellModel.SetStyleFormats();
-           // CurrentMSGExellModel.SetFormulas();
+            // CurrentMSGExellModel.SetFormulas();
         }
 
         private void btnShowAlllHidenWorksheets_Click(object sender, RibbonControlEventArgs e)
@@ -250,14 +251,14 @@ namespace MSGAddIn
                 //  empl_model.ClearWorksheetDaysPart();
             }
             CurrentMSGExellModel = empl_model;
-
+            CurrentMSGExellModel.Update();
 
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             this.ShowWorksheet(empl_model.RegisterSheet);
             this.ShowWorksheet(empl_model.WorkerConsumptionsSheet);
             empl_model.RegisterSheet.Activate();
             labelCurrentEmployerName.Label = $"ОТВЕСТВЕННЫЙ: {empl_model.Employer.Name}";
-     //       CurrentMSGExellModel.ResetCalculatesFields();
+            //       CurrentMSGExellModel.ResetCalculatesFields();
         }
         private void bntChangeEmployerWorkersConsumption_Click(object sender, RibbonControlEventArgs e)
         {
@@ -363,7 +364,7 @@ namespace MSGAddIn
             CommonMSGExellModel.WorkerConsumptionsSheet = CommonWorkConsumptionsWorksheet;
             CommonMSGExellModel.CommonSheet = CommonWorksheet;
             CommonMSGExellModel.UnitOfMeasurements = UnitOfMeasurements;
-            
+
             foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
             {
                 string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
@@ -392,9 +393,9 @@ namespace MSGAddIn
             foreach (MSGExellModel model in this.MSGExellModels)
             {
                 model.CopyOwnerObjectModels();
-               // model.LoadWorksReportCards();
+                // model.LoadWorksReportCards();
             }
-           
+
         }
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
@@ -498,10 +499,10 @@ namespace MSGAddIn
 
             Excel.Worksheet MSGTemplateWorksheet = MSGTemplateWorkbook.Worksheets["МСГ_Шаблон"];
             Excel.Worksheet MSGNeedsTemplateWorksheet = MSGTemplateWorkbook.Worksheets["Людские_тех_ресурсы_Шаблон"];
-            //MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
-            //MSGNeedsOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
-            //MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
-            //   MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden; 
+           // MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            MSGNeedsOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             DateTime current_day_date = DateTime.Now;
 
             MSGOutWorksheet.Cells[TMP_NOW_DATE_ROW, TMP_NOW_DATE_COL] = current_day_date.ToString("d");
@@ -720,22 +721,22 @@ namespace MSGAddIn
                 var current_needs_of_worker = CommonMSGExellModel.WorkersComposition.FirstOrDefault(nw => nw.Name == worker_post_name);
                 var current_worker_consumption = CommonMSGExellModel.WorkerConsumptions.FirstOrDefault(wc => wc.Name == worker_post_name);
 
-                while (work_needs_date_col_index < last_day_col_index && current_needs_of_worker != null)
+                while (work_needs_date_col_index < last_day_col_index)
                 {
-                    NeedsOfWorkersDay needsOfWorkersDay = current_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == current_date);
-                    if (needsOfWorkersDay != null)
+                    if (current_needs_of_worker != null)
                     {
-                        MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator,
-                            NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = needsOfWorkersDay.Quantity;
+                        NeedsOfWorkersDay needsOfWorkersDay = current_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == current_date);
+                        if (needsOfWorkersDay != null)
+                            MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator,
+                                NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = needsOfWorkersDay.Quantity;
                     }
-
-                    WorkerConsumptionDay worker_consumption_day = current_worker_consumption.WorkersConsumptionReportCard.FirstOrDefault(wcd => wcd.Date == current_date);
-                    if (worker_consumption_day != null)
+                    if (current_worker_consumption != null)
                     {
-                        MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator + 1,
-                            NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = worker_consumption_day.Quantity;
+                        WorkerConsumptionDay worker_consumption_day = current_worker_consumption.WorkersConsumptionReportCard.FirstOrDefault(wcd => wcd.Date == current_date);
+                        if (worker_consumption_day != null)
+                            MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator + 1,
+                                NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = worker_consumption_day.Quantity;
                     }
-
                     work_needs_date_col_index++;
                     if (MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value == null) break;
                     DateTime.TryParse(MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value.ToString(), out current_date);
@@ -747,8 +748,8 @@ namespace MSGAddIn
             }
             MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
             MSGNeedsOutWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
-            MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
-            MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
+            // MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
+            // MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
 
             #endregion
             MSGTemplateWorkbook.SaveAs(@"D:\1234.xlsx");
@@ -913,7 +914,7 @@ namespace MSGAddIn
                 out_date = out_date.AddDays(1);
             return out_date;
         }
-        
+
 
         private void checkBoxRerightDatePart_Click(object sender, RibbonControlEventArgs e)
         {
@@ -979,6 +980,6 @@ namespace MSGAddIn
 
         }
 
-       
+
     }
 }
