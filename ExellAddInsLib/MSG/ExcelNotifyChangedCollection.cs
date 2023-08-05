@@ -16,6 +16,14 @@ namespace ExellAddInsLib.MSG
         where T : IExcelBindableBase, ICloneable
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        private bool _isValide = true;
+
+        public bool IsValide
+        {
+            get { return _isValide; }
+            set { _isValide = value; }
+        }
+
         public string Name { get; set; }
         private Guid _id = Guid.NewGuid();
 
@@ -192,11 +200,21 @@ namespace ExellAddInsLib.MSG
             var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name);
             if (cell_maps.Any())
             {
+                var lu = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).First().Value;
+                var rl = cell_maps.OrderBy(c => c.Value.Column).OrderBy(c => c.Value.Row).Last().Value;
                 var left_upper_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).First().Value.Cell;
-                var rigth_lower_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).Last().Value.Cell;
+                var rigth_lower_cell = cell_maps.OrderBy(c => c.Value.Column).OrderBy(c => c.Value.Row).Last().Value.Cell;
                 range = worksheet.Range[left_upper_cell, rigth_lower_cell];
             }
             return range;
+        }
+        public void SetInvalidateCellsColor(XlRgbColor color)
+        {
+            var invalide_cells = this.CellAddressesMap.Where(cm => cm.Value.IsValide == false);
+            foreach (var kvp in invalide_cells)
+            {
+                kvp.Value.Cell.Interior.Color = color;
+            }
         }
         public void ChangeTopRow(int row)
         {

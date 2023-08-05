@@ -427,7 +427,8 @@ namespace MSGAddIn
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 temlate_file_name = openFileDialog1.FileName;
-                CurrentMSGExellModel.CalcQuantity();
+                CurrentMSGExellModel.Update();
+                CurrentMSGExellModel.CalcAll();
                 MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                 MSGTemplateWorkbook.Activate();
                 if (CommonMSGExellModel != null)
@@ -473,7 +474,7 @@ namespace MSGAddIn
         const int WORKDAY_DATE_FIRST_COL = 18;
 
         const int NEEDS_NOW_DATE_ROW = 9;
-        const int NEEDS_NOW_DATE_COL = 1;
+        const int NEEDS_NOW_DATE_COL = 5;
 
         const int NEEDS_CONTRACT_CODE_ROW = 11;
         const int NEEDS_CONSTRUCTION_OBJECT_CODE_ROW = 10;
@@ -501,13 +502,13 @@ namespace MSGAddIn
             //MSGNeedsOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             //MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             //   MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden; 
-            DateTime current_daye_date = DateTime.Now;
+            DateTime current_day_date = DateTime.Now;
 
-            MSGOutWorksheet.Cells[TMP_NOW_DATE_ROW, TMP_NOW_DATE_COL] = current_daye_date.ToString("d");
+            MSGOutWorksheet.Cells[TMP_NOW_DATE_ROW, TMP_NOW_DATE_COL] = current_day_date.ToString("d");
             MSGOutWorksheet.Cells[TMP_CONTRACT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ContractCode;
             MSGOutWorksheet.Cells[TMP_CONSTRUCTION_OBJECT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ContructionObjectCode;
 
-            MSGNeedsTemplateWorksheet.Cells[NEEDS_NOW_DATE_ROW, NEEDS_NOW_DATE_COL] = current_daye_date.ToString("d");
+            MSGNeedsTemplateWorksheet.Cells[NEEDS_NOW_DATE_ROW, NEEDS_NOW_DATE_COL] = current_day_date.ToString("d");
             MSGNeedsTemplateWorksheet.Cells[NEEDS_CONTRACT_CODE_ROW, NEEDS_NOW_DATE_COL] = CommonMSGExellModel.ContructionObjectCode;
             MSGNeedsTemplateWorksheet.Cells[NEEDS_CONSTRUCTION_OBJECT_CODE_ROW, NEEDS_NOW_DATE_COL] = CommonMSGExellModel.ContractCode;
 
@@ -711,9 +712,10 @@ namespace MSGAddIn
 
             while (MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKERS_NAME_COL].Value != "Общее количество")
             {
-                int work_needs_date_col_index = 0;
+                int work_needs_date_col_index = 1;
                 DateTime current_date;
-                DateTime.TryParse(MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value, out current_date);
+                var ss = MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value;
+                DateTime.TryParse(MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value.ToString("d"), out current_date);
                 string worker_post_name = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKERS_NAME_COL].Value;
                 var current_needs_of_worker = CommonMSGExellModel.WorkersComposition.FirstOrDefault(nw => nw.Name == worker_post_name);
                 var current_worker_consumption = CommonMSGExellModel.WorkerConsumptions.FirstOrDefault(wc => wc.Name == worker_post_name);

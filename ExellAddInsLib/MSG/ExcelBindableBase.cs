@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -15,7 +16,12 @@ namespace ExellAddInsLib.MSG
 
         public string Name { get; set; }
         private Guid _id = Guid.NewGuid();
-
+        private bool _isValide = true;
+        public bool IsValide
+        {
+            get { return _isValide; }
+            set { _isValide = value; }
+        }
         public Guid Id
         {
 
@@ -126,9 +132,17 @@ namespace ExellAddInsLib.MSG
 
                 range = worksheet.Range[left_upper_cell, rigth_lower_cell];
             }
+            
             return range;
         }
-
+        public void SetInvalidateCellsColor(XlRgbColor color)
+        {
+            var invalide_cells = this.CellAddressesMap.Where(cm => cm.Value.IsValide == false);
+            foreach (var kvp in invalide_cells)
+            {
+                kvp.Value.Cell.Interior.Color = color;
+            }
+        }
         public void ChangeTopRow(int row)
         {
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
