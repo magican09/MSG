@@ -1484,8 +1484,25 @@ namespace ExellAddInsLib.MSG
         public void SetFormulas()
         {
             int days_number = (this.WorksEndDate - this.WorksStartDate).Days;
+            string rc_works_labourness_sum_formula = "";
+            Excel.Range first_rc_work_range;
+            if (this.Owner == null && this.WorksSections.Count > 0 
+                && this.WorksSections[0].MSGWorks.Count>0 
+                && this.WorksSections[0].MSGWorks[0].VOVRWorks.Count>0
+                && this.WorksSections[0].MSGWorks[0].VOVRWorks[0].KSWorks.Count>0
+                && this.WorksSections[0].MSGWorks[0].VOVRWorks[0].KSWorks[0].RCWorks.Count>0)
+            {
+                RCWork first_rc_work = this.WorksSections[0].MSGWorks[0].VOVRWorks[0].KSWorks[0].RCWorks[0];
+                var first_cell = this.RegisterSheet.Cells[first_rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
+                var lastt_cell = this.RegisterSheet.Cells[first_rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL + 1 + days_number];
+                first_rc_work_range = first_rc_work.CellAddressesMap["Quantity"].Cell;
+                first_rc_work_range.Formula =
+                    $"=SUM({Func.RangeAddress(first_cell)}:{Func.RangeAddress(lastt_cell)})";
+            }
+
             foreach (WorksSection section in this.WorksSections)
             {
+
                 foreach (MSGWork msg_work in section.MSGWorks)
                 {
                     //foreach (NeedsOfWorker need_of_worker in msg_work.WorkersComposition)
@@ -1497,19 +1514,25 @@ namespace ExellAddInsLib.MSG
                         string vovr_works_labourness_sum_formula = "";
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
-                            string rc_works_labourness_sum_formula = "";
-
-                            foreach (RCWork rc_work in ks_work.RCWorks)
+                            //string rc_works_labourness_sum_formula = "";
+                            bool is_first_rc_work = true;
+                     if(this.Owner==null && ks_work.RCWorks.Count>0)
                             {
+                                RCWork rc_work = ks_work.RCWorks[0];
                                 var first_cell = this.RegisterSheet.Cells[rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
                                 var lastt_cell = this.RegisterSheet.Cells[rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL + 1 + (this.WorksEndDate - this.WorksStartDate).Days];
 
                                 rc_work.CellAddressesMap["Quantity"].Cell.Formula =
                                     $"=SUM({Func.RangeAddress(first_cell)}:{Func.RangeAddress(lastt_cell)})";
-                    
+
                                 rc_works_labourness_sum_formula +=
                                     $"{Func.RangeAddress(rc_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(rc_work.CellAddressesMap["Laboriousness"].Cell)}+";
 
+                            }
+
+                            foreach (RCWork rc_work in ks_work.RCWorks)
+                            {
+                               
                                 if (rc_work.ReportCard == null)
                                 {
                                     rc_work.ReportCard = new WorkReportCard();
@@ -1522,6 +1545,7 @@ namespace ExellAddInsLib.MSG
                                     string w_day_quantity_furmula = "";
                                     Excel.Range first_w_day_range =
                                                 this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Row, WRC_DATE_COL];
+                                  
                                     foreach (MSGExellModel model in this.Children)
                                     {
                                         var child_rc = model.WorkReportCards.FirstOrDefault(rc => rc.Number == rc_work.Number);
@@ -1530,7 +1554,6 @@ namespace ExellAddInsLib.MSG
                                         {
                                             Excel.Range w_day_range_tmp = model.RegisterSheet.Cells[child_rc.CellAddressesMap["Number"].Row, WRC_DATE_COL];
                                             w_day_quantity_furmula += $"{model.RegisterSheet.Name}!{Func.RangeAddress(w_day_range_tmp)}+";
-                                            
                                         }
                                     }
                                     w_day_quantity_furmula = w_day_quantity_furmula.Trim('+');
