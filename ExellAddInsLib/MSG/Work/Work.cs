@@ -20,11 +20,14 @@ namespace ExellAddInsLib.MSG
 
         private string _number;
 
-        public string Number
+        public override string Number
         {
             get { return _number; }
             set { SetProperty(ref _number, value); }
         }//Номер работы
+        
+
+
         private string _name;
 
         public string Name
@@ -149,6 +152,7 @@ namespace ExellAddInsLib.MSG
             number = number.Substring(number.IndexOf('.'), number.Length - number.IndexOf('.'));
          return section_number + number;
         }
+       
         public override object Clone()
         {
             var new_work = (Work) base.Clone();

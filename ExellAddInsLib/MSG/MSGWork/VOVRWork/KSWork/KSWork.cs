@@ -38,6 +38,7 @@
             KSWork new_work = (KSWork)base.Clone();
             new_work.Code = Code;
             new_work.RCWorks = (ExcelNotifyChangedCollection<RCWork>)this.RCWorks.Clone();
+            new_work.RCWorks.Owner = new_work;
             return new_work;
         }
     }

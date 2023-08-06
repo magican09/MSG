@@ -4,6 +4,14 @@ namespace ExellAddInsLib.MSG
 {
     public class WorkDay : ExcelBindableBase
     {
+        private string _number;
+
+        public override string Number
+        {
+            get { return _number; }
+            set { SetProperty(ref _number, value); }
+        }//Номер работы
+
         private DateTime _date;
 
         public DateTime Date

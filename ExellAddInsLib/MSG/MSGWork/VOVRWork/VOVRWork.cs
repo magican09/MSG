@@ -29,6 +29,7 @@
         {
             VOVRWork new_work = (VOVRWork)base.Clone();
             new_work.KSWorks = (ExcelNotifyChangedCollection<KSWork>)this.KSWorks.Clone();
+            new_work.KSWorks.Owner = new_work;
             return new_work;
         }
     }

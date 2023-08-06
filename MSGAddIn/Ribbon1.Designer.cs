@@ -48,7 +48,9 @@
             this.separator2 = this.Factory.CreateRibbonSeparator();
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.groupCommands = this.Factory.CreateRibbonGroup();
+            this.menu1 = this.Factory.CreateRibbonMenu();
             this.buttonCopy = this.Factory.CreateRibbonButton();
+            this.btnCopyMSGWork = this.Factory.CreateRibbonButton();
             this.buttonPaste = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.separator1 = this.Factory.CreateRibbonSeparator();
@@ -173,17 +175,31 @@
             // 
             // groupCommands
             // 
-            this.groupCommands.Items.Add(this.buttonCopy);
+            this.groupCommands.Items.Add(this.menu1);
             this.groupCommands.Items.Add(this.buttonPaste);
             this.groupCommands.Label = "_______";
             this.groupCommands.Name = "groupCommands";
             // 
+            // menu1
+            // 
+            this.menu1.Items.Add(this.buttonCopy);
+            this.menu1.Items.Add(this.btnCopyMSGWork);
+            this.menu1.Label = "Команды";
+            this.menu1.Name = "menu1";
+            // 
             // buttonCopy
             // 
-            this.buttonCopy.Label = "Копировать";
+            this.buttonCopy.Label = "Копировать раздел";
             this.buttonCopy.Name = "buttonCopy";
             this.buttonCopy.ShowImage = true;
             this.buttonCopy.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonCopy_Click);
+            // 
+            // btnCopyMSGWork
+            // 
+            this.btnCopyMSGWork.Label = "Копировать МСГ";
+            this.btnCopyMSGWork.Name = "btnCopyMSGWork";
+            this.btnCopyMSGWork.ShowImage = true;
+            this.btnCopyMSGWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyMSGWork_Click);
             // 
             // buttonPaste
             // 
@@ -359,6 +375,8 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonPaste;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonCalc;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator4;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menu1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyMSGWork;
     }
 
     partial class ThisRibbonCollection

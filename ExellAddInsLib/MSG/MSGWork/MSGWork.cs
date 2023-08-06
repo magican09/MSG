@@ -15,7 +15,7 @@ namespace ExellAddInsLib.MSG
 
         private WorkSchedule _workSchedules = new WorkSchedule();
        
-        [NonRegisterInUpCellAddresMap]
+       
         public WorkSchedule WorkSchedules
         {
             get { return _workSchedules; }
@@ -57,21 +57,15 @@ namespace ExellAddInsLib.MSG
         {
 
         }
-        public override void SetSectionNumber(string section_number)
-        {
-            base.SetSectionNumber(section_number);
-            foreach (VOVRWork work in this.VOVRWorks)
-            {
-                work.SetSectionNumber(section_number);
-
-            }
-
-        }
+       
+      
         public override object Clone()
         {
             MSGWork new_obj = (MSGWork)base.Clone();
             new_obj.WorkSchedules = (WorkSchedule)this.WorkSchedules.Clone();
             new_obj.VOVRWorks = (ExcelNotifyChangedCollection<VOVRWork>)this.VOVRWorks.Clone();
+            new_obj.WorkSchedules.Owner = new_obj;
+            new_obj.VOVRWorks.Owner = new_obj;
             return new_obj;
         }
     }

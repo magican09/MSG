@@ -4,7 +4,7 @@
     {
         private string _number;
 
-        public string Number
+        public override string Number
         {
             get { return _number; }
             set { _number = value; }

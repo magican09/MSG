@@ -12,12 +12,21 @@ namespace ExellAddInsLib.MSG
         public int Column { get; set; }
         public Excel.Worksheet Worksheet { get; set; }
         public string ProprertyName { get; set; }
-        private bool _isValide = true;
-        public bool IsValide
+        private bool _isValid = true;
+        public bool IsValid
         {
-            get { return _isValide; }
-            set { _isValide = value; }
+            get { return _isValid; }
+            set { _isValid = value; }
         }
+
+        private IExcelBindableBase _owner;
+
+        public IExcelBindableBase Owner
+        {
+            get { return _owner; }
+            set { _owner = value; }
+        }
+
         //private object _cellColor;
 
         //public object CellColor
@@ -47,12 +56,7 @@ namespace ExellAddInsLib.MSG
             Worksheet = worksheet;
             ProprertyName = prop_name;
             this.Cell.Interior.Color = XlRgbColor.rgbGreenYellow;
-            var prop_infoes = this.Cell.GetType().GetMembers();
-            var prop_infoes1 = this.Cell.GetType().GetMethods();
-            var prop_infoes2 = this.Cell.GetType().GetRuntimeEvents();
-            var prop_infoes3 = this.Cell.GetType().GetRuntimeFields();
-            var prop_infoes4 = this.Cell.GetType().GetRuntimeMethods();
-            var prop_infoes5 = this.Cell.GetType().GetRuntimeProperties();
+
         }
         public ExellPropAddress(ExellPropAddress ex_addr)
         {
