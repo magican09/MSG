@@ -10,7 +10,7 @@
             set { SetProperty(ref _code, value); }
         }
         private ExcelNotifyChangedCollection<RCWork> _rCWorks = new ExcelNotifyChangedCollection<RCWork>();
-       
+
         [NonRegisterInUpCellAddresMap]
         public ExcelNotifyChangedCollection<RCWork> RCWorks
         {
@@ -27,12 +27,12 @@
             foreach (RCWork work in this.RCWorks)
             {
                 work.SetSectionNumber(section_number);
-               if (work.ReportCard!=null)
+                if (work.ReportCard != null)
                     work.ReportCard.Number = work.Number;
             }
 
         }
-      
+
         public override object Clone()
         {
             KSWork new_work = (KSWork)base.Clone();

@@ -119,9 +119,9 @@ namespace MSGAddIn
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
             LoadMSG_File();
-        //    CurrentMSGExellModel.SetFormulas(); 
-        //    CurrentMSGExellModel.SetStyleFormats();
-         
+            //    CurrentMSGExellModel.SetFormulas(); 
+            CurrentMSGExellModel.SetStyleFormats();
+
         }
         private void LoadMSG_File()
         {
@@ -150,7 +150,7 @@ namespace MSGAddIn
             }
 
             this.ReloadAllModels();
-         
+
             CurrentMSGExellModel = CommonMSGExellModel;
             labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode.Substring(0, 15)}\n" +
                                     $"Объект:{CurrentMSGExellModel.ContructionObjectCode.Substring(0, 15)}\n " +
@@ -255,12 +255,15 @@ namespace MSGAddIn
                 //  empl_model.ClearWorksheetDaysPart();
             }
             CurrentMSGExellModel = empl_model;
-            CurrentMSGExellModel.Update();
+
+
+            CurrentMSGExellModel.ReloadSheetModel();
 
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             this.ShowWorksheet(empl_model.RegisterSheet);
             this.ShowWorksheet(empl_model.WorkerConsumptionsSheet);
             empl_model.RegisterSheet.Activate();
+
             labelCurrentEmployerName.Label = $"ОТВЕСТВЕННЫЙ: {empl_model.Employer.Name}";
             //       CurrentMSGExellModel.ResetCalculatesFields();
         }
@@ -393,18 +396,27 @@ namespace MSGAddIn
                 if (model != null && worksheet.Name.Contains("Люди"))
                     model.WorkerConsumptionsSheet = worksheet;
             }
-             CommonMSGExellModel.Update();
-             
+            CommonMSGExellModel.ReloadSheetModel();
+
 
         }
 
         private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
         {
-
             CurrentMSGExellModel.Update();
-
         }
+        private void btnUpdateAll_Click(object sender, RibbonControlEventArgs e)
+        {
 
+            if (CurrentMSGExellModel.Owner == null)
+                foreach (MSGExellModel model in CurrentMSGExellModel.Children)
+                {
+                    model.UpdateWorksheetRepresetation();
+                    model.SetFormulas();
+                    model.SetStyleFormats();
+                }
+            CurrentMSGExellModel.Update();
+        }
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
             //  string solutionpath = Directory.GetParent(Globals.ThisAddIn.Application.Path).Parent.Parent.Parent.FullName; 
@@ -428,8 +440,8 @@ namespace MSGAddIn
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 temlate_file_name = openFileDialog1.FileName;
-              //  CurrentMSGExellModel.Update();
-            //    CurrentMSGExellModel.CalcAll();
+                CurrentMSGExellModel.Update();
+                //    CurrentMSGExellModel.CalcAll();
                 MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                 MSGTemplateWorkbook.Activate();
                 if (CommonMSGExellModel != null)
@@ -964,14 +976,16 @@ namespace MSGAddIn
                         try
                         {
                             if (selection.Column != MSGExellModel.WSEC_NUMBER_COL) return;
-                            int  cell_val = Int32.Parse(selection.Value.ToString());
+                            int cell_val = Int32.Parse(selection.Value.ToString());
                             WorksSection section = CopyedObject as WorksSection;
                             CurrentMSGExellModel.WorksSections.Add(section);
+                            CurrentMSGExellModel.SetCommonModelCollections();
+
                             section.SetNumberItem(0, cell_val.ToString());
                             CurrentMSGExellModel.SetSectionExcelRepresentionTree(section, selection.Row);
                             CurrentMSGExellModel.UpdateWorksheetRepresetation();
                             CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
-                          
+
                             CurrentMSGExellModel.SetStyleFormats();
                             commands_group_label = "";
                         }
@@ -998,7 +1012,7 @@ namespace MSGAddIn
                              .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
                              .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
                         int msg_work_rows_number = last_msg_work_row - msg_work.CellAddressesMap["Number"].Row;
-                        
+
                         int selection_row = picked_section.CellAddressesMap["Number"].Row;
 
                         while (msg_work_rows_number > 0)
@@ -1007,19 +1021,19 @@ namespace MSGAddIn
                             msg_work_rows_number--;
                         }
 
-                        msg_work.SetNumberItem(0, picked_section.Number); 
+                        msg_work.SetNumberItem(0, picked_section.Number);
                         var last_msg_work = picked_section.MSGWorks.OrderBy(w => w.Number).LastOrDefault();
-                        int last_w_namber = Int32.Parse(last_msg_work.GetSelfNamber())+1;
-                        if(last_msg_work!=null)
+                        int last_w_namber = Int32.Parse(last_msg_work.GetSelfNamber()) + 1;
+                        if (last_msg_work != null)
                             msg_work.SetNumberItem(1, last_w_namber.ToString());
 
                         picked_section.MSGWorks.Add(msg_work);
- 
-                         CurrentMSGExellModel.SetSectionExcelRepresentionTree(picked_section, selection_row);
-                         CurrentMSGExellModel.UpdateWorksheetRepresetation();
-                         CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
-                         CurrentMSGExellModel.SetStyleFormats();
-                         commands_group_label = "";
+                        CurrentMSGExellModel.SetCommonModelCollections();
+                        CurrentMSGExellModel.SetSectionExcelRepresentionTree(picked_section, selection_row);
+                        CurrentMSGExellModel.UpdateWorksheetRepresetation();
+                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                        CurrentMSGExellModel.SetStyleFormats();
+                        commands_group_label = "";
 
                         break;
                     }
@@ -1034,6 +1048,6 @@ namespace MSGAddIn
 
         }
 
-
+        
     }
 }

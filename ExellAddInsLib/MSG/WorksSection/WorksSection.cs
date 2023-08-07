@@ -4,12 +4,12 @@
     {
         private string _number;
 
-        public  override string Number
+        public override string Number
         {
             get { return _number; }
             set { SetProperty(ref _number, value); }
         }//Номер работы
-     
+
         private string _name;
 
         public string Name
@@ -22,13 +22,13 @@
         /// </summary>
         public ExcelNotifyChangedCollection<MSGWork> MSGWorks { get; private set; } = new ExcelNotifyChangedCollection<MSGWork>();
 
-        public override  object Clone()
+        public override object Clone()
         {
             WorksSection new_obj = (WorksSection)base.Clone();
             new_obj.MSGWorks = (ExcelNotifyChangedCollection<MSGWork>)this.MSGWorks.Clone();
             new_obj.MSGWorks.Owner = new_obj;
             return new_obj;
         }
-       
+
     }
 }

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ExellAddInsLib.MSG
+﻿namespace ExellAddInsLib.MSG
 {
-    public  class RCWork: Work
+    public class RCWork : Work
     {
         private string _code;
 
@@ -17,11 +11,11 @@ namespace ExellAddInsLib.MSG
         }
         private decimal _labournessCoefficient;
 
-		public decimal LabournessCoefficient
+        public decimal LabournessCoefficient
         {
-			get { return _labournessCoefficient; }
-			set { SetProperty(ref _labournessCoefficient, value); }
-		}
+            get { return _labournessCoefficient; }
+            set { SetProperty(ref _labournessCoefficient, value); }
+        }
 
         public override object Clone()
         {

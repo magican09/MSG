@@ -1,7 +1,4 @@
 ﻿using Microsoft.Office.Interop.Excel;
-using Microsoft.Office.Tools.Excel;
-using System.Data.Common;
-using System.Reflection;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -64,7 +61,7 @@ namespace ExellAddInsLib.MSG
             Column = ex_addr.Column;
             Worksheet = ex_addr.Worksheet;
             ProprertyName = ex_addr.ProprertyName;
-           
+
         }
 
         //public void SetColor(XlRgbColor color)

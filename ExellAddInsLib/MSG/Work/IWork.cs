@@ -8,7 +8,7 @@ namespace ExellAddInsLib.MSG
         decimal Laboriousness { get; set; }
         string Name { get; set; }
         string Number { get; set; }
-      //  IWork Owner { get; set; }
+        //  IWork Owner { get; set; }
         MSGExellModel OwnerExellModel { get; set; }
         decimal ProjectQuantity { get; set; }
         decimal Quantity { get; set; }

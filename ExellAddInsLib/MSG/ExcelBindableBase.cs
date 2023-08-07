@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -26,7 +25,7 @@ namespace ExellAddInsLib.MSG
             {
                 try
                 {
-                    if (Number!=null&& Number.Contains('.'))
+                    if (Number != null && Number.Contains('.'))
                     {
                         var str = this.Number.Split('.');
                         List<string> out_str_arr = new List<string>();
@@ -36,14 +35,14 @@ namespace ExellAddInsLib.MSG
                         string out_str = "";
                         foreach (string s in out_str_arr)
                             out_str += $"{s}.";
-                        out_str= out_str.TrimEnd('.');
+                        out_str = out_str.TrimEnd('.');
                         return out_str;
                     }
                     else return null;
                 }
                 catch
                 {
-return null;
+                    return null;
                 }
             }
         }
@@ -54,9 +53,12 @@ return null;
         [NonRegisterInUpCellAddresMap]
         public bool IsValid
         {
-            get { if (this.CellAddressesMap.Where(cm => cm.Value.IsValid == false).Any())
-                    _isValid =  false;
-                return _isValid; }
+            get
+            {
+                if (this.CellAddressesMap.Where(cm => cm.Value.IsValid == false).Any())
+                    _isValid = false;
+                return _isValid;
+            }
             set { _isValid = value; }
         }
         public Guid Id
@@ -86,8 +88,8 @@ return null;
 
         public bool IsPropertyChangedHaveSubsctribers()
         {
-             
-            return PropertyChanged!=null;
+
+            return PropertyChanged != null;
         }
 
         // public ObservableCollection<IExcelBindableBase> Owners { get; set; } = new ObservableCollection<IExcelBindableBase>();
@@ -225,7 +227,7 @@ return null;
             return top_row;
         }
         private List<IExcelBindableBase> nambered_objects = new List<IExcelBindableBase>();
-        public void SetNumberItem(int possition, string number, bool first_itaration=true)
+        public void SetNumberItem(int possition, string number, bool first_itaration = true)
         {
             if (this.Number == null) return;
 
@@ -238,9 +240,9 @@ return null;
             this.Number = out_str;
             if (first_itaration) nambered_objects.Clear();
             var prop_infoes = this.GetType().GetRuntimeProperties().Where(pr => pr.GetIndexParameters().Length == 0
-                                            && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute))==null
-                                            &&  pr.GetValue(this)  is IExcelBindableBase);
-            foreach(PropertyInfo prop_inf in prop_infoes)
+                                            && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null
+                                            && pr.GetValue(this) is IExcelBindableBase);
+            foreach (PropertyInfo prop_inf in prop_infoes)
             {
                 var prop_val = prop_inf.GetValue(this);
                 if (prop_val is WorkersComposition)
@@ -259,24 +261,24 @@ return null;
                         {
                             if (!nambered_objects.Contains(elm))
                             {
-                                nambered_objects.Add(elm); 
+                                nambered_objects.Add(elm);
                                 elm.SetNumberItem(possition, number);
                             }
                         }
                     }
-                     else if (!nambered_objects.Contains(exbb_prop_value))
+                    else if (!nambered_objects.Contains(exbb_prop_value))
                     {
                         nambered_objects.Add(exbb_prop_value);
                         exbb_prop_value.SetNumberItem(possition, number);
 
                     }
-                    
+
 
                 }
             }
         }
 
-        public string  GetSelfNamber()
+        public string GetSelfNamber()
         {
             if (this.Number != null && !this.Number.Contains('.')) return this.Number;
             if (this.Number == null) return "";

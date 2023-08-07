@@ -14,8 +14,8 @@ namespace ExellAddInsLib.MSG
         }
 
         private WorkSchedule _workSchedules = new WorkSchedule();
-       
-       
+
+
         public WorkSchedule WorkSchedules
         {
             get { return _workSchedules; }
@@ -23,7 +23,7 @@ namespace ExellAddInsLib.MSG
         }
 
         private ExcelNotifyChangedCollection<VOVRWork> _vOVRWorks = new ExcelNotifyChangedCollection<VOVRWork>();
-      
+
         [NonRegisterInUpCellAddresMap]
         public ExcelNotifyChangedCollection<VOVRWork> VOVRWorks
         {
@@ -57,8 +57,8 @@ namespace ExellAddInsLib.MSG
         {
 
         }
-       
-      
+
+
         public override object Clone()
         {
             MSGWork new_obj = (MSGWork)base.Clone();

@@ -12,6 +12,6 @@ namespace ExellAddInsLib.MSG
             member = new_val;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property_name));
         }
-        
+
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ExellAddInsLib.MSG
 {
-    public class EventedDictationary<TKey, TValue> : Dictionary<TKey, TValue>,ICloneable
+    public class EventedDictationary<TKey, TValue> : Dictionary<TKey, TValue>, ICloneable
     {
         public class AddEventArgs : EventArgs
         {
@@ -37,7 +37,7 @@ namespace ExellAddInsLib.MSG
         public event AddEventHandler AddEvent;
         private IExcelBindableBase _owner;
 
-     
+
         public IExcelBindableBase Owner
         {
             get { return _owner; }

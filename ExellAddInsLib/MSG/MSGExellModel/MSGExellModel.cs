@@ -1,16 +1,13 @@
 ﻿using ExellAddInsLib.MSG.Section;
 using Microsoft.Office.Interop.Excel;
-using Microsoft.Office.Tools.Excel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -86,7 +83,7 @@ namespace ExellAddInsLib.MSG
         public const int W_CONSUMPTIONS_DATE_RAW = 3;
         public const int W_CONSUMPTIONS_FIRST_DATE_COL = 3;
 
-        public const int _SECTIONS_GAP = 3;
+        public const int _SECTIONS_GAP = 2;
 
 
         private int null_str_count = 0;
@@ -418,7 +415,7 @@ namespace ExellAddInsLib.MSG
 
         }
         ObservableCollection<IExcelBindableBase> unregistedObjects = new ObservableCollection<IExcelBindableBase>();
-        public void Unregister(IExcelBindableBase notified_object, bool first_iteration=true)
+        public void Unregister(IExcelBindableBase notified_object, bool first_iteration = true)
         {
             if (first_iteration) unregistedObjects.Clear();
             if (unregistedObjects.Contains(notified_object)) return;
@@ -427,6 +424,9 @@ namespace ExellAddInsLib.MSG
             {
                 notified_object.PropertyChanged -= OnPropertyChange;
             }
+            if (notified_object is IList exbb_list)
+                foreach (IExcelBindableBase elm in exbb_list)
+                    this.Unregister(elm);
 
             var all_object_prop_names_registed_rrecords = new ObservableCollection<RelateRecord>(
                 this.ObjectPropertyNameRegister.Where(op => op.Entity.Id == notified_object.Id).ToList());
@@ -435,7 +435,7 @@ namespace ExellAddInsLib.MSG
                 this.ObjectPropertyNameRegister.Remove(rr);
 
             var prop_infoes = notified_object.GetType().GetRuntimeProperties().Where(pr => pr.GetIndexParameters().Length == 0
-                                                                     &&pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute))==null
+                                                                     && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null
                                                                                          && pr.GetValue(notified_object) is IExcelBindableBase);
             foreach (PropertyInfo property_info in prop_infoes)
             {
@@ -1175,7 +1175,6 @@ namespace ExellAddInsLib.MSG
                         {
                             WorkerConsumptionDay w_consumption_Day = new WorkerConsumptionDay();
                             w_consumption_Day.Date = current_date;
-                            // workDay.CellAddressesMap.Add("Date", new ExellPropAddress(WRC_DATE_ROW, WRC_DATE_COL + date_index));
                             w_consumption_Day.Quantity = quantity;
                             this.Register(w_consumption_Day, "Quantity", rowIndex, W_CONSUMPTIONS_FIRST_DATE_COL + date_index, consumtionsSheet);
                             worker_consumption.WorkersConsumptionReportCard.Add(w_consumption_Day);
@@ -1192,23 +1191,7 @@ namespace ExellAddInsLib.MSG
 
         }
 
-        /// <summary>
-        /// Функция перезагружает все объекты из всех Worksheet в соотвествующие модели. 
-        /// </summary>
-        //public void ReloadAllSheetsInModel()
-        //{
-        //    this.ReloadSheetModel();
-        //    foreach (MSGExellModel model in Children)
-        //    {
-        //        model.CopyOwnerObjectModels();
-        //        model.ReloadSheetModel();
-
-        //    }
-
-        //}
-        /// <summary>
-        /// Функция перезагружает все объектные модели с соответсвующих листов
-        /// </summary>
+        
         public void ReloadSheetModel()
         {
             this.UpdateCellAddressMapsWorkSheets();
@@ -1235,10 +1218,8 @@ namespace ExellAddInsLib.MSG
                 this.LoadWorksReportCards();
                 this.LoadWorkerConsumptions();
                 foreach (MSGExellModel model in Children)
-                {
-                    //    model.CopyOwnerObjectModels();
                     model.ReloadSheetModel();
-                }
+
             }
             else
             {
@@ -2087,10 +2068,11 @@ namespace ExellAddInsLib.MSG
             if (this.Owner != null)
             {
                 this.Unregister(this.WorksSections);
-            
+
                 this.WorksSections = (ExcelNotifyChangedCollection<WorksSection>)this.Owner.WorksSections.Clone();
                 this.WorksSections.Owner = this;
                 this.SetCommonModelCollections();
+
                 foreach (var section in this.WorksSections)
                     this.RegisterObjectInObjectPropertyNameRegister(section);
             }
@@ -2098,21 +2080,22 @@ namespace ExellAddInsLib.MSG
         }
         public void SetCommonModelCollections()
         {
+            this.MSGWorks.Clear();
+            this.VOVRWorks.Clear();
+            this.KSWorks.Clear();
+            this.RCWorks.Clear();
             foreach (WorksSection w_section in this.WorksSections)
-            { 
-                this.MSGWorks.Clear();
+            {
                 foreach (MSGWork msg_work in w_section.MSGWorks)
                 {
                     if (!this.MSGWorks.Contains(msg_work)) this.MSGWorks.Add(msg_work);
-                    this.VOVRWorks.Clear();
                     foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
                     {
                         if (!this.VOVRWorks.Contains(vovr_work)) this.VOVRWorks.Add(vovr_work);
-                        this.KSWorks.Clear();
+
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
                             if (!this.KSWorks.Contains(ks_work)) this.KSWorks.Add(ks_work);
-                            this.RCWorks.Clear();
                             foreach (RCWork rc_work in ks_work.RCWorks)
                                 if (!this.RCWorks.Contains(rc_work)) this.RCWorks.Add(rc_work);
                         }

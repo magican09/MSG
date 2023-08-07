@@ -3,7 +3,7 @@
     public class VOVRWork : Work
     {
         private ExcelNotifyChangedCollection<KSWork> _kSWorks = new ExcelNotifyChangedCollection<KSWork>();
-       
+
         [NonRegisterInUpCellAddresMap]
         public ExcelNotifyChangedCollection<KSWork> KSWorks
         {
@@ -15,7 +15,7 @@
         {
 
         }
-       
+
         public override void SetSectionNumber(string section_number)
         {
             base.SetSectionNumber(section_number);

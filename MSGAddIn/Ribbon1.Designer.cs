@@ -69,6 +69,7 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.btnUpdateAll = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -93,6 +94,7 @@
             // 
             this.groupFileLaod.Items.Add(this.btnLoadMSGFile);
             this.groupFileLaod.Items.Add(this.btnReloadWorksheets);
+            this.groupFileLaod.Items.Add(this.btnUpdateAll);
             this.groupFileLaod.Items.Add(this.separator4);
             this.groupFileLaod.Items.Add(this.btnChangeCommonMSG);
             this.groupFileLaod.Items.Add(this.comboBoxEmployerName);
@@ -316,6 +318,13 @@
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
             // 
+            // btnUpdateAll
+            // 
+            this.btnUpdateAll.Label = "ОБНОВИТЬ ВСЁ";
+            this.btnUpdateAll.Name = "btnUpdateAll";
+            this.btnUpdateAll.ShowImage = true;
+            this.btnUpdateAll.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnUpdateAll_Click);
+            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -377,6 +386,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator4;
         internal Microsoft.Office.Tools.Ribbon.RibbonMenu menu1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyMSGWork;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnUpdateAll;
     }
 
     partial class ThisRibbonCollection

@@ -25,7 +25,7 @@ namespace ExellAddInsLib.MSG
             get { return _number; }
             set { SetProperty(ref _number, value); }
         }//Номер работы
-        
+
 
 
         private string _name;
@@ -60,7 +60,7 @@ namespace ExellAddInsLib.MSG
         }//Проектный объем работ
 
         private UnitOfMeasurement _unitOfMeasurement;
-      
+
         public UnitOfMeasurement UnitOfMeasurement
         {
             get { return _unitOfMeasurement; }
@@ -73,8 +73,8 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _laboriousness, value); }
         }//Трудоемкость  чел.час/ед.изм
 
-        private WorkReportCard _reportCard ;
-      
+        private WorkReportCard _reportCard;
+
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
         public WorkReportCard ReportCard
@@ -82,7 +82,7 @@ namespace ExellAddInsLib.MSG
             get { return _reportCard; }
             set { SetProperty(ref _reportCard, value); }
         }
-      
+
         //public WorkReportCard ReportCard { get; set; }
         private MSGExellModel _ownerExellModel;
 
@@ -136,26 +136,26 @@ namespace ExellAddInsLib.MSG
             }
             if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-            //    foreach (IWork child in e.OldItems)
-            //        child.Owner = null;
+                //    foreach (IWork child in e.OldItems)
+                //        child.Owner = null;
             }
         }
-        public  virtual void SetSectionNumber(string section_number)
+        public virtual void SetSectionNumber(string section_number)
         {
-            Number = setSectionNumber(section_number,Number);
+            Number = setSectionNumber(section_number, Number);
 
             foreach (var nw in this.WorkersComposition)
                 nw.Number = setSectionNumber(section_number, nw.Number);
         }
-        private string  setSectionNumber(string section_number, string number)
+        private string setSectionNumber(string section_number, string number)
         {
             number = number.Substring(number.IndexOf('.'), number.Length - number.IndexOf('.'));
-         return section_number + number;
+            return section_number + number;
         }
-       
+
         public override object Clone()
         {
-            var new_work = (Work) base.Clone();
+            var new_work = (Work)base.Clone();
             new_work.UnitOfMeasurement = this.UnitOfMeasurement;
             new_work.WorkersComposition = (WorkersComposition)this.WorkersComposition.Clone();
             return new_work;

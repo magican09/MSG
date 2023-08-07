@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -72,7 +71,7 @@ namespace ExellAddInsLib.MSG
             get { return _id; }
         }
 
-        public bool IsPropertyChangedHaveSubsctribers( )
+        public bool IsPropertyChangedHaveSubsctribers()
         {
             return PropertyChanged != null;
         }
