@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using Excel = Microsoft.Office.Interop.Excel;
 namespace ExellAddInsLib.MSG
 {
-    public interface IExcelBindableBase : ICloneable,INameable
+    public interface IExcelBindableBase : ICloneable,INameable, IPropertyChnagedIsSubscribed
     {
        
         event PropertyChangedEventHandler PropertyChanged;
@@ -30,7 +30,7 @@ namespace ExellAddInsLib.MSG
         int GetTopRow();
         int GetRowsCount();
         void SetNumberItem(int possition, string number, bool first_itaration = true);
-          string GetSelfNamber();
+        string GetSelfNamber();
 
 
 

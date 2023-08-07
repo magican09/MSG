@@ -18,13 +18,15 @@ namespace ExellAddInsLib.MSG
         public string Name { get; set; }
 
         public virtual string Number { get; set; }
+        [NonGettinInReflection]
+        [NonRegisterInUpCellAddresMap]
         public string NumberSuffix
         {
             get
             {
                 try
                 {
-                    if (this.Number!=null&&this.Number.Contains('.'))
+                    if (Number!=null&& Number.Contains('.'))
                     {
                         var str = this.Number.Split('.');
                         List<string> out_str_arr = new List<string>();
@@ -33,7 +35,8 @@ namespace ExellAddInsLib.MSG
 
                         string out_str = "";
                         foreach (string s in out_str_arr)
-                            out_str += s;
+                            out_str += $"{s}.";
+                        out_str= out_str.TrimEnd('.');
                         return out_str;
                     }
                     else return null;
@@ -80,6 +83,13 @@ return null;
             PropertyChange(this, property_name);
 
         }
+
+        public bool IsPropertyChangedHaveSubsctribers()
+        {
+             
+            return PropertyChanged!=null;
+        }
+
         // public ObservableCollection<IExcelBindableBase> Owners { get; set; } = new ObservableCollection<IExcelBindableBase>();
         private IExcelBindableBase _owner;
 
@@ -228,7 +238,8 @@ return null;
             this.Number = out_str;
             if (first_itaration) nambered_objects.Clear();
             var prop_infoes = this.GetType().GetRuntimeProperties().Where(pr => pr.GetIndexParameters().Length == 0
-                                            && pr.GetValue(this) is IExcelBindableBase);
+                                            && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute))==null
+                                            &&  pr.GetValue(this)  is IExcelBindableBase);
             foreach(PropertyInfo prop_inf in prop_infoes)
             {
                 var prop_val = prop_inf.GetValue(this);

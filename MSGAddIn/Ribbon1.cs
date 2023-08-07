@@ -59,7 +59,6 @@ namespace MSGAddIn
             EmployersWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Ответственные");
             if (CommonMSGWorksheet != null && CommonWorksheet != null && UnitMeasurementsWorksheet != null && PostsWorksheet != null && EmployersWorksheet != null)
             {
-                //    LoadMSG_File();
                 InMSGWorkbook = true;
                 groupFileLaod.Visible = true;
                 groupMSGCommon.Visible = true;
@@ -120,8 +119,9 @@ namespace MSGAddIn
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
             LoadMSG_File();
-            CurrentMSGExellModel.SetStyleFormats();
-            CurrentMSGExellModel.SetFormulas();
+        //    CurrentMSGExellModel.SetFormulas(); 
+        //    CurrentMSGExellModel.SetStyleFormats();
+         
         }
         private void LoadMSG_File()
         {
@@ -150,10 +150,8 @@ namespace MSGAddIn
             }
 
             this.ReloadAllModels();
+         
             CurrentMSGExellModel = CommonMSGExellModel;
-
-            this.ShowWorksheet(CommonMSGWorksheet);
-            this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
             labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode.Substring(0, 15)}\n" +
                                     $"Объект:{CurrentMSGExellModel.ContructionObjectCode.Substring(0, 15)}\n " +
                                     $"Подобъект:{CurrentMSGExellModel.ConstructionSubObjectCode.Substring(0, 15)}";
@@ -184,7 +182,6 @@ namespace MSGAddIn
         private void btnCalcAll_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.CalcAll();
-            // CurrentMSGExellModel.FormatWorkSheetStyle();
         }
         private void buttonCalc_Click(object sender, RibbonControlEventArgs e)
         {
@@ -396,12 +393,8 @@ namespace MSGAddIn
                 if (model != null && worksheet.Name.Contains("Люди"))
                     model.WorkerConsumptionsSheet = worksheet;
             }
-             CommonMSGExellModel.ReloadSheetModel();
-            //foreach (MSGExellModel model in this.MSGExellModels)
-            //{
-            //    //   model.CopyOwnerObjectModels();
-            //    // model.LoadWorksReportCards();
-            //}
+             CommonMSGExellModel.Update();
+             
 
         }
 
@@ -435,8 +428,8 @@ namespace MSGAddIn
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 temlate_file_name = openFileDialog1.FileName;
-                CurrentMSGExellModel.Update();
-                CurrentMSGExellModel.CalcAll();
+              //  CurrentMSGExellModel.Update();
+            //    CurrentMSGExellModel.CalcAll();
                 MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                 MSGTemplateWorkbook.Activate();
                 if (CommonMSGExellModel != null)
@@ -506,10 +499,10 @@ namespace MSGAddIn
             Excel.Worksheet MSGTemplateWorksheet = MSGTemplateWorkbook.Worksheets["МСГ_Шаблон"];
             Excel.Worksheet MSGNeedsTemplateWorksheet = MSGTemplateWorkbook.Worksheets["Людские_тех_ресурсы_Шаблон"];
 
-            // MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             MSGNeedsOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
-            MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            //MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             DateTime current_day_date = DateTime.Now;
 
             MSGOutWorksheet.Cells[TMP_NOW_DATE_ROW, TMP_NOW_DATE_COL] = current_day_date.ToString("d");
@@ -976,7 +969,9 @@ namespace MSGAddIn
                             CurrentMSGExellModel.WorksSections.Add(section);
                             section.SetNumberItem(0, cell_val.ToString());
                             CurrentMSGExellModel.SetSectionExcelRepresentionTree(section, selection.Row);
+                            CurrentMSGExellModel.UpdateWorksheetRepresetation();
                             CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
+                          
                             CurrentMSGExellModel.SetStyleFormats();
                             commands_group_label = "";
                         }
@@ -1021,6 +1016,7 @@ namespace MSGAddIn
                         picked_section.MSGWorks.Add(msg_work);
  
                          CurrentMSGExellModel.SetSectionExcelRepresentionTree(picked_section, selection_row);
+                         CurrentMSGExellModel.UpdateWorksheetRepresetation();
                          CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
                          CurrentMSGExellModel.SetStyleFormats();
                          commands_group_label = "";

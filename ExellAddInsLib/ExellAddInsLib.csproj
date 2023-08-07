@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="eventClass\Delegates.cs" />
     <Compile Include="MSG\Attributes.cs" />
     <Compile Include="MSG\BindableBase.cs" />
     <Compile Include="MSG\EventedDictationary\EventedDictationary.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="MSG\IExcelBindableBase.cs" />
     <Compile Include="MSG\IExcelNotifyChangedCollection.cs" />
     <Compile Include="MSG\INameable.cs" />
+    <Compile Include="MSG\IPropertyChnagedIsSubscribed.cs" />
     <Compile Include="MSG\MSGExellModel\MSGExellModel.cs" />
     <Compile Include="MSG\MSGWork\MSGWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\KSWork\KSWork.cs" />

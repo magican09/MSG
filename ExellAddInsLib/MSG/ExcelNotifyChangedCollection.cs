@@ -36,6 +36,8 @@ namespace ExellAddInsLib.MSG
         public string Name { get; set; }
         private Guid _id = Guid.NewGuid();
         public virtual string Number { get; set; }
+        [NonGettinInReflection]
+        [NonRegisterInUpCellAddresMap]
         public string NumberSuffix
         {
             get
@@ -43,7 +45,7 @@ namespace ExellAddInsLib.MSG
 
                 try
                 {
-                    if (this.Number != null && this.Number.Contains('.'))
+                    if (Number != null && Number.Contains('.'))
                     {
                         var str = this.Number.Split('.');
                         List<string> out_str_arr = new List<string>();
@@ -52,7 +54,8 @@ namespace ExellAddInsLib.MSG
 
                         string out_str = "";
                         foreach (string s in out_str_arr)
-                            out_str += s;
+                            out_str += $"{s}.";
+                        out_str = out_str.TrimEnd('.');
                         return out_str;
                     }
                     else return null;
@@ -67,6 +70,11 @@ namespace ExellAddInsLib.MSG
         public Guid Id
         {
             get { return _id; }
+        }
+
+        public bool IsPropertyChangedHaveSubsctribers( )
+        {
+            return PropertyChanged != null;
         }
 
         public ObservableCollection<IExcelBindableBase> Owners { get; set; } = new ObservableCollection<IExcelBindableBase>();
@@ -233,6 +241,7 @@ namespace ExellAddInsLib.MSG
         }
         public void ChangeTopRow(int row)
         {
+            if (this.CellAddressesMap.Count == 0) return;
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             int row_delta = row - top_row;
             if (top_row + row_delta <= 0) row_delta = 0;
@@ -243,18 +252,21 @@ namespace ExellAddInsLib.MSG
         }
         public int GetRowsCount()
         {
+            if (this.CellAddressesMap.Count == 0) return 0;
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
             return bottom_row - top_row;
         }
         public int GetBottomRow()
         {
+            if (this.CellAddressesMap.Count == 0) return 0;
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
             return bottom_row;
         }
         public int GetTopRow()
         {
+            if (this.CellAddressesMap.Count == 0) return 0;
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             return top_row;
         }

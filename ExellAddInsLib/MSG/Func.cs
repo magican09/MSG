@@ -44,6 +44,11 @@ namespace ExellAddInsLib.MSG
             return rng.get_AddressLocal(false, false, Excel.XlReferenceStyle.xlA1,
                    Type.Missing, Type.Missing);
         }
+
+        private static bool IsSubscribed(EventHandler @event, object evHandler)
+        {
+            return @event.GetInvocationList().Contains(evHandler);
+        }
     }
 
  }
