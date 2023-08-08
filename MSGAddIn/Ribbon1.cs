@@ -104,12 +104,18 @@ namespace MSGAddIn
         }
         private void SetBtnsState(bool state)
         {
+            btnUpdateAll.Enabled = state;
+            btnLoadInModel.Enabled = state; 
+            btnLoadFromModel.Enabled = state;
+            btnChangeCommonMSG.Enabled = state;
+         
             btnCalcLabournes.Enabled = state;
             btnCalcAll.Enabled = state;
-            btnReloadWorksheets.Enabled = state;
-            btnChangeCommonMSG.Enabled = state;
-            btnLoadTeplateFile.Enabled = state;
+            btnCreateTemplateFile.Enabled = state;
             buttonCalc.Enabled = state;
+            menuEditCommands.Enabled = state;
+            btnRefillTemlate.Enabled = state;
+
         }
         private void AjastBtnsState()
         {
@@ -132,7 +138,6 @@ namespace MSGAddIn
             CommonWorksheet = CurrentWorkbook.Worksheets["Начальная"];
             CommonMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_общая"];
             CommonWorkConsumptionsWorksheet = CurrentWorkbook.Worksheets["Люди_общая"];
-
             EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
 
             this.ReloadEmployersList();
@@ -169,9 +174,13 @@ namespace MSGAddIn
             this.ShowWorksheet(CommonMSGWorksheet);
             this.ShowWorksheet(CommonWorkConsumptionsWorksheet);
             CommonMSGWorksheet.Activate();
+           
             btnCalcLabournes.Enabled = true;
             btnCalcAll.Enabled = true;
-            btnReloadWorksheets.Enabled = true;
+            btnLoadFromModel.Enabled = true;
+            menuEditCommands.Enabled = true;
+            btnCreateTemplateFile.Enabled = true;
+            btnRefillTemlate.Enabled = true;
             labelCurrentEmployerName.Label = $"ОБЩИЕ ДАННЫЕ";
         }
         private void btnCalcLabournes_Click(object sender, RibbonControlEventArgs e)
@@ -265,6 +274,9 @@ namespace MSGAddIn
             empl_model.RegisterSheet.Activate();
 
             labelCurrentEmployerName.Label = $"ОТВЕСТВЕННЫЙ: {empl_model.Employer.Name}";
+            menuEditCommands.Enabled = false;
+            btnCreateTemplateFile.Enabled = false;
+            btnRefillTemlate.Enabled = false;
             //       CurrentMSGExellModel.ResetCalculatesFields();
         }
         private void bntChangeEmployerWorkersConsumption_Click(object sender, RibbonControlEventArgs e)
@@ -400,10 +412,18 @@ namespace MSGAddIn
 
 
         }
+        private void btnLoadInModel_Click(object sender, RibbonControlEventArgs e)
+        {
+            CurrentMSGExellModel.ReloadSheetModel();
+           // CurrentMSGExellModel.SetFormulas();
+            CurrentMSGExellModel.SetStyleFormats();
+        }
 
-        private void btnReloadWorksheets_Click(object sender, RibbonControlEventArgs e)
+        private void btnLoadFromModel_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.Update();
+            CurrentMSGExellModel.SetFormulas();
+            CurrentMSGExellModel.SetStyleFormats();
         }
         private void btnUpdateAll_Click(object sender, RibbonControlEventArgs e)
         {
@@ -411,11 +431,12 @@ namespace MSGAddIn
             if (CurrentMSGExellModel.Owner == null)
                 foreach (MSGExellModel model in CurrentMSGExellModel.Children)
                 {
-                    model.UpdateWorksheetRepresetation();
-                    model.SetFormulas();
-                    model.SetStyleFormats();
+                    model.Update();
                 }
+            CurrentMSGExellModel.ReloadSheetModel();
             CurrentMSGExellModel.Update();
+            CurrentMSGExellModel.SetFormulas();
+            CurrentMSGExellModel.SetStyleFormats();
         }
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
@@ -440,13 +461,13 @@ namespace MSGAddIn
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 temlate_file_name = openFileDialog1.FileName;
-                CurrentMSGExellModel.Update();
-                //    CurrentMSGExellModel.CalcAll();
+                CurrentMSGExellModel.ReloadSheetModel();
+                CurrentMSGExellModel.CalcAll();
                 MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                 MSGTemplateWorkbook.Activate();
                 if (CommonMSGExellModel != null)
                     this.FillMSG_OUT_File();
-                btnFillTemlate.Enabled = true;
+                btnRefillTemlate.Enabled = true;
             }
         }
 
@@ -511,10 +532,10 @@ namespace MSGAddIn
             Excel.Worksheet MSGTemplateWorksheet = MSGTemplateWorkbook.Worksheets["МСГ_Шаблон"];
             Excel.Worksheet MSGNeedsTemplateWorksheet = MSGTemplateWorkbook.Worksheets["Людские_тех_ресурсы_Шаблон"];
 
-            MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+           // MSGOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             MSGNeedsOutWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             MSGTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
-            //MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+            MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
             DateTime current_day_date = DateTime.Now;
 
             MSGOutWorksheet.Cells[TMP_NOW_DATE_ROW, TMP_NOW_DATE_COL] = current_day_date.ToString("d");
@@ -560,7 +581,8 @@ namespace MSGAddIn
                     {
                         section_null_cell_counter = 0;
                         string w_section_name = MSGOutWorksheet.Cells[section_local_index_iterator, TMP_WORK_NUMBER_COL].Value.ToString();
-                        if (w_section_name == w_section.Name)
+                        string w_section_number = w_section_name.Split(' ')[0];
+                        if (w_section_number == w_section.Number)
                         {
                             saved_iterator = section_local_index_iterator;
                             break;
@@ -576,7 +598,7 @@ namespace MSGAddIn
                 tmp_works_selection_range.Copy();
                 Excel.Range sect_row_dest = MSGOutWorksheet.Cells[section_local_index_iterator, 1];
                 sect_row_dest.PasteSpecial(XlPasteType.xlPasteAll);
-                MSGOutWorksheet.Cells[section_local_index_iterator, 1] = w_section.Name;
+                MSGOutWorksheet.Cells[section_local_index_iterator, 1] = $"{w_section.Number} {w_section.Name}";
 
                 //    row_index++;
                 saved_iterator = section_local_index_iterator + 1;
@@ -1048,6 +1070,6 @@ namespace MSGAddIn
 
         }
 
-        
+       
     }
 }

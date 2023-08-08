@@ -14,13 +14,20 @@ namespace ExellAddInsLib.MSG
 {
     public class MSGExellModel : ExcelBindableBase
     {
-        public const int COMMON_PARAMETRS_VALUE_COL = 3;
+        /// <summary>
+        /// Констраныт номеров строк и стобцов в документе exel 
+        /// </summary>
 
-        public const int CONTRACT_CODE_ROW = 2;
-        public const int CONSTRUCTION_OBJECT_CODE_ROW = 3;
-        public const int CONSTRUCTION_SUBOBJECT_CODE_ROW = 4;
+        ///Начальная
+        public const int COMMON_PARAMETRS_VALUE_COL = 3; //Номер стобца с общим параметрами проекта
 
+        public const int CONTRACT_CODE_ROW = 2; //Код объекта или договора
+        public const int CONSTRUCTION_OBJECT_CODE_ROW = 3;// Код объекта
+        public const int CONSTRUCTION_SUBOBJECT_CODE_ROW = 4;//Код подъобьекта
 
+        /// <summary>
+        /// Ведомость_
+        /// </summary>
         public const int WORKS_START_DATE_ROW = 1;
         public const int WORKS_START_DATE_COL = 3;
         public const int WORKS_END_DATE_ROW = 2;
@@ -77,6 +84,9 @@ namespace ExellAddInsLib.MSG
         public const int WRC_PC_QUANTITY_COL = WRC_NUMBER_COL + 1;
         public const int WRC_DATE_COL = WRC_PC_QUANTITY_COL + 1;
 
+        /// <summary>
+        /// Люди_
+        /// </summary>
         public const int W_CONSUMPTIONS_FIRST_ROW_INDEX = 4;
         public const int W_CONSUMPTIONS_NUMBER_COL = 1;
         public const int W_CONSUMPTIONS_NAME_COL = 2;
@@ -109,7 +119,9 @@ namespace ExellAddInsLib.MSG
         }
 
 
-
+        /// <summary>
+        /// Общее количество каленадрых дне с начала до окончания работ
+        /// </summary>
         public int WorkedDaysNumber
         {
             get
@@ -120,104 +132,96 @@ namespace ExellAddInsLib.MSG
         }
 
 
+
+        private ExcelNotifyChangedCollection<WorksSection> _worksSections;
         /// <summary>
         /// Коллекция с разделами работ
         /// </summary>
-        private ExcelNotifyChangedCollection<WorksSection> _worksSections;
-
         public ExcelNotifyChangedCollection<WorksSection> WorksSections
         {
             get { return _worksSections; }
             set { SetProperty(ref _worksSections, value); }
         }
+
+
+        private ExcelNotifyChangedCollection<MSGWork> _mSGWorks;
         /// <summary>
         /// Коллекция с работами типа МСГ модели
         /// </summary>
-
-        private ExcelNotifyChangedCollection<MSGWork> _mSGWorks;
-
         public ExcelNotifyChangedCollection<MSGWork> MSGWorks
         {
             get { return _mSGWorks; }
             set { SetProperty(ref _mSGWorks, value); }
         }
+
+        private ExcelNotifyChangedCollection<VOVRWork> _vOVRWorks;
         /// <summary>
         /// Коллекция с работами типа ВОВР модели
         /// </summary>
-        private ExcelNotifyChangedCollection<VOVRWork> _vOVRWorks;
-
         public ExcelNotifyChangedCollection<VOVRWork> VOVRWorks
         {
             get { return _vOVRWorks; }
             set { SetProperty(ref _vOVRWorks, value); }
         }
+
+
+        private ExcelNotifyChangedCollection<KSWork> _kSWorks;
         /// <summary>
         /// Коллекция с работами типа КС-2 модели
         /// </summary>
-
-        private ExcelNotifyChangedCollection<KSWork> _kSWorks;
-
         public ExcelNotifyChangedCollection<KSWork> KSWorks
         {
             get { return _kSWorks; }
             set { SetProperty(ref _kSWorks, value); }
         }
+
+
+        private ExcelNotifyChangedCollection<RCWork> _rCWorks;
         /// <summary>
         /// Коллекция с работами типа ждя учета модели
         /// </summary>
-
-        private ExcelNotifyChangedCollection<RCWork> _rCWorks;
-
         public ExcelNotifyChangedCollection<RCWork> RCWorks
         {
             get { return _rCWorks; }
             set { SetProperty(ref _rCWorks, value); }
         }
+
+        private ExcelNotifyChangedCollection<WorkReportCard> _workReportCards;
         /// <summary>
         /// Коллекция  табелей выполненных работ
         /// </summary>
-        private ExcelNotifyChangedCollection<WorkReportCard> _workReportCards;
-
         public ExcelNotifyChangedCollection<WorkReportCard> WorkReportCards
         {
             get { return _workReportCards; }
             set { SetProperty(ref _workReportCards, value); }
         }
-        //private Dictionary<Type,IExcelBindableBase> _invalidObjects = new Dictionary<Type, IExcelBindableBase>();
 
-        //public Dictionary<Type, IExcelBindableBase> InvalidObjects
-        //{
-        //    get { return _invalidObjects; }
-        //    set { SetProperty(ref _invalidObjects, value); }
-        //}
         private ObservableCollection<IExcelBindableBase> _invalidObjects = new ObservableCollection<IExcelBindableBase>();
 
-        public ObservableCollection<IExcelBindableBase> InvalidObjects
-        {
-            get { return _invalidObjects; }
-            set { SetProperty(ref _invalidObjects, value); }
-        }
+
+        private ExcelNotifyChangedCollection<UnitOfMeasurement> _unitOfMeasurements;
         /// <summary>
         /// Коллекция с единицами измерения модели
         /// </summary>
-        private ExcelNotifyChangedCollection<UnitOfMeasurement> _unitOfMeasurements;
-
         public ExcelNotifyChangedCollection<UnitOfMeasurement> UnitOfMeasurements
         {
             get { return _unitOfMeasurements; }
             set { SetProperty(ref _unitOfMeasurements, value); }
         }
-        //public WorkersCompositionReportCard WorkersCompositionReportCard = new MSG.WorkersCompositionReportCard();
 
         private WorkersComposition _WorkersComposition;
-
+        /// <summary>
+        /// Состав работников ( потребности)
+        /// </summary>
         public WorkersComposition WorkersComposition
         {
             get { return _WorkersComposition; }
             set { SetProperty(ref _WorkersComposition, value); }
         }
         private WorkerConsumptions _workerConsumptions;
-
+        /// <summary>
+        /// Потребления работников
+        /// </summary>
         public WorkerConsumptions WorkerConsumptions
         {
             get { return _workerConsumptions; }
@@ -246,11 +250,11 @@ namespace ExellAddInsLib.MSG
         /// Коллекия дочерних моделей
         /// </summary>
         public ObservableCollection<MSGExellModel> Children { get; set; } = new ObservableCollection<MSGExellModel>();
+
+        private Excel.Worksheet _registerSheet;
         /// <summary>
         /// Прикрепленный к модели лист ведомости  Worksheet
         /// </summary>
-        private Excel.Worksheet _registerSheet;
-
         public Excel.Worksheet RegisterSheet
         {
             get
@@ -269,13 +273,13 @@ namespace ExellAddInsLib.MSG
 
             }
         }
+
+        private Excel.Worksheet _workerConsumptionsSheet;
+
         /// <summary>
         /// Прикрепленный к модели лист  Людских ресурсов Worksheet
         /// </summary>
-        ///    
-        private Excel.Worksheet _workerConsumptionsSheet;
-
-
+        ///   
         public Excel.Worksheet WorkerConsumptionsSheet
         {
             get
@@ -295,13 +299,11 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-
+        private Excel.Worksheet _commonSheet;
 
         /// <summary>
         /// Прикрепленный к модели лист общих данных  Worksheet
         /// </summary>
-        private Excel.Worksheet _commonSheet;
-
         public Excel.Worksheet CommonSheet
         {
             get
@@ -339,13 +341,19 @@ namespace ExellAddInsLib.MSG
 
 
         }
-        // private ObservableCollection<IExcelBindableBase> RegistedObjects = new ObservableCollection<IExcelBindableBase>();
-        // private EventedDictationary<RalateRecord, Tuple<string, ExellPropAddress>> RegistedObjects = new EventedDictationary<RalateRecord, Tuple<string, ExellPropAddress>>();
-        // private EventedDictationary<RalateRecord, ExellPropAddress> RegistedObjects = new EventedDictationary<RalateRecord, ExellPropAddress>();
+        /// <summary>
+        /// Реестр зарегистрированных в системе основных объектов
+        /// </summary>
         public ObservableCollection<RelateRecord> RegistedObjects = new ObservableCollection<RelateRecord>();
-        // private EventedDictationary<IExcelBindableBase, string> ObjectPropertyNameRegister = new EventedDictationary<IExcelBindableBase, string>();
+        /// <summary>
+        /// Реест и основных и внутренных отлеживаемых обхектов и их совойств
+        /// </summary>
         public ObservableCollection<RelateRecord> ObjectPropertyNameRegister = new ObservableCollection<RelateRecord>();
-        public Dictionary<IExcelBindableBase, string> RegisterTemporalStopList = new Dictionary<IExcelBindableBase, string>();
+
+        /// <summary>
+        /// Времення колеекция для предотвращения зацикливания в рекурсии Register(..)/
+        /// </summary>
+        private Dictionary<IExcelBindableBase, string> RegisterTemporalStopList = new Dictionary<IExcelBindableBase, string>();
         /// <summary>
         /// Функция для регистрации объекта реализующего интрефейс INotifyPropertyChanged 
         /// для обработки событий изменения полей объета и соотвествующего изменения связанной с 
@@ -371,9 +379,6 @@ namespace ExellAddInsLib.MSG
                         local_register.ExellPropAddress.Owner = notified_object;
                         notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
                     }
-                    //  if (!notified_object.CellAddressesMap.ContainsKey(prop_name))
-                    //      notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
-
                     this.RegistedObjects.Add(local_register);
                     RegisterTemporalStopList.Clear();
                     RegisterTemporalStopList.Add(local_register.Entity, prop_names[0]);
@@ -415,6 +420,11 @@ namespace ExellAddInsLib.MSG
 
         }
         ObservableCollection<IExcelBindableBase> unregistedObjects = new ObservableCollection<IExcelBindableBase>();
+        /// <summary>
+        /// Удаления регистрации объекта из системы отслеживания
+        /// </summary>
+        /// <param name="notified_object"></param>
+        /// <param name="first_iteration"></param>
         public void Unregister(IExcelBindableBase notified_object, bool first_iteration = true)
         {
             if (first_iteration) unregistedObjects.Clear();
@@ -434,20 +444,25 @@ namespace ExellAddInsLib.MSG
             foreach (var rr in all_object_prop_names_registed_rrecords)
                 this.ObjectPropertyNameRegister.Remove(rr);
 
-            var prop_infoes = notified_object.GetType().GetRuntimeProperties().Where(pr => pr.GetIndexParameters().Length == 0
-                                                                     && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null
-                                                                                         && pr.GetValue(notified_object) is IExcelBindableBase);
-            foreach (PropertyInfo property_info in prop_infoes)
-            {
-                var property_val = property_info.GetValue(notified_object);
-                if (property_val is IExcelBindableBase exbb_prop_val)
-                {
-                    this.Unregister(exbb_prop_val, false);
-                }
-            }
+            //var prop_infoes = notified_object.GetType().GetRuntimeProperties().Where(pr => pr.GetIndexParameters().Length == 0
+            //                                                         && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null
+            //                                                                             && pr.GetValue(notified_object) is IExcelBindableBase);
+            //foreach (PropertyInfo property_info in prop_infoes)
+            //{
+            //    var property_val = property_info.GetValue(notified_object);
+            //    if (property_val is IExcelBindableBase exbb_prop_val)
+            //    {
+            //        this.Unregister(exbb_prop_val, false);
+            //    }
+            //}
         }
 
         ObservableCollection<IExcelBindableBase> registed_objects = new ObservableCollection<IExcelBindableBase>();
+        /// <summary>
+        /// Регистрация всего дерева IExcelBindableBase объектов в системе отслеживания
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="firt_itaration"></param>
         public void RegisterObjectInObjectPropertyNameRegister(IExcelBindableBase obj, bool firt_itaration = true)
         {
             if (firt_itaration == true) registed_objects.Clear();
@@ -484,6 +499,11 @@ namespace ExellAddInsLib.MSG
             }
         }
 
+        /// <summary>
+        /// Функция для получаения самого высоско вдевере регистрации объектов объекта
+        /// </summary>
+        /// <param name="relateRecord"></param>
+        /// <returns></returns>
         private RelateRecord GetFirstParentRelateRecord(RelateRecord relateRecord)
         {
             if (relateRecord.Parent != null)
@@ -492,6 +512,11 @@ namespace ExellAddInsLib.MSG
                 return relateRecord;
             return null;
         }
+        /// <summary>
+        /// Функция для получения всех самых нижни в дереве регистрации объектов зависимых от данного объекта.
+        /// </summary>
+        /// <param name="relateRecord"></param>
+        /// <param name="childrenRecords"></param>
         private void GetChildrenRelateRecords(RelateRecord relateRecord, ObservableCollection<Tuple<RelateRecord, string>> childrenRecords)
         {
             string prop_name = "";
@@ -506,6 +531,12 @@ namespace ExellAddInsLib.MSG
             }
 
         }
+        /// <summary>
+        /// Получение значения по пути к свойству из объекта
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="prop_path"></param>
+        /// <returns></returns>
         private object GetValueFromObject(IExcelBindableBase obj, string prop_path)
         {
             string rest_prop_name_part = prop_path;
@@ -529,6 +560,13 @@ namespace ExellAddInsLib.MSG
         }
 
 
+
+
+        /// <summary>
+        /// Обработчик собиытия изменений в зарегистрированных объетах.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void OnPropertyChange(object sender, PropertyChangedEventArgs e)
         {
             if (sender is IExcelBindableBase bindable_object)
@@ -562,6 +600,53 @@ namespace ExellAddInsLib.MSG
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Функция обновляет документальное представление объетка (рукурсивно проходит по всем объектам 
+        /// реализующим интерфейс IExcelBindableBase). 
+        /// </summary>
+        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IExcelBindableBase </param>
+        private void UpdateExellBindableObject(IExcelBindableBase obj)
+        {
+            var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
+
+            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
+            {
+                var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
+                if (val != null)
+                    kvp.Value.Cell.Value = val.ToString();
+            }
+        }
+
+
+        private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
+        {
+            string[] prop_names = full_prop_name.Split('.');
+            foreach (string name in prop_names)
+            {
+                string rest_prop_name_part = full_prop_name;
+                if (full_prop_name.Contains(".")) rest_prop_name_part = full_prop_name.Replace($"{name}.", "");
+                if (obj.GetType().GetProperty(name).GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) != null)
+                    return null;
+                var prop_value = obj.GetType().GetProperty(name).GetValue(obj);
+
+                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
+                {
+                    return this.GetPropertyValueByPath(excel_bimdable_prop_value, rest_prop_name_part);
+                }
+                else if (prop_value != null && prop_value.GetType().FullName.Contains("System."))
+                {
+
+                    if (prop_value is DateTime date_val)
+                        return date_val.ToString("d");
+                    else
+                        return prop_value.ToString();
+                }
+                else
+                    return "";
+            }
+            return null;
         }
 
 
@@ -1191,7 +1276,9 @@ namespace ExellAddInsLib.MSG
 
         }
 
-        
+        /// <summary>
+        /// Заргужает(перезагружает)  данныхе из соотвествующих листов в модель
+        /// </summary>
         public void ReloadSheetModel()
         {
             this.UpdateCellAddressMapsWorkSheets();
@@ -1228,10 +1315,12 @@ namespace ExellAddInsLib.MSG
                 this.LoadWorkerConsumptions();
             }
         }
-
+        /// <summary>
+        /// Функция форматирует представления модели на листе Excel
+        /// </summary>
         public void SetStyleFormats()
         {
-
+            this.RemoveGroups(this.RegisterSheet);
             int selectin_col = 33;
             this.SetBordersBoldLine(this.WorksSections.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
             int first_row = 0;
@@ -1371,7 +1460,25 @@ namespace ExellAddInsLib.MSG
                 this.SetBordersBoldLine(cons_range, XlLineStyle.xlDouble, XlLineStyle.xlDouble,
                     XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
             }
-            //this.SetFormulas();
+
+            //  Excel.Range section_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[WSEC_NUMBER_COL], this.RegisterSheet.Columns[WSEC_NAME_COL]];
+            //  Excel.Range msg_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[WSEC_NUMBER_COL], this.RegisterSheet.Columns[MSG_NEEDS_OF_WORKERS_QUANTITY_COL]];
+            Excel.Range vovr_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[VOVR_NUMBER_COL], this.RegisterSheet.Columns[VOVR_LABOURNESS_COL]];
+            Excel.Range ks_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[VOVR_NUMBER_COL], this.RegisterSheet.Columns[KS_LABOURNESS_COL]];
+            //    Excel.Range rc_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[WSEC_NUMBER_COL], this.RegisterSheet.Columns[RC_LABOURNESS_COL]];
+            try
+            {
+                // section_colomns.Group();
+                //   msg_colomns.Group();
+                ks_colomns.Group();
+                vovr_colomns.Group();
+                //  rc_colomns.Group();
+            }
+            catch
+            {
+
+            }
+
         }
         public void SetFormulas_bkup()
         {
@@ -1524,6 +1631,10 @@ namespace ExellAddInsLib.MSG
 
             }
         }
+
+        /// <summary>
+        ///Фунция проставляет все соотвесвующие формулы в ячейках Excell в соотвествии с моделью
+        /// </summary>
         public void SetFormulas()
         {
             int days_number = (this.WorksEndDate - this.WorksStartDate).Days;
@@ -1605,8 +1716,6 @@ namespace ExellAddInsLib.MSG
                                     Excel.Range w_days_row_range = this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
                                     if (tmp_first_rc_card_days_row != null)
                                         w_days_row_range.PasteSpecial(XlPasteType.xlPasteAll);
-
-
                                 }
                                 rc_works_labourness_sum_formula +=
                                        $"{Func.RangeAddress(rc_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(rc_work.CellAddressesMap["Laboriousness"].Cell)}+";
@@ -1671,6 +1780,10 @@ namespace ExellAddInsLib.MSG
 
             }
         }
+        /// <summary>
+        /// Функция устанавливает границы диапазона двоейной линией
+        /// </summary>
+        /// <param name="range"></param>
         private void SetBordersBoldLine(Excel.Range range)
         {
             if (range == null) return;
@@ -1680,6 +1793,14 @@ namespace ExellAddInsLib.MSG
             range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlDouble;
             range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlDouble;
         }
+        /// <summary>
+        /// Функция устанавливает границы диапазона двойной линей
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="right"></param>
+        /// <param name="left"></param>
+        /// <param name="top"></param>
+        /// <param name="bottom"></param>
         private void SetBordersBoldLine(Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true)
         {
             if (range == null) return;
@@ -1693,6 +1814,14 @@ namespace ExellAddInsLib.MSG
             if (right) range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlDouble;
             else range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
         }
+        /// <summary>
+        /// Функция устанавливает границы диапазона соовествующими типами линий
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="right"></param>
+        /// <param name="left"></param>
+        /// <param name="top"></param>
+        /// <param name="bottom"></param>
         private void SetBordersBoldLine(Excel.Range range,
             Excel.XlLineStyle right = Excel.XlLineStyle.xlDouble,
             Excel.XlLineStyle left = Excel.XlLineStyle.xlDouble,
@@ -1747,12 +1876,18 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
+        /// <summary>
+        /// Функция вычисляет коэфиценты рапределения трудоемкойстей для работ. 
+        /// </summary>
+        /// <param name="ks_work"></param>
+        /// <exception cref="Exception"></exception>
         private void CalcLabournessCoefficiens(KSWork ks_work)
         {
             var rc_works_with_notNull_labourness = ks_work.RCWorks.Where(rcw => rcw.Laboriousness != 0);
             decimal rc_laboriousness_coeffecients_sum = 0;
+            var ks_work_total_laboriousnes = (ks_work.Laboriousness * ks_work.ProjectQuantity);
             foreach (RCWork rc_work in rc_works_with_notNull_labourness)
-                rc_work.LabournessCoefficient = rc_work.Laboriousness * rc_work.ProjectQuantity / (ks_work.Laboriousness * ks_work.ProjectQuantity);
+                rc_work.LabournessCoefficient = rc_work.Laboriousness * rc_work.ProjectQuantity / ks_work_total_laboriousnes;
 
             var rc_works_with_notNull_labourness_coef = ks_work.RCWorks.Where(rcw => rcw.LabournessCoefficient != 0);
             foreach (RCWork rc_work in rc_works_with_notNull_labourness_coef)
@@ -1971,6 +2106,9 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
+        /// <summary>
+        /// Функция подсчитывает потребления работчей силы для МСГ работ
+        /// </summary>
         public void CalcWorkerConsumptions()
         {
             Excel.Worksheet consumtionsSheet = this.WorkerConsumptionsSheet;
@@ -2041,7 +2179,7 @@ namespace ExellAddInsLib.MSG
         {
             this.CalcLabourness();
             this.CalcQuantity();
-            this.SetStyleFormats();
+            //  this.SetStyleFormats();
 
         }
 
@@ -2060,9 +2198,13 @@ namespace ExellAddInsLib.MSG
             foreach (WorksSection w_section in this.WorksSections.OrderBy(s => s.Number))
             {
                 last_row = this.SetSectionExcelRepresentionTree(w_section, last_row) + _SECTIONS_GAP;
+                this.UpdateSectionExcelRepresentation(w_section);
             }
-            this.UpdateSectionExcelRepresentation();
+
         }
+        /// <summary>
+        /// Функция копирует часть объектой модели из родительской модеи в текущую
+        /// </summary>
         public void CopyOwnerObjectModels()
         {
             if (this.Owner != null)
@@ -2078,6 +2220,9 @@ namespace ExellAddInsLib.MSG
             }
 
         }
+        /// <summary>
+        /// Функция заполняет соосветврующие общие коллекции из дерева загруженных в объекты данных
+        /// </summary>
         public void SetCommonModelCollections()
         {
             this.MSGWorks.Clear();
@@ -2104,8 +2249,10 @@ namespace ExellAddInsLib.MSG
 
             }
         }
-
-        public void UpdateSectionExcelRepresentation()
+        /// <summary>
+        /// 
+        /// </summary>
+        public void UpdateSectionExcelRepresentation_bkup()
         {
             foreach (WorksSection section in this.WorksSections)
                 this.UpdateExellBindableObject(section);
@@ -2137,7 +2284,11 @@ namespace ExellAddInsLib.MSG
 
 
         }
-        public void UpdateSectionExcelRepresentation_bkup(WorksSection w_section)
+        /// <summary>
+        /// Функция отображает данные их модели в на соответвующие листа Excel
+        /// </summary>
+        /// <param name="w_section"></param>
+        public void UpdateSectionExcelRepresentation(WorksSection w_section)
         {
             this.UpdateExellBindableObject(w_section);
             foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => w.Number))
@@ -2169,6 +2320,12 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
+        /// <summary>
+        /// Функция устанавливает соовествующие значения строк и столбцов, где будут располагаться объеты на листе Excel
+        /// </summary>
+        /// <param name="w_section"></param>
+        /// <param name="top_row"></param>
+        /// <returns></returns>
         public int SetSectionExcelRepresentionTree(WorksSection w_section, int top_row)
         {
             int section_row = top_row;
@@ -2270,6 +2427,7 @@ namespace ExellAddInsLib.MSG
             section_row = msg_row + 1;
             return rc_row;
         }
+
         public void UpdateSectionWorksheetCommonPart_backup(WorksSection w_section, int top_row = FIRST_ROW_INDEX)
         {
             int section_row = top_row;
@@ -2338,14 +2496,11 @@ namespace ExellAddInsLib.MSG
             }
             section_row = msg_row + 1;
         }
+
+
         public void Update()
         {
-
-            this.ReloadSheetModel();
             this.UpdateWorksheetRepresetation();
-            this.SetFormulas();
-            this.SetStyleFormats();
-
         }
         /// <summary>
         /// Функция устанавливаетв объектах текущией модели соотвествующие worksheet-ы 
@@ -2389,52 +2544,6 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-        /// <summary>
-        /// Функция обновляет документальное представление объетка (рукурсивно проходит по всем объектам 
-        /// реализующим интерфейс IExcelBindableBase). 
-        /// </summary>
-        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IExcelBindableBase </param>
-        private void UpdateExellBindableObject(IExcelBindableBase obj)
-        {
-            var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
-
-            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
-            {
-                var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
-                if (val != null)
-                    kvp.Value.Cell.Value = val.ToString();
-            }
-        }
-
-
-        private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
-        {
-            string[] prop_names = full_prop_name.Split('.');
-            foreach (string name in prop_names)
-            {
-                string rest_prop_name_part = full_prop_name;
-                if (full_prop_name.Contains(".")) rest_prop_name_part = full_prop_name.Replace($"{name}.", "");
-                if (obj.GetType().GetProperty(name).GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) != null)
-                    return null;
-                var prop_value = obj.GetType().GetProperty(name).GetValue(obj);
-
-                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
-                {
-                    return this.GetPropertyValueByPath(excel_bimdable_prop_value, rest_prop_name_part);
-                }
-                else if (prop_value != null && prop_value.GetType().FullName.Contains("System."))
-                {
-
-                    if (prop_value is DateTime date_val)
-                        return date_val.ToString("d");
-                    else
-                        return prop_value.ToString();
-                }
-                else
-                    return "";
-            }
-            return null;
-        }
 
 
         /// <summary>
@@ -2493,8 +2602,6 @@ namespace ExellAddInsLib.MSG
                 record_cards_area_range.Interior.ColorIndex = 0;
 
                 common_area_range.ClearContents();
-
-                //   if (this.Owner == null)
                 record_cards_area_range.ClearContents();
             }
             catch
@@ -2502,24 +2609,37 @@ namespace ExellAddInsLib.MSG
 
             }
 
+            this.RemoveGroups(this.RegisterSheet);
 
-            Excel.Range all_rows = this.RegisterSheet.Cells.Rows;
+        }
+        /// <summary>
+        /// Удалфет все групы в сторках и столбцах
+        /// </summary>
+        /// <param name="worksheet"></param>
+        public void RemoveGroups(Excel.Worksheet worksheet)
+        {
+            Excel.Range all_rows = worksheet.Cells.Rows;
+            Excel.Range all_colomns = worksheet.Cells.Columns;
 
-            for (int ii = 0; ii < 10; ii++)
+
+            for (int ii = 0; ii < 5; ii++)
                 try
                 {
                     all_rows.Select();
                     all_rows.Ungroup();
-
+                    all_colomns.Select();
+                    all_colomns.Ungroup();
                 }
                 catch
                 {
-
                 }
-
         }
-
-
+        /// <summary>
+        /// Функция получает ближайший на листе Exсуд объет необходимого типа.
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="object_type"></param>
+        /// <returns></returns>
         public IExcelBindableBase GetObjectBySelection(Excel.Range section, Type object_type)
         {
             ObservableCollection<Tuple<double, IExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IExcelBindableBase>>();

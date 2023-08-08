@@ -37,7 +37,10 @@
             this.tab1 = this.Factory.CreateRibbonTab();
             this.groupFileLaod = this.Factory.CreateRibbonGroup();
             this.btnLoadMSGFile = this.Factory.CreateRibbonButton();
-            this.btnReloadWorksheets = this.Factory.CreateRibbonButton();
+            this.btnLoadInModel = this.Factory.CreateRibbonButton();
+            this.btnLoadFromModel = this.Factory.CreateRibbonButton();
+            this.menuCommon = this.Factory.CreateRibbonMenu();
+            this.btnUpdateAll = this.Factory.CreateRibbonButton();
             this.separator4 = this.Factory.CreateRibbonSeparator();
             this.btnChangeCommonMSG = this.Factory.CreateRibbonButton();
             this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
@@ -48,7 +51,7 @@
             this.separator2 = this.Factory.CreateRibbonSeparator();
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.groupCommands = this.Factory.CreateRibbonGroup();
-            this.menu1 = this.Factory.CreateRibbonMenu();
+            this.menuEditCommands = this.Factory.CreateRibbonMenu();
             this.buttonCopy = this.Factory.CreateRibbonButton();
             this.btnCopyMSGWork = this.Factory.CreateRibbonButton();
             this.buttonPaste = this.Factory.CreateRibbonButton();
@@ -59,17 +62,16 @@
             this.btnChangeUOM = this.Factory.CreateRibbonButton();
             this.btnSelectPerson = this.Factory.CreateRibbonButton();
             this.groupMSG_OUT = this.Factory.CreateRibbonGroup();
-            this.btnLoadTeplateFile = this.Factory.CreateRibbonButton();
+            this.btnCreateTemplateFile = this.Factory.CreateRibbonButton();
             this.checkBoxSandayVocationrStatus = this.Factory.CreateRibbonCheckBox();
             this.checkBoxRerightDatePart = this.Factory.CreateRibbonCheckBox();
             this.separator3 = this.Factory.CreateRibbonSeparator();
-            this.btnFillTemlate = this.Factory.CreateRibbonButton();
+            this.btnRefillTemlate = this.Factory.CreateRibbonButton();
             this.group2 = this.Factory.CreateRibbonGroup();
             this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.btnUpdateAll = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -93,8 +95,9 @@
             // groupFileLaod
             // 
             this.groupFileLaod.Items.Add(this.btnLoadMSGFile);
-            this.groupFileLaod.Items.Add(this.btnReloadWorksheets);
-            this.groupFileLaod.Items.Add(this.btnUpdateAll);
+            this.groupFileLaod.Items.Add(this.btnLoadInModel);
+            this.groupFileLaod.Items.Add(this.btnLoadFromModel);
+            this.groupFileLaod.Items.Add(this.menuCommon);
             this.groupFileLaod.Items.Add(this.separator4);
             this.groupFileLaod.Items.Add(this.btnChangeCommonMSG);
             this.groupFileLaod.Items.Add(this.comboBoxEmployerName);
@@ -104,16 +107,37 @@
             // 
             // btnLoadMSGFile
             // 
-            this.btnLoadMSGFile.Label = "Загрузить ведомость";
+            this.btnLoadMSGFile.Label = "Загрузить";
             this.btnLoadMSGFile.Name = "btnLoadMSGFile";
             this.btnLoadMSGFile.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadMSGFile_Click);
             // 
-            // btnReloadWorksheets
+            // btnLoadInModel
             // 
-            this.btnReloadWorksheets.Enabled = false;
-            this.btnReloadWorksheets.Label = "ОБНОВИТЬ";
-            this.btnReloadWorksheets.Name = "btnReloadWorksheets";
-            this.btnReloadWorksheets.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnReloadWorksheets_Click);
+            this.btnLoadInModel.Enabled = false;
+            this.btnLoadInModel.Label = "Обновить модель";
+            this.btnLoadInModel.Name = "btnLoadInModel";
+            this.btnLoadInModel.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadInModel_Click);
+            // 
+            // btnLoadFromModel
+            // 
+            this.btnLoadFromModel.Enabled = false;
+            this.btnLoadFromModel.Label = "Обновить из модели";
+            this.btnLoadFromModel.Name = "btnLoadFromModel";
+            this.btnLoadFromModel.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadFromModel_Click);
+            // 
+            // menuCommon
+            // 
+            this.menuCommon.Items.Add(this.btnUpdateAll);
+            this.menuCommon.Label = "Глобальные команды";
+            this.menuCommon.Name = "menuCommon";
+            // 
+            // btnUpdateAll
+            // 
+            this.btnUpdateAll.Enabled = false;
+            this.btnUpdateAll.Label = "ОБНОВИТЬ ВСЁ";
+            this.btnUpdateAll.Name = "btnUpdateAll";
+            this.btnUpdateAll.ShowImage = true;
+            this.btnUpdateAll.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnUpdateAll_Click);
             // 
             // separator4
             // 
@@ -177,17 +201,18 @@
             // 
             // groupCommands
             // 
-            this.groupCommands.Items.Add(this.menu1);
+            this.groupCommands.Items.Add(this.menuEditCommands);
             this.groupCommands.Items.Add(this.buttonPaste);
             this.groupCommands.Label = "_______";
             this.groupCommands.Name = "groupCommands";
             // 
-            // menu1
+            // menuEditCommands
             // 
-            this.menu1.Items.Add(this.buttonCopy);
-            this.menu1.Items.Add(this.btnCopyMSGWork);
-            this.menu1.Label = "Команды";
-            this.menu1.Name = "menu1";
+            this.menuEditCommands.Enabled = false;
+            this.menuEditCommands.Items.Add(this.buttonCopy);
+            this.menuEditCommands.Items.Add(this.btnCopyMSGWork);
+            this.menuEditCommands.Label = "Команды";
+            this.menuEditCommands.Name = "menuEditCommands";
             // 
             // buttonCopy
             // 
@@ -250,20 +275,20 @@
             // 
             // groupMSG_OUT
             // 
-            this.groupMSG_OUT.Items.Add(this.btnLoadTeplateFile);
+            this.groupMSG_OUT.Items.Add(this.btnCreateTemplateFile);
             this.groupMSG_OUT.Items.Add(this.checkBoxSandayVocationrStatus);
             this.groupMSG_OUT.Items.Add(this.checkBoxRerightDatePart);
             this.groupMSG_OUT.Items.Add(this.separator3);
-            this.groupMSG_OUT.Items.Add(this.btnFillTemlate);
+            this.groupMSG_OUT.Items.Add(this.btnRefillTemlate);
             this.groupMSG_OUT.Label = "МСГ выход";
             this.groupMSG_OUT.Name = "groupMSG_OUT";
             // 
-            // btnLoadTeplateFile
+            // btnCreateTemplateFile
             // 
-            this.btnLoadTeplateFile.Enabled = false;
-            this.btnLoadTeplateFile.Label = "Создать МСГ из шаблона";
-            this.btnLoadTeplateFile.Name = "btnLoadTeplateFile";
-            this.btnLoadTeplateFile.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadTeplateFile_Click);
+            this.btnCreateTemplateFile.Enabled = false;
+            this.btnCreateTemplateFile.Label = "Создать МСГ из шаблона";
+            this.btnCreateTemplateFile.Name = "btnCreateTemplateFile";
+            this.btnCreateTemplateFile.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadTeplateFile_Click);
             // 
             // checkBoxSandayVocationrStatus
             // 
@@ -283,12 +308,12 @@
             // 
             this.separator3.Name = "separator3";
             // 
-            // btnFillTemlate
+            // btnRefillTemlate
             // 
-            this.btnFillTemlate.Enabled = false;
-            this.btnFillTemlate.Label = "Обновить существующий  МСГ";
-            this.btnFillTemlate.Name = "btnFillTemlate";
-            this.btnFillTemlate.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnFillTemlate_Click);
+            this.btnRefillTemlate.Enabled = false;
+            this.btnRefillTemlate.Label = "Обновить существующий  МСГ";
+            this.btnRefillTemlate.Name = "btnRefillTemlate";
+            this.btnRefillTemlate.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnFillTemlate_Click);
             // 
             // group2
             // 
@@ -317,13 +342,6 @@
             // openMSGTemplateFileDialog
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
-            // 
-            // btnUpdateAll
-            // 
-            this.btnUpdateAll.Label = "ОБНОВИТЬ ВСЁ";
-            this.btnUpdateAll.Name = "btnUpdateAll";
-            this.btnUpdateAll.ShowImage = true;
-            this.btnUpdateAll.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnUpdateAll_Click);
             // 
             // Ribbon1
             // 
@@ -365,12 +383,12 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeUOM;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton bntChangeEmployerMSG;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeCommonMSG;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnReloadWorksheets;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnFillTemlate;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadFromModel;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnRefillTemlate;
         private System.Windows.Forms.OpenFileDialog openMSGTemplateFileDialog;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupMSG_OUT;
         internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox checkBoxSandayVocationrStatus;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadTeplateFile;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCreateTemplateFile;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupFileLaod;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadMSGFile;
         internal Microsoft.Office.Tools.Ribbon.RibbonLabel labelConractCode;
@@ -384,9 +402,11 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonPaste;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonCalc;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator4;
-        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menu1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuEditCommands;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyMSGWork;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnUpdateAll;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadInModel;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuCommon;
     }
 
     partial class ThisRibbonCollection
