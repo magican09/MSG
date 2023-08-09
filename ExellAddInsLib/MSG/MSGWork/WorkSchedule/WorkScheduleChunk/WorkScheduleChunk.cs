@@ -36,6 +36,15 @@ namespace ExellAddInsLib.MSG
             get { return _workersNumber; }
             set { SetProperty(ref _workersNumber, value); }
         }
+
+        private string _isSundayVacationDay = "Да";
+
+        public string IsSundayVacationDay
+        {
+            get { return _isSundayVacationDay; }
+            set { _isSundayVacationDay = value; }
+        }
+
         public WorkScheduleChunk()
         {
 

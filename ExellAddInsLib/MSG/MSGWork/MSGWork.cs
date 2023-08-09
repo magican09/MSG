@@ -30,17 +30,23 @@ namespace ExellAddInsLib.MSG
             get { return _vOVRWorks; }
             set { _vOVRWorks = value; }
         }
-        public int? GetShedulesAllDaysNumber(bool is_sunday_vocation)
+        public int? GetShedulesAllDaysNumber()
         {
 
 
             if (WorkSchedules.Count > 0)
             {
                 // var time_span = new TimeSpan(
+                bool is_sunday_vocation = true;
                 int? days_count = 0;
                 foreach (WorkScheduleChunk chunk in this.WorkSchedules)
                 {
-                    int worked_day_number = 0;
+                    if (chunk.IsSundayVacationDay == "Да")
+                        is_sunday_vocation = true;
+                    else
+                        is_sunday_vocation = false;
+
+                   int worked_day_number = 0;
                     for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1)) //Находим количество рабочих дней
                         if (is_sunday_vocation == false || date.DayOfWeek != DayOfWeek.Sunday)
                             worked_day_number++;

@@ -110,6 +110,13 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _workersComposition, value); }
         }
 
+        private MachinesComposition _machinesComposition;
+
+        public MachinesComposition MachinesComposition
+        {
+            get { return _machinesComposition; }
+            set { SetProperty(ref _machinesComposition, value); }
+        }
 
 
         private ObservableCollection<IWork> _children = new ObservableCollection<IWork>();
@@ -122,6 +129,7 @@ namespace ExellAddInsLib.MSG
         public Work()
         {
             WorkersComposition = new WorkersComposition();
+            MachinesComposition = new MachinesComposition();
             ReportCard = new WorkReportCard();
             Children.CollectionChanged += OnChildrenAdd;
 

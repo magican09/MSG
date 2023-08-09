@@ -53,7 +53,9 @@
             this.groupCommands = this.Factory.CreateRibbonGroup();
             this.menuEditCommands = this.Factory.CreateRibbonMenu();
             this.buttonCopy = this.Factory.CreateRibbonButton();
+            this.menuMSG = this.Factory.CreateRibbonMenu();
             this.btnCopyMSGWork = this.Factory.CreateRibbonButton();
+            this.btnInitMSGContent = this.Factory.CreateRibbonButton();
             this.buttonPaste = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.separator1 = this.Factory.CreateRibbonSeparator();
@@ -61,6 +63,7 @@
             this.btnChangePosts = this.Factory.CreateRibbonButton();
             this.btnChangeUOM = this.Factory.CreateRibbonButton();
             this.btnSelectPerson = this.Factory.CreateRibbonButton();
+            this.btnMachines = this.Factory.CreateRibbonButton();
             this.groupMSG_OUT = this.Factory.CreateRibbonGroup();
             this.btnCreateTemplateFile = this.Factory.CreateRibbonButton();
             this.checkBoxSandayVocationrStatus = this.Factory.CreateRibbonCheckBox();
@@ -114,14 +117,14 @@
             // btnLoadInModel
             // 
             this.btnLoadInModel.Enabled = false;
-            this.btnLoadInModel.Label = "Обновить модель";
+            this.btnLoadInModel.Label = "В МОДЕЛЬ";
             this.btnLoadInModel.Name = "btnLoadInModel";
             this.btnLoadInModel.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadInModel_Click);
             // 
             // btnLoadFromModel
             // 
             this.btnLoadFromModel.Enabled = false;
-            this.btnLoadFromModel.Label = "Обновить из модели";
+            this.btnLoadFromModel.Label = "ИЗ МОДЕЛИ";
             this.btnLoadFromModel.Name = "btnLoadFromModel";
             this.btnLoadFromModel.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadFromModel_Click);
             // 
@@ -202,6 +205,7 @@
             // groupCommands
             // 
             this.groupCommands.Items.Add(this.menuEditCommands);
+            this.groupCommands.Items.Add(this.menuMSG);
             this.groupCommands.Items.Add(this.buttonPaste);
             this.groupCommands.Label = "_______";
             this.groupCommands.Name = "groupCommands";
@@ -210,23 +214,36 @@
             // 
             this.menuEditCommands.Enabled = false;
             this.menuEditCommands.Items.Add(this.buttonCopy);
-            this.menuEditCommands.Items.Add(this.btnCopyMSGWork);
-            this.menuEditCommands.Label = "Команды";
+            this.menuEditCommands.Label = "РАЗДЕЛ";
             this.menuEditCommands.Name = "menuEditCommands";
             // 
             // buttonCopy
             // 
-            this.buttonCopy.Label = "Копировать раздел";
+            this.buttonCopy.Label = "Копировать";
             this.buttonCopy.Name = "buttonCopy";
             this.buttonCopy.ShowImage = true;
             this.buttonCopy.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonCopy_Click);
             // 
+            // menuMSG
+            // 
+            this.menuMSG.Items.Add(this.btnCopyMSGWork);
+            this.menuMSG.Items.Add(this.btnInitMSGContent);
+            this.menuMSG.Label = "МСГ";
+            this.menuMSG.Name = "menuMSG";
+            // 
             // btnCopyMSGWork
             // 
-            this.btnCopyMSGWork.Label = "Копировать МСГ";
+            this.btnCopyMSGWork.Label = "Копировать";
             this.btnCopyMSGWork.Name = "btnCopyMSGWork";
             this.btnCopyMSGWork.ShowImage = true;
             this.btnCopyMSGWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyMSGWork_Click);
+            // 
+            // btnInitMSGContent
+            // 
+            this.btnInitMSGContent.Label = "Дописать ...";
+            this.btnInitMSGContent.Name = "btnInitMSGContent";
+            this.btnInitMSGContent.ShowImage = true;
+            this.btnInitMSGContent.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnInitMSGContent_Click);
             // 
             // buttonPaste
             // 
@@ -243,7 +260,8 @@
             this.grpInChargePersons.Items.Add(this.btnChangePosts);
             this.grpInChargePersons.Items.Add(this.btnChangeUOM);
             this.grpInChargePersons.Items.Add(this.btnSelectPerson);
-            this.grpInChargePersons.Label = "Отвественные";
+            this.grpInChargePersons.Items.Add(this.btnMachines);
+            this.grpInChargePersons.Label = "Общие данные";
             this.grpInChargePersons.Name = "grpInChargePersons";
             // 
             // separator1
@@ -252,19 +270,19 @@
             // 
             // btnChangeEmployers
             // 
-            this.btnChangeEmployers.Label = "Редактировать список отвественных";
+            this.btnChangeEmployers.Label = "Отвественные";
             this.btnChangeEmployers.Name = "btnChangeEmployers";
             this.btnChangeEmployers.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeEmployers_Click);
             // 
             // btnChangePosts
             // 
-            this.btnChangePosts.Label = "Редактировать список должностей";
+            this.btnChangePosts.Label = "Должности";
             this.btnChangePosts.Name = "btnChangePosts";
             this.btnChangePosts.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangePosts_Click);
             // 
             // btnChangeUOM
             // 
-            this.btnChangeUOM.Label = "Радактировать ед.изм.";
+            this.btnChangeUOM.Label = "Ед.изм.";
             this.btnChangeUOM.Name = "btnChangeUOM";
             this.btnChangeUOM.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeUOM_Click);
             // 
@@ -272,6 +290,12 @@
             // 
             this.btnSelectPerson.Label = "";
             this.btnSelectPerson.Name = "btnSelectPerson";
+            // 
+            // btnMachines
+            // 
+            this.btnMachines.Label = "Техника";
+            this.btnMachines.Name = "btnMachines";
+            this.btnMachines.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnMachines_Click);
             // 
             // groupMSG_OUT
             // 
@@ -407,6 +431,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnUpdateAll;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadInModel;
         internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuCommon;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnMachines;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuMSG;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitMSGContent;
     }
 
     partial class ThisRibbonCollection

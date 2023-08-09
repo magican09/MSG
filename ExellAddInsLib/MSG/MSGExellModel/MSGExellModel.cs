@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -33,7 +34,7 @@ namespace ExellAddInsLib.MSG
         public const int WORKS_END_DATE_ROW = 2;
         public const int WORKS_END_DATE_COL = 3;
 
-        public const int FIRST_ROW_INDEX = 7;
+        public const int FIRST_ROW_INDEX = 8;
 
         public const int WSEC_NUMBER_COL = 2;
         public const int WSEC_NAME_COL = WSEC_NUMBER_COL + 1;
@@ -46,13 +47,18 @@ namespace ExellAddInsLib.MSG
         public const int MSG_LABOURNESS_COL = MSG_NUMBER_COL + 5;
         public const int MSG_START_DATE_COL = MSG_NUMBER_COL + 6;
         public const int MSG_END_DATE_COL = MSG_NUMBER_COL + 7;
+        public const int MSG_SUNDAY_IS_VOCATION_COL = MSG_NUMBER_COL + 8;
 
-        public const int MSG_NEEDS_OF_WORKERS_NUMBER_COL = MSG_END_DATE_COL + 1;
+        public const int MSG_NEEDS_OF_WORKERS_NUMBER_COL = MSG_SUNDAY_IS_VOCATION_COL + 1;
         public const int MSG_NEEDS_OF_WORKERS_NAME_COL = MSG_NEEDS_OF_WORKERS_NUMBER_COL + 1;
-        public const int MSG_NEEDS_OF_WORKERS_QUANTITY_COL = MSG_NEEDS_OF_WORKERS_NAME_COL + 1;
+        public const int MSG_NEEDS_OF_WORKERS_QUANTITY_COL = MSG_NEEDS_OF_WORKERS_NUMBER_COL + 2;
+
+        public const int MSG_NEEDS_OF_MACHINE_NUMBER_COL = MSG_NEEDS_OF_WORKERS_QUANTITY_COL + 1;
+        public const int MSG_NEEDS_OF_MACHINE_NAME_COL = MSG_NEEDS_OF_MACHINE_NUMBER_COL + 1;
+        public const int MSG_NEEDS_OF_MACHINE_QUANTITY_COL = MSG_NEEDS_OF_MACHINE_NUMBER_COL + 2;
 
 
-        public const int VOVR_NUMBER_COL = 15;
+        public const int VOVR_NUMBER_COL = MSG_NEEDS_OF_MACHINE_QUANTITY_COL + 1;
         public const int VOVR_NAME_COL = VOVR_NUMBER_COL + 1;
         public const int VOVR_MEASURE_COL = VOVR_NUMBER_COL + 2;
         public const int VOVR_QUANTITY_COL = VOVR_NUMBER_COL + 3;
@@ -60,7 +66,7 @@ namespace ExellAddInsLib.MSG
         public const int VOVR_LABOURNESS_COL = VOVR_NUMBER_COL + 5;
 
 
-        public const int KS_NUMBER_COL = 21;
+        public const int KS_NUMBER_COL = VOVR_LABOURNESS_COL + 1;
         public const int KS_CODE_COL = KS_NUMBER_COL + 1;
         public const int KS_NAME_COL = KS_NUMBER_COL + 2;
         public const int KS_MEASURE_COL = KS_NUMBER_COL + 3;
@@ -93,7 +99,15 @@ namespace ExellAddInsLib.MSG
         public const int W_CONSUMPTIONS_DATE_RAW = 3;
         public const int W_CONSUMPTIONS_FIRST_DATE_COL = 3;
 
+        public const int MCH_CONSUMPTIONS_FIRST_ROW_INDEX = 4;
+        public const int MCH_CONSUMPTIONS_NUMBER_COL = 1;
+        public const int MCH_CONSUMPTIONS_NAME_COL = 2;
+        public const int MCH_CONSUMPTIONS_DATE_RAW = 3;
+        public const int MCH_CONSUMPTIONS_FIRST_DATE_COL = 3;
+
         public const int _SECTIONS_GAP = 2;
+        
+        public const int W_SECTION_COLOR = 33;
 
 
         private int null_str_count = 0;
@@ -218,6 +232,16 @@ namespace ExellAddInsLib.MSG
             get { return _WorkersComposition; }
             set { SetProperty(ref _WorkersComposition, value); }
         }
+        private MachinesComposition _machinesComposition;
+        /// <summary>
+        /// Состав работников ( потребности)
+        /// </summary>
+        public MachinesComposition MachinesComposition
+        {
+            get { return _machinesComposition; }
+            set { SetProperty(ref _machinesComposition, value); }
+        }
+
         private WorkerConsumptions _workerConsumptions;
         /// <summary>
         /// Потребления работников
@@ -228,6 +252,12 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _workerConsumptions, value); }
         }
 
+        private MachineConsumptions _machineConsumptions;
+        public MachineConsumptions MachineConsumptions
+        {
+            get { return _machineConsumptions; }
+            set { SetProperty(ref _machineConsumptions, value); }
+        }
         /// <summary>
         ///Шифр объекта или договора
         /// </summary>
@@ -299,6 +329,31 @@ namespace ExellAddInsLib.MSG
             }
         }
 
+        private Excel.Worksheet _machineConsumptionsSheet;
+
+        /// <summary>
+        /// Прикрепленный к модели лист  Технических ресурсов Worksheet
+        /// </summary>
+        ///   
+        public Excel.Worksheet MachineConsumptionsSheet
+        {
+            get
+            {
+                return _machineConsumptionsSheet;
+            }
+            set
+            {
+                if (!AllWorksheets.Contains(value))
+                {
+                    if (AllWorksheets.Contains(_machineConsumptionsSheet))
+                        AllWorksheets.Remove(_machineConsumptionsSheet);
+                    AllWorksheets.Add(value);
+                }
+                _machineConsumptionsSheet = value;
+
+            }
+        }
+
         private Excel.Worksheet _commonSheet;
 
         /// <summary>
@@ -337,6 +392,8 @@ namespace ExellAddInsLib.MSG
             WorkReportCards = new ExcelNotifyChangedCollection<WorkReportCard>();
             WorkersComposition = new WorkersComposition();
             WorkerConsumptions = new WorkerConsumptions();
+            MachinesComposition = new MachinesComposition();
+            MachineConsumptions = new MachineConsumptions();
             UnitOfMeasurements = new ExcelNotifyChangedCollection<UnitOfMeasurement>();
 
 
@@ -559,9 +616,6 @@ namespace ExellAddInsLib.MSG
             return null;
         }
 
-
-
-
         /// <summary>
         /// Обработчик собиытия изменений в зарегистрированных объетах.
         /// </summary>
@@ -755,8 +809,15 @@ namespace ExellAddInsLib.MSG
                     WorkScheduleChunk work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
                     int schedule_number = 1;
                     work_sh_chunk.Number = $"{msg_work.Number}.{schedule_number.ToString()}";
+                    string is_snaday_vacation = registerSheet.Cells[rowIndex, MSG_SUNDAY_IS_VOCATION_COL].Value;
+                    if (is_snaday_vacation != null && is_snaday_vacation.Contains("Нет"))
+                        work_sh_chunk.IsSundayVacationDay = "Нет";
+                    else
+                        work_sh_chunk.IsSundayVacationDay = "Да";
+
                     this.Register(work_sh_chunk, "StartTime", rowIndex, MSG_START_DATE_COL, this.RegisterSheet);
                     this.Register(work_sh_chunk, "EndTime", rowIndex, MSG_END_DATE_COL, this.RegisterSheet);
+                    this.Register(work_sh_chunk, "IsSundayVacationDay", rowIndex, MSG_SUNDAY_IS_VOCATION_COL, this.RegisterSheet);
                     msg_work.WorkSchedules.Add(work_sh_chunk);
 
                     while (registerSheet.Cells[rowIndex + 1, MSG_NUMBER_COL].Value == null
@@ -768,8 +829,15 @@ namespace ExellAddInsLib.MSG
                         end_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_END_DATE_COL].Value.ToString());
                         WorkScheduleChunk extra_work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
                         extra_work_sh_chunk.Number = $"{msg_work.Number}.{schedule_number.ToString()}";
+
+                        is_snaday_vacation = registerSheet.Cells[rowIndex, MSG_SUNDAY_IS_VOCATION_COL].Value;
+                        if (is_snaday_vacation != null && is_snaday_vacation.Contains("Нет"))
+                            extra_work_sh_chunk.IsSundayVacationDay = "Нет";
+                        else
+                            extra_work_sh_chunk.IsSundayVacationDay = "Да";
                         this.Register(extra_work_sh_chunk, "StartTime", rowIndex, MSG_START_DATE_COL, this.RegisterSheet);
                         this.Register(extra_work_sh_chunk, "EndTime", rowIndex, MSG_END_DATE_COL, this.RegisterSheet);
+                        this.Register(extra_work_sh_chunk, "IsSundayVacationDay", rowIndex, MSG_SUNDAY_IS_VOCATION_COL, this.RegisterSheet);
                         msg_work.WorkSchedules.Add(extra_work_sh_chunk);
                     }
 
@@ -827,7 +895,7 @@ namespace ExellAddInsLib.MSG
 
                     var quantity = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value;
                     if (quantity != null)
-                        msg_needs_of_workers.Quantity = Int32.Parse(quantity.ToString());
+                        msg_needs_of_workers.Quantity = Decimal.Parse(quantity.ToString());
                     else
                         msg_needs_of_workers.CellAddressesMap["Quantity"].IsValid = false;
 
@@ -871,6 +939,92 @@ namespace ExellAddInsLib.MSG
                             {
                                 NeedsOfWorkersDay new_nw_day = new NeedsOfWorkersDay(needsOfWorkersDay);
                                 global_needs_of_worker.NeedsOfWorkersReportCard.Add(new_nw_day);
+                            }
+                        }
+
+                    }
+
+                }
+                rowIndex++;
+            }
+        }
+        /// <summary>
+        /// Функция из части МСГ листа Worksheet 
+        /// </summary>
+        public void LoadMSGMachineCompositions()
+        {
+            Excel.Worksheet registerSheet = this.RegisterSheet;
+
+            int rowIndex = FIRST_ROW_INDEX;
+            foreach (var mch_coposition in this.MachinesComposition)
+                this.Unregister(mch_coposition);
+            this.MachinesComposition.Clear();
+            foreach (var work in this.MSGWorks)
+                work.MachinesComposition.Clear();
+
+            null_str_count = 0;
+            while (null_str_count < 100)
+            {
+                var number = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_MACHINE_NUMBER_COL].Value;
+                if (number == null) null_str_count++;
+                else
+                {
+                    null_str_count = 0;
+                    NeedsOfMachine msg_needs_of_machines = new NeedsOfMachine();
+
+                    this.Register(msg_needs_of_machines, "Number", rowIndex, MSG_NEEDS_OF_MACHINE_NUMBER_COL, this.RegisterSheet);
+                    this.Register(msg_needs_of_machines, "Name", rowIndex, MSG_NEEDS_OF_MACHINE_NAME_COL, this.RegisterSheet);
+                    this.Register(msg_needs_of_machines, "Quantity", rowIndex, MSG_NEEDS_OF_MACHINE_QUANTITY_COL, this.RegisterSheet);
+
+                    msg_needs_of_machines.Number = number.ToString();
+                    msg_needs_of_machines.Name = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_MACHINE_NAME_COL].Value;
+
+                    var quantity = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_MACHINE_QUANTITY_COL].Value;
+                    if (quantity != null)
+                        msg_needs_of_machines.Quantity = decimal.Parse(quantity.ToString());
+                    else
+                        msg_needs_of_machines.CellAddressesMap["Quantity"].IsValid = false;
+
+                    MSGWork msg_work = this.MSGWorks.Where(w => w.Number.StartsWith(msg_needs_of_machines.Number.Remove(msg_needs_of_machines.Number.LastIndexOf(".")))).FirstOrDefault();
+                    if (msg_work != null)
+                    {
+                        msg_work.MachinesComposition.Add(msg_needs_of_machines);
+                        msg_needs_of_machines.Owner = msg_work;
+                        foreach (WorkScheduleChunk chunk in msg_work.WorkSchedules)
+                        {
+                            for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1))
+                            {
+                                NeedsOfMachineDay needsOfMachinesDay = new NeedsOfMachineDay();
+                                needsOfMachinesDay.Date = date;
+                                needsOfMachinesDay.Quantity = msg_needs_of_machines.Quantity;
+                                msg_needs_of_machines.NeedsOfMachinesReportCard.Add(needsOfMachinesDay);
+                            }
+                        }
+                    }
+
+                    NeedsOfMachine global_needs_of_machine = this.MachinesComposition.FirstOrDefault(nw => nw.Name == msg_needs_of_machines.Name);
+                    if (global_needs_of_machine == null)
+                    {
+                        global_needs_of_machine = new NeedsOfMachine();
+                        global_needs_of_machine.Number = msg_needs_of_machines.Number;
+                        global_needs_of_machine.Name = msg_needs_of_machines.Name;
+                        foreach (NeedsOfMachineDay needsOfMachinesDay in msg_needs_of_machines.NeedsOfMachinesReportCard)
+                            global_needs_of_machine.NeedsOfMachinesReportCard.Add(needsOfMachinesDay);
+                        this.MachinesComposition.Add(global_needs_of_machine);
+                    }
+                    else
+                    {
+                        foreach (NeedsOfMachineDay needsOfMachinesDay in msg_needs_of_machines.NeedsOfMachinesReportCard)
+                        {
+                            var nw_day = global_needs_of_machine.NeedsOfMachinesReportCard.FirstOrDefault(nwd => nwd.Date == needsOfMachinesDay.Date);
+                            if (nw_day != null)
+                            {
+                                nw_day.Quantity += needsOfMachinesDay.Quantity;
+                            }
+                            else
+                            {
+                                NeedsOfMachineDay new_nmch_day = new NeedsOfMachineDay(needsOfMachinesDay);
+                                global_needs_of_machine.NeedsOfMachinesReportCard.Add(new_nmch_day);
                             }
                         }
 
@@ -1275,7 +1429,59 @@ namespace ExellAddInsLib.MSG
             }
 
         }
+        public void LoadMachineConsumptions()
+        {
+            Excel.Worksheet consumtionsSheet = this.MachineConsumptionsSheet;
+            int rowIndex = MCH_CONSUMPTIONS_FIRST_ROW_INDEX;
+            foreach (var mc in this.MachineConsumptions)
+                this.Unregister(mc);
+            this.MachineConsumptions.Clear();
+            null_str_count = 0;
 
+            while (null_str_count < 100)
+            {
+                var number = consumtionsSheet.Cells[rowIndex, MCH_CONSUMPTIONS_NUMBER_COL].Value;
+                if (number == null) null_str_count++;
+                else
+                {
+                    null_str_count = 0;
+                    MachineConsumption machine_consumption = new MachineConsumption();
+                    this.Register(machine_consumption, "Number", rowIndex, MCH_CONSUMPTIONS_NUMBER_COL, consumtionsSheet);
+                    this.Register(machine_consumption, "Name", rowIndex, MCH_CONSUMPTIONS_NAME_COL, consumtionsSheet);
+
+                    machine_consumption.Number = number.ToString();
+                    var name = consumtionsSheet.Cells[rowIndex, MCH_CONSUMPTIONS_NAME_COL].Value;
+                    machine_consumption.Name = name;
+                    machine_consumption.MachinesConsumptionReportCard.Clear();
+
+                    int date_index = 0;
+
+                    while (date_index < this.WorkedDaysNumber)
+                    {
+                        DateTime current_date = DateTime.Parse(consumtionsSheet.Cells[MCH_CONSUMPTIONS_DATE_RAW, MCH_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString());
+                        decimal quantity = 0;
+                        if (consumtionsSheet.Cells[rowIndex, MCH_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value != null)
+                            quantity = Decimal.Parse(consumtionsSheet.Cells[rowIndex, MCH_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString());
+
+                        if (quantity != 0)
+                        {
+                            MachineConsumptionDay w_consumption_Day = new MachineConsumptionDay();
+                            w_consumption_Day.Date = current_date;
+                            w_consumption_Day.Quantity = quantity;
+                            this.Register(w_consumption_Day, "Quantity", rowIndex, MCH_CONSUMPTIONS_FIRST_DATE_COL + date_index, consumtionsSheet);
+                            machine_consumption.MachinesConsumptionReportCard.Add(w_consumption_Day);
+                        }
+
+                        date_index++;
+                    }
+                    if (!this.MachineConsumptions.Contains(machine_consumption))
+                        this.MachineConsumptions.Add(machine_consumption);
+
+                }
+                rowIndex++;
+            }
+
+        }
         /// <summary>
         /// Заргужает(перезагружает)  данныхе из соотвествующих листов в модель
         /// </summary>
@@ -1299,11 +1505,13 @@ namespace ExellAddInsLib.MSG
                 this.LoadWorksSections();
                 this.LoadMSGWorks();
                 this.LoadMSGWorkerCompositions();
+                this.LoadMSGMachineCompositions();
                 this.LoadVOVRWorks();
                 this.LoadKSWorks();
                 this.LoadRCWorks();
                 this.LoadWorksReportCards();
                 this.LoadWorkerConsumptions();
+                this.LoadMachineConsumptions();
                 foreach (MSGExellModel model in Children)
                     model.ReloadSheetModel();
 
@@ -1313,6 +1521,7 @@ namespace ExellAddInsLib.MSG
                 this.CopyOwnerObjectModels();
                 this.LoadWorksReportCards();
                 this.LoadWorkerConsumptions();
+                this.LoadMachineConsumptions();
             }
         }
         /// <summary>
@@ -1320,124 +1529,15 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public void SetStyleFormats()
         {
+            //  this.UpdateCellAddressMapsWorkSheets();
             this.RemoveGroups(this.RegisterSheet);
-            int selectin_col = 33;
+            int selectin_col = W_SECTION_COLOR;
             this.SetBordersBoldLine(this.WorksSections.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
             int first_row = 0;
             int last_row = 0;
             foreach (WorksSection section in this.WorksSections)
             {
-                var section_range = section.GetRange(this.RegisterSheet);
-                section_range.Interior.ColorIndex = selectin_col;
-                this.SetBordersBoldLine(section_range);
-                first_row = section_range.Row;
-                this.SetBordersBoldLine(section.MSGWorks.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
-                int msg_work_col = selectin_col + 1;
-                foreach (MSGWork msg_work in section.MSGWorks)
-                {
-                    var msg_work_range = msg_work.GetRange(this.RegisterSheet);
-                    msg_work_range.Interior.ColorIndex = msg_work_col;
-                    this.SetBordersBoldLine(msg_work_range);
-                    this.SetBordersBoldLine(msg_work.WorkersComposition.GetRange(this.RegisterSheet));
-                    foreach (NeedsOfWorker need_of_worker in msg_work.WorkersComposition)
-                    {
-                        var need_of_worker_range = need_of_worker.GetRange(this.RegisterSheet);
-                        need_of_worker_range.Interior.ColorIndex = msg_work_col;
-                    }
-
-                    this.SetBordersBoldLine(msg_work.WorkSchedules.GetRange(this.RegisterSheet));
-                    foreach (WorkScheduleChunk chunk in msg_work.WorkSchedules)
-                    {
-                        var work_composition_range = chunk.GetRange(this.RegisterSheet);
-                        work_composition_range.Interior.ColorIndex = msg_work_col;
-                    }
-
-                    this.SetBordersBoldLine(msg_work.VOVRWorks.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
-                    int vovr_work_col = msg_work_col + 1;
-                    foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
-                    {
-                        var vovr_work_range = vovr_work.GetRange(this.RegisterSheet);
-                        vovr_work_range.Interior.ColorIndex = vovr_work_col;
-                        this.SetBordersBoldLine(vovr_work_range);
-                        this.SetBordersBoldLine(vovr_work.KSWorks.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
-                        int ks_work_col = vovr_work_col;
-                        foreach (KSWork ks_work in vovr_work.KSWorks)
-                        {
-                            var ks_work_range = ks_work.GetRange(this.RegisterSheet);
-                            ks_work_range.Interior.ColorIndex = ks_work_col;
-
-                            this.SetBordersBoldLine(ks_work.RCWorks.GetRange(this.RegisterSheet, RC_LABOURNESS_COL));
-                            foreach (RCWork rc_work in ks_work.RCWorks)
-                            {
-                                var rc_work_range = rc_work.GetRange(this.RegisterSheet, RC_LABOURNESS_COL);
-                                rc_work_range.Interior.ColorIndex = ks_work_col;
-                                if (rc_work.ReportCard != null && rc_work.ReportCard.CellAddressesMap.Count > 0)
-                                {
-                                    var cr_range = rc_work.ReportCard.GetRange(this.RegisterSheet);
-                                    if (cr_range != null)
-                                    {
-                                        cr_range.Interior.ColorIndex = ks_work_col;
-                                        // cr_range.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
-                                        this.SetBordersBoldLine(cr_range, XlLineStyle.xlDashDotDot, XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
-                                    }
-                                    // Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
-
-                                    var days_row_range = this.RegisterSheet.Range[
-                                           this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Cell.Row, WRC_PC_QUANTITY_COL + 1],
-                                           this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Cell.Row, WRC_PC_QUANTITY_COL + this.WorkedDaysNumber]];
-                                    days_row_range.Interior.ColorIndex = ks_work_col;
-                                    days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
-
-                                    this.SetBordersBoldLine(days_row_range,
-                                        XlLineStyle.xlContinuous, XlLineStyle.xlContinuous,
-                                        XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
-
-                                }
-                                if (last_row < rc_work_range.Row) last_row = rc_work_range.Row;
-                            }
-
-
-                            if (ks_work.RCWorks.Count > 0)
-                            {
-                                int rc_works_top_row = ks_work.RCWorks.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
-                                int rc_works_bottom_row = ks_work.RCWorks.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
-                                int days_number = (this.WorksEndDate - this.WorksStartDate).Days;
-                                var report_cards_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[rc_works_top_row, WRC_NUMBER_COL],
-                                                                                this.RegisterSheet.Cells[rc_works_bottom_row, WRC_PC_QUANTITY_COL + days_number]];
-                                // report_cards_range.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
-                                this.SetBordersBoldLine(report_cards_range, XlLineStyle.xlContinuous);
-                                //try
-                                //{
-                                //    Excel.Range top_row = this.RegisterSheet.Rows[ks_work.RCWorks.GetTopRow() + 1];
-                                //    Excel.Range rottom_row_num = this.RegisterSheet.Rows[ks_work.RCWorks.GetBottomRow()]; ;
-                                //    this.RegisterSheet.Range[top_row, rottom_row_num].Group();
-                                //}
-                                //catch { }
-                            }
-
-                            this.SetBordersBoldLine(ks_work_range, XlLineStyle.xlLineStyleNone);
-                        }
-                        try
-                        {
-                            Excel.Range top_row = this.RegisterSheet.Rows[vovr_work.KSWorks.GetTopRow() + 1];
-                            Excel.Range rottom_row_num = this.RegisterSheet.Rows[vovr_work.KSWorks.OrderBy(w => w.RCWorks.GetBottomRow()).Last().RCWorks.GetBottomRow()]; ;
-                            this.RegisterSheet.Range[top_row, rottom_row_num].Group();
-                        }
-                        catch { }
-                        vovr_work_col++;
-                    }
-                }
-                try
-                {
-                    Excel.Range range = this.RegisterSheet.Range[this.RegisterSheet.Rows[first_row + 1],
-                                        this.RegisterSheet.Rows[last_row + _SECTIONS_GAP]];
-                    range.Group();
-                }
-                catch
-                {
-
-                }
-
+                this.SetStyleFormats( section,  selectin_col);
             }
             this.WorksSections.SetInvalidateCellsColor(XlRgbColor.rgbRed);
             this.MSGWorks.SetInvalidateCellsColor(XlRgbColor.rgbRed);
@@ -1480,6 +1580,165 @@ namespace ExellAddInsLib.MSG
             }
 
         }
+        public Excel.Range SetStyleFormats(WorksSection section, int selectin_col)
+        {
+
+            var section_range = section.GetRange(this.RegisterSheet);
+            section_range.Interior.ColorIndex = selectin_col;
+            this.SetBordersBoldLine(section_range);
+           int   first_row = section_range.Row;
+            this.SetBordersBoldLine(section.MSGWorks.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
+            int msg_work_col = selectin_col + 1;
+            int last_section_row = 0;
+            foreach (MSGWork msg_work in section.MSGWorks)
+            {
+                last_section_row = this.SetStyleFormats(msg_work, msg_work_col);
+            }
+            try
+            {
+                Excel.Range range = this.RegisterSheet.Range[this.RegisterSheet.Rows[first_row + 1],
+                                    this.RegisterSheet.Rows[last_section_row + _SECTIONS_GAP]];
+                range.Group();
+            }
+            catch
+            {
+
+            }
+            return section_range;
+        }
+        public int  SetStyleFormats(MSGWork msg_work, int msg_work_col)
+        {
+            var msg_work_range = msg_work.GetRange(this.RegisterSheet, MSG_LABOURNESS_COL);
+            msg_work_range.Interior.ColorIndex = msg_work_col;
+            this.SetBordersBoldLine(msg_work_range);
+            int last_msg_row = msg_work_range.Row;
+
+            this.SetBordersBoldLine(msg_work.WorkersComposition.GetRange(this.RegisterSheet));
+            int need_of_workers_count = 0;
+            foreach (NeedsOfWorker need_of_worker in msg_work.WorkersComposition)
+            {
+                var need_of_worker_range = need_of_worker.GetRange(this.RegisterSheet);
+                need_of_worker_range.Interior.ColorIndex = msg_work_col;
+                need_of_workers_count++;
+            }
+
+            this.SetBordersBoldLine(msg_work.MachinesComposition.GetRange(this.RegisterSheet));
+
+            int need_of_machine_count = 0;
+            foreach (NeedsOfMachine need_of_machine in msg_work.MachinesComposition)
+            {
+                var need_of_machine_range = need_of_machine.GetRange(this.RegisterSheet);
+                need_of_machine_range.Interior.ColorIndex = msg_work_col;
+                need_of_machine_count++;
+            }
+
+            this.SetBordersBoldLine(msg_work.WorkSchedules.GetRange(this.RegisterSheet));
+            int chunks_count = 0;
+            foreach (WorkScheduleChunk chunk in msg_work.WorkSchedules)
+            {
+                var work_composition_range = chunk.GetRange(this.RegisterSheet);
+                work_composition_range.Interior.ColorIndex = msg_work_col;
+                chunks_count++;
+            }
+
+            this.SetBordersBoldLine(msg_work.VOVRWorks.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
+            int vovr_work_col = msg_work_col + 1;
+            foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
+            {
+                int  vovr_work_row = this.SetStyleFormats(vovr_work, vovr_work_col);
+                last_msg_row++;
+                vovr_work_col++;
+            }
+
+            if (last_msg_row < need_of_workers_count) last_msg_row = need_of_workers_count;
+            if (last_msg_row < need_of_machine_count) last_msg_row = need_of_machine_count;
+            if (last_msg_row < chunks_count) last_msg_row = chunks_count;
+
+
+            return last_msg_row;
+
+        }
+
+
+        public  int  SetStyleFormats(VOVRWork vovr_work, int vovr_work_col)
+        {
+            var vovr_work_range = vovr_work.GetRange(this.RegisterSheet);
+            vovr_work_range.Interior.ColorIndex = vovr_work_col;
+            this.SetBordersBoldLine(vovr_work_range);
+            this.SetBordersBoldLine(vovr_work.KSWorks.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
+            int ks_work_col = vovr_work_col;
+            int last_vovr_row = vovr_work_range.Row;
+            foreach (KSWork ks_work in vovr_work.KSWorks)
+            {
+                int  ks_work_row = SetStyleFormats(ks_work, ks_work_col);
+                if (last_vovr_row < ks_work_row) last_vovr_row = ks_work_row;
+            }
+            try
+            {
+                Excel.Range top_row = this.RegisterSheet.Rows[vovr_work.KSWorks.GetTopRow() + 1];
+                Excel.Range rottom_row_num = this.RegisterSheet.Rows[vovr_work.KSWorks.OrderBy(w => w.RCWorks.GetBottomRow()).Last().RCWorks.GetBottomRow()]; ;
+                this.RegisterSheet.Range[top_row, rottom_row_num].Group();
+            }
+            catch { }
+            return last_vovr_row;
+        }
+
+
+        public int  SetStyleFormats(KSWork ks_work, int ks_work_col)
+        {
+            var ks_work_range = ks_work.GetRange(this.RegisterSheet);
+            ks_work_range.Interior.ColorIndex = ks_work_col;
+            int last_row = ks_work_range.Row;
+            this.SetBordersBoldLine(ks_work.RCWorks.GetRange(this.RegisterSheet, RC_LABOURNESS_COL));
+            foreach (RCWork rc_work in ks_work.RCWorks)
+            {
+                int rc_row = this.SetStyleFormats(rc_work, ks_work_col);
+                if (last_row < rc_row) last_row = rc_row;
+            }
+
+            if (ks_work.RCWorks.Count > 0)
+            {
+                int rc_works_top_row = ks_work.RCWorks.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
+                int rc_works_bottom_row = ks_work.RCWorks.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
+                int days_number = (this.WorksEndDate - this.WorksStartDate).Days;
+                var report_cards_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[rc_works_top_row, WRC_NUMBER_COL],
+                                                                this.RegisterSheet.Cells[rc_works_bottom_row, WRC_PC_QUANTITY_COL + days_number]];
+                this.SetBordersBoldLine(report_cards_range, XlLineStyle.xlContinuous);
+
+            }
+            this.SetBordersBoldLine(ks_work_range, XlLineStyle.xlLineStyleNone);
+
+            return last_row;
+        }
+        public  int  SetStyleFormats(RCWork rc_work, int ks_work_col)
+        {
+            var rc_work_range = rc_work.GetRange(this.RegisterSheet, RC_LABOURNESS_COL);
+            rc_work_range.Interior.ColorIndex = ks_work_col;
+            if (rc_work.ReportCard != null && rc_work.ReportCard.CellAddressesMap.Count > 0)
+            {
+                var cr_range = rc_work.ReportCard.GetRange(this.RegisterSheet);
+                if (cr_range != null)
+                {
+                    cr_range.Interior.ColorIndex = ks_work_col;
+                    // cr_range.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+                    this.SetBordersBoldLine(cr_range, XlLineStyle.xlDashDotDot, XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+                }
+                // Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+
+                var days_row_range = this.RegisterSheet.Range[
+                       this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Cell.Row, WRC_PC_QUANTITY_COL + 1],
+                       this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Cell.Row, WRC_PC_QUANTITY_COL + this.WorkedDaysNumber]];
+                days_row_range.Interior.ColorIndex = ks_work_col;
+                days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
+
+                this.SetBordersBoldLine(days_row_range,
+                    XlLineStyle.xlContinuous, XlLineStyle.xlContinuous,
+                    XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+
+            }
+            return rc_work_range.Row;
+        }
+
         public void SetFormulas_bkup()
         {
             int days_number = (this.WorksEndDate - this.WorksStartDate).Days;
@@ -1674,7 +1933,6 @@ namespace ExellAddInsLib.MSG
 
             foreach (WorksSection section in this.WorksSections)
             {
-
                 foreach (MSGWork msg_work in section.MSGWorks)
                 {
                     //foreach (NeedsOfWorker need_of_worker in msg_work.WorkersComposition)
@@ -1770,6 +2028,31 @@ namespace ExellAddInsLib.MSG
                             var child_cons_day_range =
                                  model.WorkerConsumptionsSheet.Cells[cons_row, col_iterator];
                             cons_quantity_formula += $"{model.WorkerConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
+                        }
+                    }
+                    cons_quantity_formula = cons_quantity_formula.TrimEnd('+');
+                    if (cons_quantity_formula != "")
+                        cons_day_range.Formula = $"={cons_quantity_formula}";
+                    col_iterator++;
+                }
+
+            }
+            foreach (MachineConsumption consumption in this.MachineConsumptions)
+            {
+                int col_iterator = MCH_CONSUMPTIONS_FIRST_DATE_COL;
+                while (col_iterator <= (this.WorksEndDate - this.WorksStartDate).Days)
+                {
+                    var cons_day_range = this.MachineConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, col_iterator];
+                    string cons_quantity_formula = "";
+                    foreach (MSGExellModel model in this.Children)
+                    {
+                        var child_consumption = model.MachineConsumptions.FirstOrDefault(cn => cn.Number == consumption.Number);
+                        if (child_consumption != null)
+                        {
+                            int cons_row = child_consumption.CellAddressesMap["Number"].Row;
+                            var child_cons_day_range =
+                                 model.MachineConsumptionsSheet.Cells[cons_row, col_iterator];
+                            cons_quantity_formula += $"{model.MachineConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
                         }
                     }
                     cons_quantity_formula = cons_quantity_formula.TrimEnd('+');
@@ -2189,7 +2472,7 @@ namespace ExellAddInsLib.MSG
         /// 
         /// или если ведомость сама общая, то просто очищает у нее каледарную часть с записями выполенных объемов
         /// </summary>
-        public void UpdateWorksheetRepresetation()
+        public void UpdateExcelRepresetation()
         {
             this.UpdateCellAddressMapsWorkSheets();
             this.ClearWorksheetCommonPart();
@@ -2197,11 +2480,16 @@ namespace ExellAddInsLib.MSG
             int last_row = FIRST_ROW_INDEX;
             foreach (WorksSection w_section in this.WorksSections.OrderBy(s => s.Number))
             {
-                last_row = this.SetSectionExcelRepresentionTree(w_section, last_row) + _SECTIONS_GAP;
-                this.UpdateSectionExcelRepresentation(w_section);
+                last_row = this.SetExcelRepresentionTree(w_section, last_row) + _SECTIONS_GAP;
+                this.UpdateRepresentation(w_section);
             }
 
         }
+        public void UpdateExcelRepresetation(IExcelBindableBase obj0)
+        {
+
+        }
+
         /// <summary>
         /// Функция копирует часть объектой модели из родительской модеи в текущую
         /// </summary>
@@ -2215,6 +2503,7 @@ namespace ExellAddInsLib.MSG
                 this.WorksSections.Owner = this;
                 this.SetCommonModelCollections();
 
+                this.UpdateCellAddressMapsWorkSheets();
                 foreach (var section in this.WorksSections)
                     this.RegisterObjectInObjectPropertyNameRegister(section);
             }
@@ -2288,143 +2577,199 @@ namespace ExellAddInsLib.MSG
         /// Функция отображает данные их модели в на соответвующие листа Excel
         /// </summary>
         /// <param name="w_section"></param>
-        public void UpdateSectionExcelRepresentation(WorksSection w_section)
+        public void UpdateRepresentation(WorksSection w_section)
         {
             this.UpdateExellBindableObject(w_section);
             foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => w.Number))
             {
-                this.UpdateExellBindableObject(msg_work);
-                foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
-                    this.UpdateExellBindableObject(w_ch);
-                foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
-                    this.UpdateExellBindableObject(n_w);
-                foreach (VOVRWork vovr_work in msg_work.VOVRWorks.OrderBy(w => w.Number))
-                {
-                    this.UpdateExellBindableObject(vovr_work);
-                    foreach (KSWork ks_work in vovr_work.KSWorks.OrderBy(w => w.Number))
-                    {
-                        this.UpdateExellBindableObject(ks_work);
-                        foreach (RCWork rc_work in ks_work.RCWorks.OrderBy(w => w.Number))
-                        {
-                            this.UpdateExellBindableObject(rc_work);
-                            var rc_cards = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).ToList();
-
-                            foreach (var rc in rc_cards)
-                            {
-                                this.UpdateExellBindableObject(rc);
-                                foreach (WorkDay w_day in rc)
-                                    this.UpdateExellBindableObject(w_day);
-                            }
-                        }
-                    }
-                }
+                this.UpdateRepresentation(msg_work);
             }
         }
+        public void UpdateRepresentation(MSGWork msg_work)
+        {
+            this.UpdateExellBindableObject(msg_work);
+            foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
+                this.UpdateExellBindableObject(w_ch);
+            foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
+                this.UpdateExellBindableObject(n_w);
+            foreach (NeedsOfMachine n_m in msg_work.MachinesComposition)
+                this.UpdateExellBindableObject(n_m);
+            foreach (VOVRWork vovr_work in msg_work.VOVRWorks.OrderBy(w => w.Number))
+            {
+                this.UpdateRepresentation(vovr_work);
+            }
+        }
+        public void UpdateRepresentation(VOVRWork vovr_work)
+        {
+            this.UpdateExellBindableObject(vovr_work);
+            foreach (KSWork ks_work in vovr_work.KSWorks.OrderBy(w => w.Number))
+            {
+                this.UpdateRepresentation(ks_work);
+            }
+        }
+        public void UpdateRepresentation(KSWork ks_work)
+        {
+            this.UpdateExellBindableObject(ks_work);
+            foreach (RCWork rc_work in ks_work.RCWorks.OrderBy(w => w.Number))
+            {
+                this.UpdateRepresentation(rc_work);
+            }
+        }
+        public void UpdateRepresentation(RCWork rc_work)
+        {
+            this.UpdateExellBindableObject(rc_work);
+            var rc_cards = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).ToList();
+
+            foreach (var rc in rc_cards)
+            {
+                this.UpdateExellBindableObject(rc);
+                foreach (WorkDay w_day in rc)
+                    this.UpdateExellBindableObject(w_day);
+            }
+        }
+
         /// <summary>
         /// Функция устанавливает соовествующие значения строк и столбцов, где будут располагаться объеты на листе Excel
         /// </summary>
         /// <param name="w_section"></param>
         /// <param name="top_row"></param>
         /// <returns></returns>
-        public int SetSectionExcelRepresentionTree(WorksSection w_section, int top_row)
+
+
+
+
+        public int SetExcelRepresentionTree(WorksSection w_section, int top_row)
         {
             int section_row = top_row;
             int rc_row = top_row;
             int ks_row = top_row;
             int vovr_row = top_row;
             int msg_row = top_row;
+
             w_section.ChangeTopRow(section_row);
-            foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => w.Number))
+            foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
             {
-                msg_work.ChangeTopRow(msg_row);
-                int sh_ch_row_iterator = 0;
-                foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
-                {
-                    w_ch.ChangeTopRow(msg_row + sh_ch_row_iterator);
-                    sh_ch_row_iterator++;
-                }
-                int nw_row_iterator = 0;
-                foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
-                {
-                    n_w.ChangeTopRow(msg_row + nw_row_iterator);
-                    nw_row_iterator++;
-                }
-
-                var duple_msg_works = this.MSGWorks.Where(msgw => msgw.Number == msg_work.Number && msgw.Id != msg_work.Id).ToList();
-                int msg_work_cuont = 0;
-                foreach (var msgw in duple_msg_works)
-                {
-                    msg_work_cuont++;
-                    msgw.ChangeTopRow(msg_row + msg_work_cuont);
-                }
-                msg_row += msg_work_cuont;
-                vovr_row = msg_row;
-                foreach (VOVRWork vovr_work in msg_work.VOVRWorks.OrderBy(w => w.Number))
-                {
-                    vovr_work.ChangeTopRow(vovr_row);
-                    var duple_vovr_works = this.VOVRWorks.Where(vrw => vrw.Number == vovr_work.Number && vrw.Id != vovr_work.Id).ToList();
-                    int vovr_work_cuont = 0;
-                    foreach (var vrw in duple_vovr_works)
-                    {
-                        vovr_work_cuont++;
-                        vrw.ChangeTopRow(vovr_row + vovr_work_cuont);
-                    }
-                    //vovr_row += vovr_work_cuont;
-                    ks_row = vovr_row;
-                    foreach (KSWork ks_work in vovr_work.KSWorks.OrderBy(w => w.Number))
-                    {
-                        ks_work.ChangeTopRow(ks_row);
-                        var duple_kc_works = this.KSWorks.Where(ksw => ksw.Number == ks_work.Number && ksw.Id != ks_work.Id).ToList();
-                        int ks_work_cuont = 0;
-                        foreach (var ksw in duple_kc_works)
-                        {
-                            ks_work_cuont++;
-                            ksw.ChangeTopRow(ks_row + ks_work_cuont);
-                        }
-                        //  ks_row += ks_work_cuont;
-                        rc_row = ks_row + ks_work_cuont;
-                        foreach (RCWork rc_work in ks_work.RCWorks.OrderBy(w => w.Number))
-                        {
-                            rc_work.ChangeTopRow(rc_row);
-                            ///Находимо работы с таким же номером и помещаем их ниже 
-                            var duple_rc_works = this.RCWorks.Where(rcw => rcw.Number == rc_work.Number && rcw.Id != rc_work.Id).ToList();
-                            int rc_work_cuont = 0;
-                            foreach (var rcw in duple_rc_works)
-                            {
-                                rc_work_cuont++;
-                                rcw.ChangeTopRow(rc_row + rc_work_cuont);
-                            }
-
-                            if (rc_work.ReportCard != null)
-                            {
-                                rc_work.ReportCard.ChangeTopRow(rc_row);
-                                var duple_rc_work_rc = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number && rc.Id != rc_work.ReportCard.Id).ToList();
-                                int rc_card_count = 0;
-                                foreach (WorkReportCard rc in duple_rc_work_rc)
-                                {
-                                    rc_card_count++;
-                                    rc.ChangeTopRow(rc_row + rc_card_count);
-                                    foreach (WorkDay w_day in rc)
-                                    {
-                                        w_day.ChangeTopRow(rc_work.CellAddressesMap["Number"].Row);
-                                    }
-                                }
-
-                                if (rc_work_cuont > rc_card_count)
-                                    rc_row += rc_work_cuont;
-                                else
-                                    rc_row += rc_card_count;
-                            }
-                            rc_row++;
-                        }
-                        ks_row = rc_row;
-
-                    }
-                    vovr_row = ks_row;
-                }
-                msg_row = rc_row + 1;
+                msg_row = this.SetExcelRepresentionTree(msg_work, msg_row);
             }
             section_row = msg_row + 1;
+            return rc_row;
+        }
+        
+        public int SetExcelRepresentionTree(MSGWork msg_work, int msg_row)
+        {
+            int msg_lowest_row = 0;
+            msg_work.ChangeTopRow(msg_row);
+            int sh_ch_row_iterator = 0;
+            foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
+            {
+                w_ch.ChangeTopRow(msg_row + sh_ch_row_iterator);
+                sh_ch_row_iterator++;
+            }
+            int nw_row_iterator = 0;
+            foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
+            {
+                n_w.ChangeTopRow(msg_row + nw_row_iterator);
+                nw_row_iterator++;
+            }
+
+            var duple_msg_works = this.MSGWorks.Where(msgw => msgw.Number == msg_work.Number && msgw.Id != msg_work.Id).ToList();
+            int msg_work_cuont = 0;
+            foreach (var msgw in duple_msg_works)
+            {
+                msg_work_cuont++;
+                msgw.ChangeTopRow(msg_row + msg_work_cuont);
+            }
+            if (msg_row + sh_ch_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + sh_ch_row_iterator;
+            if (msg_row + nw_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + nw_row_iterator;
+            if (msg_row + msg_work_cuont > msg_lowest_row) msg_lowest_row = msg_row + msg_work_cuont;
+
+            msg_row += msg_work_cuont;
+            int vovr_row = msg_row;
+            foreach (VOVRWork vovr_work in msg_work.VOVRWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+            {
+
+
+                vovr_row = this.SetExcelRepresentionTree(vovr_work, vovr_row); ;
+            }
+            if (vovr_row < msg_lowest_row)
+                msg_row = msg_lowest_row + 1;
+            else
+                msg_row = vovr_row + 1;
+
+            return msg_row;
+        }
+        public int SetExcelRepresentionTree(VOVRWork vovr_work, int vovr_row)
+        {
+            vovr_work.ChangeTopRow(vovr_row);
+            var duple_vovr_works = this.VOVRWorks.Where(vrw => vrw.Number == vovr_work.Number && vrw.Id != vovr_work.Id).ToList();
+            int vovr_work_cuont = 0;
+            foreach (var vrw in duple_vovr_works)
+            {
+                vovr_work_cuont++;
+                vrw.ChangeTopRow(vovr_row + vovr_work_cuont);
+            }
+            int ks_row = vovr_row;
+            foreach (KSWork ks_work in vovr_work.KSWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+            {
+                ks_row = this.SetExcelRepresentionTree(ks_work, ks_row); ;
+            }
+
+            vovr_row = ks_row;
+            return vovr_row;
+        }
+        public int SetExcelRepresentionTree(KSWork ks_work, int ks_row)
+        {
+            ks_work.ChangeTopRow(ks_row);
+            var duple_kc_works = this.KSWorks.Where(ksw => ksw.Number == ks_work.Number && ksw.Id != ks_work.Id).ToList();
+            int ks_work_cuont = 0;
+            foreach (var ksw in duple_kc_works)
+            {
+                ks_work_cuont++;
+                ksw.ChangeTopRow(ks_row + ks_work_cuont);
+            }
+
+            int rc_row = ks_row + ks_work_cuont;
+            foreach (RCWork rc_work in ks_work.RCWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+            {
+                rc_row = this.SetExcelRepresentionTree(rc_work, rc_row);
+                rc_row++;
+            }
+
+            ks_row = rc_row;
+            return ks_row;
+        }
+        public int SetExcelRepresentionTree(RCWork rc_work, int rc_row)
+        {
+            rc_work.ChangeTopRow(rc_row);
+            ///Находимо работы с таким же номером и помещаем их ниже 
+            var duple_rc_works = this.RCWorks.Where(rcw => rcw.Number == rc_work.Number && rcw.Id != rc_work.Id).ToList();
+            int rc_work_cuont = 0;
+            foreach (var rcw in duple_rc_works)
+            {
+                rc_work_cuont++;
+                rcw.ChangeTopRow(rc_row + rc_work_cuont);
+            }
+
+            if (rc_work.ReportCard != null)
+            {
+                rc_work.ReportCard.ChangeTopRow(rc_row);
+                var duple_rc_work_rc = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number && rc.Id != rc_work.ReportCard.Id).ToList();
+                int rc_card_count = 0;
+                foreach (WorkReportCard rc in duple_rc_work_rc)
+                {
+                    rc_card_count++;
+                    rc.ChangeTopRow(rc_row + rc_card_count);
+                    foreach (WorkDay w_day in rc)
+                    {
+                        w_day.ChangeTopRow(rc_work.CellAddressesMap["Number"].Row);
+                    }
+                }
+
+                if (rc_work_cuont > rc_card_count)
+                    rc_row += rc_work_cuont;
+                else
+                    rc_row += rc_card_count;
+            }
             return rc_row;
         }
 
@@ -2500,7 +2845,7 @@ namespace ExellAddInsLib.MSG
 
         public void Update()
         {
-            this.UpdateWorksheetRepresetation();
+            this.UpdateExcelRepresetation();
         }
         /// <summary>
         /// Функция устанавливаетв объектах текущией модели соотвествующие worksheet-ы 
@@ -2543,9 +2888,6 @@ namespace ExellAddInsLib.MSG
 
             }
         }
-
-
-
         /// <summary>
         /// Фунция очищает календарную часть ведомости (очищает все записи выполненных работ)
         /// </summary>
