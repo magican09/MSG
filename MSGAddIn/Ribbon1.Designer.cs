@@ -56,6 +56,7 @@
             this.menuMSG = this.Factory.CreateRibbonMenu();
             this.btnCopyMSGWork = this.Factory.CreateRibbonButton();
             this.btnInitMSGContent = this.Factory.CreateRibbonButton();
+            this.btnCopyWorkerComposition = this.Factory.CreateRibbonButton();
             this.buttonPaste = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.separator1 = this.Factory.CreateRibbonSeparator();
@@ -75,6 +76,7 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.btnCopyMachineComposition = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -228,6 +230,8 @@
             // 
             this.menuMSG.Items.Add(this.btnCopyMSGWork);
             this.menuMSG.Items.Add(this.btnInitMSGContent);
+            this.menuMSG.Items.Add(this.btnCopyWorkerComposition);
+            this.menuMSG.Items.Add(this.btnCopyMachineComposition);
             this.menuMSG.Label = "МСГ";
             this.menuMSG.Name = "menuMSG";
             // 
@@ -244,6 +248,13 @@
             this.btnInitMSGContent.Name = "btnInitMSGContent";
             this.btnInitMSGContent.ShowImage = true;
             this.btnInitMSGContent.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnInitMSGContent_Click);
+            // 
+            // btnCopyWorkerComposition
+            // 
+            this.btnCopyWorkerComposition.Label = "Копировать работников";
+            this.btnCopyWorkerComposition.Name = "btnCopyWorkerComposition";
+            this.btnCopyWorkerComposition.ShowImage = true;
+            this.btnCopyWorkerComposition.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyWorkerComposition_Click);
             // 
             // buttonPaste
             // 
@@ -367,6 +378,13 @@
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
             // 
+            // btnCopyMachineComposition
+            // 
+            this.btnCopyMachineComposition.Label = "Копировать технику";
+            this.btnCopyMachineComposition.Name = "btnCopyMachineComposition";
+            this.btnCopyMachineComposition.ShowImage = true;
+            this.btnCopyMachineComposition.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyMachineComposition_Click);
+            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -434,6 +452,8 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnMachines;
         internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuMSG;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitMSGContent;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyWorkerComposition;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyMachineComposition;
     }
 
     partial class ThisRibbonCollection

@@ -3,6 +3,7 @@ using ExellAddInsLib.MSG.Section;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Ribbon;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Forms;
@@ -506,7 +507,7 @@ namespace MSGAddIn
 
         private void btnLoadFromModel_Click(object sender, RibbonControlEventArgs e)
         {
-            CurrentMSGExellModel.Update();
+            CurrentMSGExellModel.UpdateExcelRepresetation();
             CurrentMSGExellModel.SetFormulas();
             CurrentMSGExellModel.SetStyleFormats();
         }
@@ -515,11 +516,10 @@ namespace MSGAddIn
 
             if (CurrentMSGExellModel.Owner == null)
                 foreach (MSGExellModel model in CurrentMSGExellModel.Children)
-                {
-                    model.Update();
-                }
+                    model.UpdateExcelRepresetation();
+
             CurrentMSGExellModel.ReloadSheetModel();
-            CurrentMSGExellModel.Update();
+            CurrentMSGExellModel.UpdateExcelRepresetation();
             CurrentMSGExellModel.SetFormulas();
             CurrentMSGExellModel.SetStyleFormats();
         }
@@ -798,7 +798,7 @@ namespace MSGAddIn
                                 && (date.DayOfWeek != DayOfWeek.Sunday || schedule_chunk.IsSundayVacationDay == "Нет"))
                             {
                                 MSGOutWorksheet.Cells[row_index, TMP_WORKDAY_DATE_FIRST_COL + date_index] =
-                                    msg_work.ProjectQuantity / workable_days_num;
+                                    (msg_work.ProjectQuantity- msg_work.PreviousComplatedQuantity) / workable_days_num;
                             }
                             date_index++;
                         }
@@ -952,7 +952,7 @@ namespace MSGAddIn
 
                         if (week_signatura_last_col > 0)
                         {
-                     //       if (week_signatura_last_col > 1) week_signatura_last_col++;
+                            //       if (week_signatura_last_col > 1) week_signatura_last_col++;
                             Excel.Range week_name_range_first_cell = MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW - 1, NEEDS_WORKDAY_DATE_FIRST_COL + week_signatura_first_col];
                             Excel.Range week_name_range_last_cell = MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW - 1, NEEDS_WORKDAY_DATE_FIRST_COL + week_signatura_last_col];
                             Excel.Range week_name_range = MSGNeedsOutWorksheet.get_Range(week_name_range_first_cell, week_name_range_last_cell);
@@ -1001,6 +1001,7 @@ namespace MSGAddIn
                             MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col],
                             MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col]];
                         ///Вставляем форму для подсчета суммы планового количества работан на  неделю и фактического объема...
+                        
                         project_week_q.Formula = $"=SUM({Func.RangeAddress(project_week_q_first_day)}:{Func.RangeAddress(project_week_q_last_day)})"; ;
                         project_week_pr_q.Formula = $"=SUM({Func.RangeAddress(project_week_pr_q_first_day)}:{Func.RangeAddress(project_week_pr_q_last_day)})"; ;
                         #endregion
@@ -1016,7 +1017,7 @@ namespace MSGAddIn
                         work_needs_iterator = 0;
                         while (MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKERS_NAME_COL].Value != "Общее количество")
                         {
-                            
+
                             Excel.Range needs_first_day = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + first_week_day_col];
                             Excel.Range needs_last_day = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + last_week_day_col];
                             MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index] =
@@ -1036,27 +1037,27 @@ namespace MSGAddIn
 
                         #endregion
                         if (last_week_day_col == 1) last_week_day_col = 0;
-                        week_signatura_first_col = first_week_day_col-1;
-                        week_signatura_last_col = last_week_day_col+1;
+                        week_signatura_first_col = first_week_day_col - 1;
+                        week_signatura_last_col = last_week_day_col + 1;
                         last_week_name_signatura = week_name_signatura;
-                       
-                         Excel.Range week_range = MSGOutWorksheet.Range[MSGOutWorksheet.Columns[WORKDAY_DATE_FIRST_COL + first_week_day_col],
-                            MSGOutWorksheet.Columns[WORKDAY_DATE_FIRST_COL + last_week_day_col+1]];
+
+                        Excel.Range week_range = MSGOutWorksheet.Range[MSGOutWorksheet.Columns[WORKDAY_DATE_FIRST_COL + first_week_day_col],
+                           MSGOutWorksheet.Columns[WORKDAY_DATE_FIRST_COL + last_week_day_col + 1]];
 
                         Excel.Range needs_week_range = MSGNeedsOutWorksheet.Range[MSGNeedsOutWorksheet.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + first_week_day_col],
-                            MSGNeedsOutWorksheet.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + last_week_day_col+1]];
+                            MSGNeedsOutWorksheet.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + last_week_day_col + 1]];
                         try
                         {
                             week_range.Group();
                             needs_week_range.Group();
-                          
+
                         }
                         catch
                         {
 
                         }
-                     
-                       
+
+
                         first_week_day_col = 0;
                         last_week_day_col = 0;
 
@@ -1097,7 +1098,7 @@ namespace MSGAddIn
         private DateTime GetLastNotVocationDate(DateTime date)
         {
             DateTime out_date = date;
-           if (out_date.DayOfWeek == DayOfWeek.Sunday) return date;
+            if (out_date.DayOfWeek == DayOfWeek.Sunday) return date;
             while (out_date.AddDays(1).DayOfWeek != DayOfWeek.Sunday)
                 out_date = out_date.AddDays(1);
             return out_date;
@@ -1108,19 +1109,22 @@ namespace MSGAddIn
         {
 
         }
-        private IExcelBindableBase CopyedObject;
+
+        private List<IExcelBindableBase> CopyedObjectsList = new List<IExcelBindableBase>();
         private string commands_group_label = "";
 
         private void buttonCopy_Click(object sender, RibbonControlEventArgs e)
         {
-
+            CopyedObjectsList.Clear();
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-            var sected_object = CurrentMSGExellModel.GetObjectBySelection(selection, typeof(WorksSection));
-            if (sected_object != null)
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(WorksSection));
+            if (sected_objects != null)
             {
-                CopyedObject = (WorksSection)sected_object.Clone();
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((WorksSection)obj.Clone()); ;
+
                 buttonPaste.Enabled = true;
-                commands_group_label = $"Разадел {CopyedObject.Name} скопирован.\n Выбрерите ячеку с номеров нового раздела.";
+                commands_group_label = $"Разадел(ы) скопирован.\n Выбрерите ячеку с номеров нового раздела.";
             }
             //Excel.Dialog dlg = Globals.ThisAddIn.Application.Dialogs[Excel.XlBuiltInDialog.xlDialogFont];
             //dlg.Show();
@@ -1129,12 +1133,15 @@ namespace MSGAddIn
         private void btnCopyMSGWork_Click(object sender, RibbonControlEventArgs e)
         {
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-            var sected_object = CurrentMSGExellModel.GetObjectBySelection(selection, typeof(MSGWork));
-            if (sected_object != null)
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
+            if (sected_objects != null)
             {
-                CopyedObject = (MSGWork)sected_object.Clone();
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((MSGWork)obj.Clone()); ;
+
                 buttonPaste.Enabled = true;
-                commands_group_label = $"Разадел {CopyedObject.Name} скопирован.\n Выбрерите ячеку с номеров нового раздела.";
+                commands_group_label = $"МСГ скопированы.\n Выбрерите разде куда вставить МСГ";
+
             }
             groupCommands.Label = commands_group_label;
 
@@ -1142,8 +1149,9 @@ namespace MSGAddIn
         private void btnInitMSGContent_Click(object sender, RibbonControlEventArgs e)
         {
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-            var sected_object = CurrentMSGExellModel.GetObjectBySelection(selection, typeof(MSGWork));
-            if (sected_object is MSGWork msg_work)
+            var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
+
+            foreach (MSGWork msg_work in sected_object)
             {
                 if (msg_work.VOVRWorks.Count == 0)
                 {
@@ -1199,7 +1207,7 @@ namespace MSGAddIn
                     ks_work.RCWorks.Add(rc_work);
 
                     CurrentMSGExellModel.AdjustExcelRepresentionTree(msg_work, rowIndex);
-                    CurrentMSGExellModel.UpdateRepresentation(msg_work);
+                    CurrentMSGExellModel.UpdateExcelRepresetation(msg_work);
                     CurrentMSGExellModel.SetStyleFormats(msg_work, MSGExellModel.W_SECTION_COLOR + 1);
                 }
             }
@@ -1209,88 +1217,240 @@ namespace MSGAddIn
         {
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
             //var sected_object = CurrentMSGExellModel.GetObjectBySelection(selection, typeof(WorksSection));
-
-
-            switch (CopyedObject?.GetType().Name)
-            {
-                case nameof(WorksSection):
-                    {
-
-                        try
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(IExcelBindableBase));
+            if (CopyedObjectsList.Count > 0)
+                switch (CopyedObjectsList[0]?.GetType().Name)
+                {
+                    case nameof(WorksSection):
                         {
-                            if (selection.Column != MSGExellModel.WSEC_NUMBER_COL) return;
-                            int cell_val = Int32.Parse(selection.Value.ToString());
-                            WorksSection section = CopyedObject as WorksSection;
-                            CurrentMSGExellModel.WorksSections.Add(section);
-                            CurrentMSGExellModel.SetCommonModelCollections();
 
-                            section.SetNumberItem(0, cell_val.ToString());
-                            CurrentMSGExellModel.AdjustExcelRepresentionTree(section, selection.Row);
-                            CurrentMSGExellModel.UpdateExcelRepresetation();
-                            CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
+                            try
+                            {
+                                if (selection.Column != MSGExellModel.WSEC_NUMBER_COL) return;
+                                int cell_val = Int32.Parse(selection.Value.ToString());
+                                int _serction_row = selection.Row;
+                                foreach (WorksSection section in CopyedObjectsList)
+                                {
+                                    CurrentMSGExellModel.WorksSections.Add(section);
+                                    CurrentMSGExellModel.SetCommonModelCollections();
 
-                            CurrentMSGExellModel.SetStyleFormats();
+                                    section.SetNumberItem(0, cell_val.ToString());
+                                    _serction_row = CurrentMSGExellModel.AdjustExcelRepresentionTree(section, _serction_row);
+                                    CurrentMSGExellModel.UpdateExcelRepresetation(section);
+                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
+                                    cell_val++;
+                                }
+
+                                CurrentMSGExellModel.SetStyleFormats();
+                                commands_group_label = "";
+                            }
+                            catch
+                            {
+                                throw new Exception("Ошибка вставки раздела");
+                            }
+
+                            break;
+                        }
+                    case nameof(MSGWork):
+                        {
+                            if (selection.Column >= MSGExellModel.WSEC_NUMBER_COL | selection.Column <= MSGExellModel.WSEC_NAME_COL) return;
+                            int insert_work_number = 0;
+                            //MSGWork nearest_msg_work = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork))[0] as MSGWork;
+                            //if(nearest_msg_work.GetTopRow()<selection.Row)
+                            //    nearest_msg_work.
+                            //var selected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection,(obj)=>obj is MSGWork msg_obj 
+                            //                                                                                  &&  msg_obj.Owner is WorksSection section_obj 
+                            //                                                                                  && section_obj.MSGWorks.OrderBy(w=>w.GetBottomRow()).Last ));
+                            //WorksSection picked_section = null;
+                            //if (selected_objects[0] is MSGWork selected_msg_work)
+                            //    picked_section = selected_msg_work.Owner as WorksSection;
+                            //if (selected_objects[0] is WorksSection selecte_section)
+                            //    picked_section = selecte_section;
+
+                            var picked_section = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(WorksSection))[0] as WorksSection;
+
+                            if (picked_section != null)
+                                foreach (MSGWork msg_work in CopyedObjectsList)
+                                {
+                                    int last_row = picked_section
+                                       .MSGWorks.OrderBy(w => w.GetBottomRow()).Last()
+                                       .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
+                                        .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
+                                        .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
+                                    int last_msg_work_row = msg_work
+                                        .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
+                                         .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
+                                         .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
+                                    int msg_work_rows_number = last_msg_work_row - msg_work.CellAddressesMap["Number"].Row;
+
+                                    int selection_row = picked_section.CellAddressesMap["Number"].Row;
+
+                                    while (msg_work_rows_number > 0)
+                                    {
+                                        CurrentMSGExellModel.RegisterSheet.Rows[last_row + 2].Insert();
+                                        msg_work_rows_number--;
+                                    }
+
+                                    msg_work.SetNumberItem(0, picked_section.Number);
+                                    var last_msg_work = picked_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))).LastOrDefault();
+                                    int last_w_namber = Int32.Parse(last_msg_work.GetSelfNamber()) + 1;
+                                    if (last_msg_work != null)
+                                        msg_work.SetNumberItem(1, last_w_namber.ToString());
+
+                                    picked_section.MSGWorks.Add(msg_work);
+                                    CurrentMSGExellModel.SetCommonModelCollections();
+                                    CurrentMSGExellModel.AdjustExcelRepresentionTree(picked_section, selection_row);
+                                    CurrentMSGExellModel.UpdateExcelRepresetation();
+                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                                    CurrentMSGExellModel.SetStyleFormats(msg_work, MSGExellModel.W_SECTION_COLOR + 1);
+                                }
                             commands_group_label = "";
+                            break;
                         }
-                        catch
+                    case nameof(NeedsOfWorker):
                         {
-                            throw new Exception("Ошибка вставки раздела");
+                            if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+
+                            var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
+
+                            foreach (MSGWork msg_work in sected_object)
+                            {
+
+                                foreach (NeedsOfWorker n_w in CopyedObjectsList)
+                                {
+                                    var msg_n_w = msg_work.WorkersComposition.FirstOrDefault(n => n.Name == n_w.Name);
+                                    if (msg_n_w != null)
+                                        msg_n_w.Quantity = n_w.Quantity;
+                                    else
+                                    {
+                                        NeedsOfWorker new_n_w = new NeedsOfWorker();
+                                        int rowIndex = 0;
+                                        if (msg_work.WorkersComposition.Count == 0)
+                                            rowIndex = msg_work.GetTopRow();
+                                        else
+                                        {
+                                            rowIndex = msg_work.WorkersComposition.OrderBy(n => n.GetTopRow()).Last().GetTopRow();
+                                            Excel.Range _range = CurrentMSGExellModel.RegisterSheet.Rows[rowIndex];
+                                            _range.Insert(XlInsertShiftDirection.xlShiftDown, 0);
+
+                                            var beneath_works_insection = CurrentMSGExellModel.MSGWorks.Where(w => w.GetTopRow() > rowIndex && w.Owner.Id == msg_work.Owner.Id).ToList();
+                                            var beneath_sections = CurrentMSGExellModel.WorksSections.Where(s => s.GetBottomRow() > msg_work.GetTopRow()).ToList();
+                                            foreach (MSGWork w in beneath_works_insection)
+                                                CurrentMSGExellModel.AdjustExcelRepresentionTree(w, w.GetBottomRow() + 1);
+                                            foreach (WorksSection s in beneath_sections)
+                                                CurrentMSGExellModel.AdjustExcelRepresentionTree(s, s.GetBottomRow() + 1);
+
+                                            rowIndex++;
+                                        }
+                                        CurrentMSGExellModel.Register(new_n_w, "Name", rowIndex, MSGExellModel.MSG_NEEDS_OF_WORKERS_NAME_COL, CurrentMSGExellModel.RegisterSheet);
+                                        CurrentMSGExellModel.Register(new_n_w, "Quantity", rowIndex, MSGExellModel.MSG_NEEDS_OF_WORKERS_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
+                                        new_n_w.Name = n_w.Name;
+                                        new_n_w.Quantity = n_w.Quantity;
+                                        new_n_w.Number = $"{msg_work.Number}.{(msg_work.WorkersComposition.Count+1).ToString()}";
+                                        msg_work.WorkersComposition.Add(new_n_w);
+                                       if(!CurrentMSGExellModel.WorkersComposition.Contains(new_n_w))
+                                            CurrentMSGExellModel.WorkersComposition.Add(new_n_w);
+                                    }
+
+                                }
+                            }
+                            CurrentMSGExellModel.UpdateExcelRepresetation();
+                            CurrentMSGExellModel.SetStyleFormats();
+                            break;
                         }
-
-                        break;
-                    }
-                case nameof(MSGWork):
-                    {
-                        if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_LABOURNESS_COL) return;
-
-                        MSGWork msg_work = CopyedObject as MSGWork;
-                        WorksSection picked_section = (WorksSection)CurrentMSGExellModel.GetObjectBySelection(selection, typeof(WorksSection));
-                        int last_row = picked_section
-                            .MSGWorks.OrderBy(w => w.GetBottomRow()).Last()
-                            .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
-                             .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
-                             .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
-                        int last_msg_work_row = msg_work
-                            .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
-                             .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
-                             .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
-                        int msg_work_rows_number = last_msg_work_row - msg_work.CellAddressesMap["Number"].Row;
-
-                        int selection_row = picked_section.CellAddressesMap["Number"].Row;
-
-                        while (msg_work_rows_number > 0)
+                    case nameof(NeedsOfMachine):
                         {
-                            CurrentMSGExellModel.RegisterSheet.Rows[last_row + 2].Insert();
-                            msg_work_rows_number--;
+                            if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+
+                            var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
+
+                            foreach (MSGWork msg_work in sected_object)
+                            {
+                                foreach (NeedsOfMachine n_w in CopyedObjectsList)
+                                {
+                                    var msg_n_w = msg_work.MachinesComposition.FirstOrDefault(n => n.Name == n_w.Name);
+                                    if (msg_n_w != null)
+                                        msg_n_w.Quantity = n_w.Quantity;
+                                    else
+                                    {
+                                        NeedsOfMachine new_n_w = new NeedsOfMachine();
+                                        int rowIndex = 0;
+                                        if (msg_work.MachinesComposition.Count == 0)
+                                            rowIndex = msg_work.GetTopRow();
+                                        else
+                                        {
+                                            rowIndex = msg_work.MachinesComposition.OrderBy(n => n.GetTopRow()).Last().GetTopRow();
+                                            Excel.Range _range = CurrentMSGExellModel.RegisterSheet.Rows[rowIndex];
+                                            _range.Insert(XlInsertShiftDirection.xlShiftDown, 0);
+
+                                            var beneath_works_insection = CurrentMSGExellModel.MSGWorks.Where(w => w.GetTopRow() > rowIndex && w.Owner.Id == msg_work.Owner.Id).ToList();
+                                            var beneath_sections = CurrentMSGExellModel.WorksSections.Where(s => s.GetBottomRow() > msg_work.GetTopRow()).ToList();
+                                            foreach (MSGWork w in beneath_works_insection)
+                                                CurrentMSGExellModel.AdjustExcelRepresentionTree(w, w.GetBottomRow() + 1);
+                                            foreach (WorksSection s in beneath_sections)
+                                                CurrentMSGExellModel.AdjustExcelRepresentionTree(s, s.GetBottomRow() + 1);
+
+                                            rowIndex++;
+                                        }
+                                        CurrentMSGExellModel.Register(new_n_w, "Name", rowIndex, MSGExellModel.MSG_NEEDS_OF_MACHINE_NAME_COL, CurrentMSGExellModel.RegisterSheet);
+                                        CurrentMSGExellModel.Register(new_n_w, "Quantity", rowIndex, MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
+                                        new_n_w.Name = n_w.Name;
+                                        new_n_w.Quantity = n_w.Quantity;
+                                        msg_work.MachinesComposition.Add(new_n_w);
+                                        new_n_w.Number = $"{msg_work.Number}.{(msg_work.WorkersComposition.Count + 1).ToString()}";
+                                        if (!CurrentMSGExellModel.MachinesComposition.Contains(new_n_w))
+                                            CurrentMSGExellModel.MachinesComposition.Add(new_n_w);
+                                    }
+
+                                }
+                            }
+                            CurrentMSGExellModel.UpdateExcelRepresetation();
+                            CurrentMSGExellModel.SetStyleFormats();
+                            break;
                         }
-
-                        msg_work.SetNumberItem(0, picked_section.Number);
-                        var last_msg_work = picked_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))).LastOrDefault();
-                        int last_w_namber = Int32.Parse(last_msg_work.GetSelfNamber()) + 1;
-                        if (last_msg_work != null)
-                            msg_work.SetNumberItem(1, last_w_namber.ToString());
-
-                        picked_section.MSGWorks.Add(msg_work);
-                        CurrentMSGExellModel.SetCommonModelCollections();
-                        CurrentMSGExellModel.AdjustExcelRepresentionTree(picked_section, selection_row);
-                        CurrentMSGExellModel.UpdateExcelRepresetation();
-                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
-                        CurrentMSGExellModel.SetStyleFormats(msg_work, MSGExellModel.W_SECTION_COLOR + 1);
-                        commands_group_label = "";
-
-                        break;
-                    }
-                default:
-                    {
-                        break;
-                    }
-            }
+                    default:
+                        {
+                            break;
+                        }
+                }
 
             groupCommands.Label = commands_group_label;
 
 
         }
 
+        private void btnCopyWorkerComposition_Click(object sender, RibbonControlEventArgs e)
+        {
+            CopyedObjectsList.Clear();
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(NeedsOfWorker));
+            if (sected_objects != null)
+            {
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((NeedsOfWorker)obj.Clone()); ;
 
+                buttonPaste.Enabled = true;
+                commands_group_label = $"Рабники скопированы.\n Выбрерите разде куда вставить МСГ";
+
+            }
+            groupCommands.Label = commands_group_label;
+        }
+
+        private void btnCopyMachineComposition_Click(object sender, RibbonControlEventArgs e)
+        {
+            CopyedObjectsList.Clear();
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(NeedsOfMachine));
+            if (sected_objects != null)
+            {
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((NeedsOfMachine)obj.Clone()); ;
+
+                buttonPaste.Enabled = true;
+                commands_group_label = $"Техника скопирована.\n Выбрерите разде куда вставить МСГ";
+
+            }
+            groupCommands.Label = commands_group_label;
+        }
     }
 }

@@ -69,6 +69,7 @@ namespace ExellAddInsLib.MSG
         {
             MSGWork new_obj = (MSGWork)base.Clone();
             new_obj.WorkSchedules = (WorkSchedule)this.WorkSchedules.Clone();
+         //   new_obj.MachinesComposition = (MachinesComposition)this.MachinesComposition.Clone();
             new_obj.VOVRWorks = (ExcelNotifyChangedCollection<VOVRWork>)this.VOVRWorks.Clone();
             new_obj.WorkSchedules.Owner = new_obj;
             new_obj.VOVRWorks.Owner = new_obj;

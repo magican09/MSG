@@ -166,6 +166,8 @@ namespace ExellAddInsLib.MSG
             var new_work = (Work)base.Clone();
             new_work.UnitOfMeasurement = this.UnitOfMeasurement;
             new_work.WorkersComposition = (WorkersComposition)this.WorkersComposition.Clone();
+            new_work.MachinesComposition = (MachinesComposition)this.MachinesComposition.Clone();
+
             return new_work;
         }
 
