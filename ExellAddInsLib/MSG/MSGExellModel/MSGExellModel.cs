@@ -13,7 +13,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class MSGExellModel : ExcelBindableBase
+    public  partial class MSGExellModel : ExellModelBase
     {
         /// <summary>
         /// Констраныт номеров строк и стобцов в документе exel 
@@ -305,7 +305,6 @@ namespace ExellAddInsLib.MSG
         }
 
         private Excel.Worksheet _workerConsumptionsSheet;
-
         /// <summary>
         /// Прикрепленный к модели лист  Людских ресурсов Worksheet
         /// </summary>
@@ -330,7 +329,6 @@ namespace ExellAddInsLib.MSG
         }
 
         private Excel.Worksheet _machineConsumptionsSheet;
-
         /// <summary>
         /// Прикрепленный к модели лист  Технических ресурсов Worksheet
         /// </summary>
@@ -376,12 +374,12 @@ namespace ExellAddInsLib.MSG
                 _commonSheet = value;
             }
         }
-
-        public ObservableCollection<Excel.Worksheet> AllWorksheets = new ObservableCollection<Excel.Worksheet>();
+      
         /// <summary>
         /// Отвественных за работы отраженных в работах данной модели
         /// </summary>
         public Employer Employer { get; set; }
+     
         public MSGExellModel()
         {
             WorksSections = new ExcelNotifyChangedCollection<WorksSection>();
@@ -398,312 +396,6 @@ namespace ExellAddInsLib.MSG
 
 
         }
-        /// <summary>
-        /// Реестр зарегистрированных в системе основных объектов
-        /// </summary>
-        public ObservableCollection<RelateRecord> RegistedObjects = new ObservableCollection<RelateRecord>();
-        /// <summary>
-        /// Реест и основных и внутренных отлеживаемых обхектов и их совойств
-        /// </summary>
-        public ObservableCollection<RelateRecord> ObjectPropertyNameRegister = new ObservableCollection<RelateRecord>();
-
-        /// <summary>
-        /// Времення колеекция для предотвращения зацикливания в рекурсии Register(..)/
-        /// </summary>
-        private Dictionary<IExcelBindableBase, string> RegisterTemporalStopList = new Dictionary<IExcelBindableBase, string>();
-        /// <summary>
-        /// Функция для регистрации объекта реализующего интрефейс INotifyPropertyChanged 
-        /// для обработки событий изменения полей объета и соотвествующего изменения связанной с 
-        /// с этим полем ячейки в документе Worksheet
-        /// </summary>
-        /// <param name="work"></param>
-        public void Register(IExcelBindableBase notified_object, string prop_name, int row, int column, Excel.Worksheet worksheet, RelateRecord register = null)
-        {
-
-            try
-            {
-                var prop_names = prop_name.Split(new char[] { '.' });
-                RelateRecord local_register = new RelateRecord(notified_object);
-                if (register == null)
-                {
-                    register = local_register;
-
-                    if (notified_object.CellAddressesMap.ContainsKey(prop_name))
-                        local_register.ExellPropAddress = notified_object.CellAddressesMap[prop_name];
-                    else
-                    {
-                        local_register.ExellPropAddress = new ExellPropAddress(row, column, worksheet, prop_name);
-                        local_register.ExellPropAddress.Owner = notified_object;
-                        notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
-                    }
-                    this.RegistedObjects.Add(local_register);
-                    RegisterTemporalStopList.Clear();
-                    RegisterTemporalStopList.Add(local_register.Entity, prop_names[0]);
-                    local_register.PropertyName = prop_names[0];
-                    this.ObjectPropertyNameRegister.Add(local_register);
-                }
-                else
-                    register.Items.Add(local_register);
-
-                foreach (string name in prop_names)
-                {
-                    string rest_prop_name_part = prop_name;
-                    if (prop_name.Contains(".")) rest_prop_name_part = prop_name.Replace($"{name}.", "");
-
-                    if (!RegisterTemporalStopList.ContainsKey(local_register.Entity))
-                    {
-                        RegisterTemporalStopList.Add(local_register.Entity, name);
-                        local_register.PropertyName = name;
-                        ObjectPropertyNameRegister.Add(local_register);
-                    }
-
-                    var prop_value = notified_object.GetType().GetProperty(name).GetValue(notified_object);
-                    if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
-                    {
-                        this.Register(excel_bimdable_prop_value, rest_prop_name_part, row, column, worksheet, local_register);
-                    }
-
-                }
-
-                if (!notified_object.IsPropertyChangedHaveSubsctribers())
-                    notified_object.PropertyChanged += OnPropertyChange;
-                else
-                    ;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при геристрации объектов в MSGExelModel: {ex.Message}");
-            }
-
-        }
-        ObservableCollection<IExcelBindableBase> unregistedObjects = new ObservableCollection<IExcelBindableBase>();
-        /// <summary>
-        /// Удаления регистрации объекта из системы отслеживания
-        /// </summary>
-        /// <param name="notified_object"></param>
-        /// <param name="first_iteration"></param>
-        public void Unregister(IExcelBindableBase notified_object, bool first_iteration = true)
-        {
-            if (first_iteration) unregistedObjects.Clear();
-            if (unregistedObjects.Contains(notified_object)) return;
-            var all_registed_rrecords = this.RegistedObjects.Where(ro => ro.Entity.Id == notified_object.Id);
-            foreach (var r_obj in all_registed_rrecords)
-            {
-                notified_object.PropertyChanged -= OnPropertyChange;
-            }
-            if (notified_object is IList exbb_list)
-                foreach (IExcelBindableBase elm in exbb_list)
-                    this.Unregister(elm);
-
-            var all_object_prop_names_registed_rrecords = new ObservableCollection<RelateRecord>(
-                this.ObjectPropertyNameRegister.Where(op => op.Entity.Id == notified_object.Id).ToList());
-
-            foreach (var rr in all_object_prop_names_registed_rrecords)
-                this.ObjectPropertyNameRegister.Remove(rr);
-
-            //var prop_infoes = notified_object.GetType().GetRuntimeProperties().Where(pr => pr.GetIndexParameters().Length == 0
-            //                                                         && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null
-            //                                                                             && pr.GetValue(notified_object) is IExcelBindableBase);
-            //foreach (PropertyInfo property_info in prop_infoes)
-            //{
-            //    var property_val = property_info.GetValue(notified_object);
-            //    if (property_val is IExcelBindableBase exbb_prop_val)
-            //    {
-            //        this.Unregister(exbb_prop_val, false);
-            //    }
-            //}
-        }
-
-        ObservableCollection<IExcelBindableBase> registed_objects = new ObservableCollection<IExcelBindableBase>();
-        /// <summary>
-        /// Регистрация всего дерева IExcelBindableBase объектов в системе отслеживания
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="firt_itaration"></param>
-        public void RegisterObjectInObjectPropertyNameRegister(IExcelBindableBase obj, bool firt_itaration = true)
-        {
-            if (firt_itaration == true) registed_objects.Clear();
-
-            if (!registed_objects.Contains(obj))
-            {
-                var cell_eddr_maps = obj.CellAddressesMap.Where(kvp => !kvp.Key.Contains('_'));
-                foreach (var kvp in cell_eddr_maps)
-                {
-                    string prop_name = kvp.Key;
-                    string kvp_worksheet_name = kvp.Value.Worksheet.Name;
-                    string sheet_root_name = kvp_worksheet_name.Substring(0, kvp_worksheet_name.IndexOf('_'));
-                    var work_sheet = this.AllWorksheets.FirstOrDefault(wh => wh.Name.Contains(sheet_root_name));
-                    this.Register(obj, prop_name, kvp.Value.Row, kvp.Value.Column, work_sheet);
-
-                }
-                registed_objects.Add(obj);
-                var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
-                                                                            && pr.GetValue(obj) is IExcelBindableBase);
-                foreach (PropertyInfo prop_info in prop_infoes)
-                {
-                    var prop_val = prop_info.GetValue(obj) as IExcelBindableBase;
-                    if (prop_val is IList list_prop_val)
-                    {
-                        foreach (var elm in list_prop_val)
-                            if (elm is IExcelBindableBase exb_elm)
-                                this.RegisterObjectInObjectPropertyNameRegister(exb_elm, false);
-                    }
-                    else
-                        this.RegisterObjectInObjectPropertyNameRegister(prop_val, false);
-
-                }
-
-            }
-        }
-
-        /// <summary>
-        /// Функция для получаения самого высоско вдевере регистрации объектов объекта
-        /// </summary>
-        /// <param name="relateRecord"></param>
-        /// <returns></returns>
-        private RelateRecord GetFirstParentRelateRecord(RelateRecord relateRecord)
-        {
-            if (relateRecord.Parent != null)
-                GetFirstParentRelateRecord(relateRecord.Parent);
-            else
-                return relateRecord;
-            return null;
-        }
-        /// <summary>
-        /// Функция для получения всех самых нижни в дереве регистрации объектов зависимых от данного объекта.
-        /// </summary>
-        /// <param name="relateRecord"></param>
-        /// <param name="childrenRecords"></param>
-        private void GetChildrenRelateRecords(RelateRecord relateRecord, ObservableCollection<Tuple<RelateRecord, string>> childrenRecords)
-        {
-            string prop_name = "";
-            if (relateRecord.Items.Count == 0)
-                childrenRecords.Add(new Tuple<RelateRecord, string>(relateRecord, $"{relateRecord.PropertyName}"));
-            foreach (RelateRecord rr in relateRecord.Items)
-            {
-                if (rr.Items.Count == 0)
-                    childrenRecords.Add(new Tuple<RelateRecord, string>(rr, $"{relateRecord.PropertyName}.{rr.PropertyName}"));
-                else
-                    this.GetChildrenRelateRecords(rr, childrenRecords);
-            }
-
-        }
-        /// <summary>
-        /// Получение значения по пути к свойству из объекта
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="prop_path"></param>
-        /// <returns></returns>
-        private object GetValueFromObject(IExcelBindableBase obj, string prop_path)
-        {
-            string rest_prop_name_part = prop_path;
-
-            if (prop_path.Contains("."))
-                rest_prop_name_part = prop_path.Substring(prop_path.IndexOf('.') + 1, prop_path.Length - prop_path.IndexOf('.') - 1);
-            string prop_name = prop_path.Replace($".{rest_prop_name_part}", "");
-            if (prop_name != "")
-            {
-                var prop_val = obj.GetType().GetProperty(prop_name).GetValue(obj);
-                if (prop_val is IExcelBindableBase ex_n_prop_val)
-                    return GetValueFromObject(ex_n_prop_val, rest_prop_name_part);
-                else
-                {
-                    var prop_non_object_val = obj.GetType().GetProperty(prop_path).GetValue(obj);
-                    return prop_non_object_val;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Обработчик собиытия изменений в зарегистрированных объетах.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void OnPropertyChange(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is IExcelBindableBase bindable_object)
-            {
-
-                var ralated_records = this.RegistedObjects
-                    .Where(rr => rr.Entity.Id == bindable_object.Id)
-                    .Where(r =>
-                    {
-                        var prop_names_array = r.PropertyName.Split('.');
-                        foreach (string name in prop_names_array)
-                            if (name == e.PropertyName)
-                                return true;
-                        return false;
-                    });
-                foreach (RelateRecord related_rec in ralated_records) //Находим все зависимые записиыыы
-                {
-                    var parent_rrecord = this.GetFirstParentRelateRecord(related_rec);
-                    ObservableCollection<Tuple<RelateRecord, string>> all_children_records = new ObservableCollection<Tuple<RelateRecord, string>>(); ;
-                    this.GetChildrenRelateRecords(parent_rrecord, all_children_records); //Находим все зависяцщие дочерние записи
-                    var children_for_read_props = all_children_records.Where(ch => ch.Item2 == parent_rrecord.ExellPropAddress.ProprertyName); //Находим объект находящийся по зарегисрированному в реестре пути
-                    foreach (Tuple<RelateRecord, string> rr_tuple in children_for_read_props)
-                    {
-                        var val = GetValueFromObject(parent_rrecord.Entity, rr_tuple.Item2);
-                        if (parent_rrecord.ExellPropAddress.Cell.Value == null
-                           || parent_rrecord.ExellPropAddress.Cell.Value.ToString() != val.ToString())
-                        {
-                            parent_rrecord.ExellPropAddress.Cell.Value = val;
-                            parent_rrecord.ExellPropAddress.Cell.Interior.Color = XlRgbColor.rgbAquamarine;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Функция обновляет документальное представление объетка (рукурсивно проходит по всем объектам 
-        /// реализующим интерфейс IExcelBindableBase). 
-        /// </summary>
-        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IExcelBindableBase </param>
-        private void UpdateExellBindableObject(IExcelBindableBase obj)
-        {
-            var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
-
-            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
-            {
-                var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
-                if (val != null)
-                    kvp.Value.Cell.Value = val.ToString();
-            }
-        }
-
-
-        private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
-        {
-            string[] prop_names = full_prop_name.Split('.');
-            foreach (string name in prop_names)
-            {
-                string rest_prop_name_part = full_prop_name;
-                if (full_prop_name.Contains(".")) rest_prop_name_part = full_prop_name.Replace($"{name}.", "");
-                if (obj.GetType().GetProperty(name).GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) != null)
-                    return null;
-                var prop_value = obj.GetType().GetProperty(name).GetValue(obj);
-
-                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
-                {
-                    return this.GetPropertyValueByPath(excel_bimdable_prop_value, rest_prop_name_part);
-                }
-                else if (prop_value != null && prop_value.GetType().FullName.Contains("System."))
-                {
-
-                    if (prop_value is DateTime date_val)
-                        return date_val.ToString("d");
-                    else
-                        return prop_value.ToString();
-                }
-                else
-                    return "";
-            }
-            return null;
-        }
-
-
         /// <summary>
         /// Функция из части РАЗДЕЛЫ  листа Worksheet создает и помещает в модель  разделы работ
         /// </summary>
@@ -1492,14 +1184,12 @@ namespace ExellAddInsLib.MSG
             this.ContractCode = this.CommonSheet.Cells[CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ConstructionSubObjectCode = this.CommonSheet.Cells[CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
-
             //this.CellAddressesMap.Add("ContractCode", new ExellPropAddress<int, int, Worksheet>(CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL, this.CommonSheet));
             //this.CellAddressesMap.Add("ContructionObjectCode", new ExellPropAddress<int, int, Worksheet>(CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL, this.CommonSheet));
             //this.CellAddressesMap.Add("ConstructionSubObjectCode", new ExellPropAddress<int, int, Worksheet>(CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL, this.CommonSheet));
-            this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
-            // this.WorksEndDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_END_DATE_COL, WORKS_END_DATE_COL].Value.ToString());
 
-            //this.CellAddressesMap.Add("WorksStartDate", new ExellPropAddress<int, int, Worksheet>(WORKS_START_DATE_ROW, WORKS_END_DATE_COL, this.RegisterSheet));
+            this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
+
             if (this.Owner == null)
             {
                 this.LoadWorksSections();
@@ -1533,12 +1223,9 @@ namespace ExellAddInsLib.MSG
             this.RemoveGroups(this.RegisterSheet);
             int selectin_col = W_SECTION_COLOR;
             this.SetBordersBoldLine(this.WorksSections.GetRange(this.RegisterSheet), XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
-            int first_row = 0;
-            int last_row = 0;
             foreach (WorksSection section in this.WorksSections)
-            {
                 this.SetStyleFormats( section,  selectin_col);
-            }
+
             this.WorksSections.SetInvalidateCellsColor(XlRgbColor.rgbRed);
             this.MSGWorks.SetInvalidateCellsColor(XlRgbColor.rgbRed);
             this.VOVRWorks.SetInvalidateCellsColor(XlRgbColor.rgbRed);
@@ -1561,18 +1248,12 @@ namespace ExellAddInsLib.MSG
                     XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
             }
 
-            //  Excel.Range section_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[WSEC_NUMBER_COL], this.RegisterSheet.Columns[WSEC_NAME_COL]];
-            //  Excel.Range msg_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[WSEC_NUMBER_COL], this.RegisterSheet.Columns[MSG_NEEDS_OF_WORKERS_QUANTITY_COL]];
             Excel.Range vovr_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[VOVR_NUMBER_COL], this.RegisterSheet.Columns[VOVR_LABOURNESS_COL]];
             Excel.Range ks_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[VOVR_NUMBER_COL], this.RegisterSheet.Columns[KS_LABOURNESS_COL]];
-            //    Excel.Range rc_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[WSEC_NUMBER_COL], this.RegisterSheet.Columns[RC_LABOURNESS_COL]];
             try
             {
-                // section_colomns.Group();
-                //   msg_colomns.Group();
                 ks_colomns.Group();
                 vovr_colomns.Group();
-                //  rc_colomns.Group();
             }
             catch
             {
@@ -1580,7 +1261,7 @@ namespace ExellAddInsLib.MSG
             }
 
         }
-        public Excel.Range SetStyleFormats(WorksSection section, int selectin_col)
+        public int  SetStyleFormats(WorksSection section, int selectin_col)
         {
 
             var section_range = section.GetRange(this.RegisterSheet);
@@ -1604,8 +1285,9 @@ namespace ExellAddInsLib.MSG
             {
 
             }
-            return section_range;
+            return last_section_row;
         }
+
         public int  SetStyleFormats(MSGWork msg_work, int msg_work_col)
         {
             var msg_work_range = msg_work.GetRange(this.RegisterSheet, MSG_LABOURNESS_COL);
@@ -1653,8 +1335,6 @@ namespace ExellAddInsLib.MSG
             if (last_msg_row < need_of_workers_count) last_msg_row = need_of_workers_count;
             if (last_msg_row < need_of_machine_count) last_msg_row = need_of_machine_count;
             if (last_msg_row < chunks_count) last_msg_row = chunks_count;
-
-
             return last_msg_row;
 
         }
@@ -1737,158 +1417,6 @@ namespace ExellAddInsLib.MSG
 
             }
             return rc_work_range.Row;
-        }
-
-        public void SetFormulas_bkup()
-        {
-            int days_number = (this.WorksEndDate - this.WorksStartDate).Days;
-            foreach (WorksSection section in this.WorksSections)
-            {
-                foreach (MSGWork msg_work in section.MSGWorks)
-                {
-                    //foreach (NeedsOfWorker need_of_worker in msg_work.WorkersComposition)
-                    //{
-                    //}
-                    string msg_works_labourness_sum_formula = "";
-                    foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
-                    {
-                        string vovr_works_labourness_sum_formula = "";
-                        foreach (KSWork ks_work in vovr_work.KSWorks)
-                        {
-                            string rc_works_labourness_sum_formula = "";
-                            var first_cell = this.RegisterSheet.Cells[section.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
-                            var lastt_cell = this.RegisterSheet.Cells[section.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL + 1 + (this.WorksEndDate - this.WorksStartDate).Days];
-
-                            Excel.Range q_summ_range = this.RegisterSheet.Cells[section.CellAddressesMap["Number"].Row, RC_QUANTITY_COL];
-                            q_summ_range.Formula = $"=SUM({Func.RangeAddress(first_cell)}:{Func.RangeAddress(lastt_cell)})";
-                            foreach (RCWork rc_work in ks_work.RCWorks)
-                            {
-                                q_summ_range.Copy();
-                                rc_work.CellAddressesMap["Quantity"].Cell.PasteSpecial(XlPasteType.xlPasteAll);
-
-                                rc_works_labourness_sum_formula +=
-                                   $"{Func.RangeAddress(rc_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(rc_work.CellAddressesMap["Laboriousness"].Cell)}+";
-
-                                if (rc_work.ReportCard == null)
-                                {
-                                    rc_work.ReportCard = new WorkReportCard();
-                                    this.Register(rc_work.ReportCard, "Number", rc_work.CellAddressesMap["Number"].Row, WRC_NUMBER_COL, this.RegisterSheet);
-                                    this.Register(rc_work.ReportCard, "PreviousComplatedQuantity", rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL, this.RegisterSheet);
-                                    rc_work.ReportCard.Number = rc_work.Number;
-                                }
-                                if (this.Owner == null)
-                                {
-
-                                    int day_iterator = 0;
-                                    while (day_iterator <= days_number)
-                                    {
-                                        string w_day_quantity_furmula = "";
-
-                                        foreach (MSGExellModel model in this.Children)
-                                        {
-                                            var child_rc = model.WorkReportCards.FirstOrDefault(rc => rc.Number == rc_work.Number);
-                                            var child_rc_work = model.RCWorks.FirstOrDefault(rw => rw.Number == rc_work.Number);
-
-                                            if (child_rc != null)
-                                            {
-                                                var w_day_range =
-                                                    model.RegisterSheet.Cells[child_rc.CellAddressesMap["Number"].Row, WRC_DATE_COL + day_iterator];
-                                                w_day_quantity_furmula += $"{model.RegisterSheet.Name}!{Func.RangeAddress(w_day_range)}+";
-                                            }
-                                            else if (child_rc_work != null)
-                                            {
-                                                var new_record_card = new WorkReportCard();
-                                                new_record_card.Number = rc_work.Number;
-                                                int row = child_rc_work.CellAddressesMap["Number"].Row;
-                                                int col = child_rc_work.CellAddressesMap["Number"].Column;
-                                                model.Register(new_record_card, "Number", row, col, model.RegisterSheet);
-                                                child_rc = new_record_card;
-                                            }
-                                        }
-                                        w_day_quantity_furmula = w_day_quantity_furmula.TrimEnd('+');
-                                        if (w_day_quantity_furmula != "")
-                                            this.RegisterSheet.Cells[rc_work.CellAddressesMap["Number"].Row, WRC_DATE_COL + day_iterator].Formula =
-                                                                                                    $"={w_day_quantity_furmula}";
-                                        day_iterator++;
-                                    }
-                                    string rc_previous_quantity_furmula = "";
-                                    foreach (MSGExellModel model in this.Children)
-                                    {
-
-                                        var child_rc = model.WorkReportCards.FirstOrDefault(rc => rc.Number == rc_work.Number);
-                                        if (child_rc != null)
-                                        {
-                                            var child_rc_pr_quantiti_range = child_rc.CellAddressesMap["PreviousComplatedQuantity"].Cell;
-                                            rc_previous_quantity_furmula += $"{model.RegisterSheet.Name}!{Func.RangeAddress(child_rc_pr_quantiti_range)}+";
-                                        }
-                                    }
-
-
-                                    rc_previous_quantity_furmula = rc_previous_quantity_furmula.TrimEnd('+');
-                                    if (rc_previous_quantity_furmula != "")
-                                        rc_work.ReportCard.CellAddressesMap["PreviousComplatedQuantity"].Cell.Formula =
-                                                                                                  $"={rc_previous_quantity_furmula}";
-
-                                }
-
-                            }
-                            rc_works_labourness_sum_formula = rc_works_labourness_sum_formula.TrimEnd('+');
-                            if (rc_works_labourness_sum_formula != "")
-                            {
-                                string ks_quantity_formula = $"=({rc_works_labourness_sum_formula})/{Func.RangeAddress(ks_work.CellAddressesMap["Laboriousness"].Cell)}";
-                                ks_work.CellAddressesMap["Quantity"].Cell.Formula = ks_quantity_formula;
-
-                                vovr_works_labourness_sum_formula +=
-                                    $"{Func.RangeAddress(ks_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(ks_work.CellAddressesMap["Laboriousness"].Cell)}+";
-                            }
-                        }
-                        vovr_works_labourness_sum_formula = vovr_works_labourness_sum_formula.TrimEnd('+');
-
-                        if (vovr_works_labourness_sum_formula != "")
-                        {
-                            string vovr_quantity_formula = $"=({vovr_works_labourness_sum_formula})/{Func.RangeAddress(vovr_work.CellAddressesMap["Laboriousness"].Cell)}";
-                            vovr_work.CellAddressesMap["Quantity"].Cell.Formula = vovr_quantity_formula;
-                        }
-                        msg_works_labourness_sum_formula +=
-                                             $"{Func.RangeAddress(vovr_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(vovr_work.CellAddressesMap["Laboriousness"].Cell)}+";
-
-                    }
-                    msg_works_labourness_sum_formula = msg_works_labourness_sum_formula.TrimEnd('+');
-                    if (msg_works_labourness_sum_formula != "")
-                    {
-                        string msg_quantity_formula = $"=({msg_works_labourness_sum_formula})/{Func.RangeAddress(msg_work.CellAddressesMap["Laboriousness"].Cell)}";
-                        msg_work.CellAddressesMap["Quantity"].Cell.Formula = msg_quantity_formula;
-                    }
-
-                }
-
-            }
-
-            foreach (WorkerConsumption consumption in this.WorkerConsumptions)
-            {
-                int col_iterator = W_CONSUMPTIONS_FIRST_DATE_COL;
-                while (col_iterator <= (this.WorksEndDate - this.WorksStartDate).Days)
-                {
-                    var cons_day_range = this.WorkerConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, col_iterator];
-                    string cons_quantity_formula = "";
-                    foreach (MSGExellModel model in this.Children)
-                    {
-                        var child_consumption = model.WorkerConsumptions.FirstOrDefault(cn => cn.Number == consumption.Number);
-                        if (child_consumption != null)
-                        {
-                            int cons_row = child_consumption.CellAddressesMap["Number"].Row;
-                            var child_cons_day_range =
-                                 model.WorkerConsumptionsSheet.Cells[cons_row, col_iterator];
-                            cons_quantity_formula += $"{model.WorkerConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
-                        }
-                    }
-                    cons_quantity_formula = cons_quantity_formula.TrimEnd('+');
-                    if (cons_quantity_formula != "")
-                        cons_day_range.Formula = $"={cons_quantity_formula}";
-                    col_iterator++;
-                }
-
-            }
         }
 
         /// <summary>
@@ -2455,6 +1983,7 @@ namespace ExellAddInsLib.MSG
                     }
                 }
         }
+   
         /// <summary>
         /// Вычисление всех вычисляемых величин внутри модели и всех его дочерних моделей.
         /// </summary>
@@ -2465,8 +1994,6 @@ namespace ExellAddInsLib.MSG
             //  this.SetStyleFormats();
 
         }
-
-
 
         /// <summary>
         /// 
@@ -2480,7 +2007,7 @@ namespace ExellAddInsLib.MSG
             int last_row = FIRST_ROW_INDEX;
             foreach (WorksSection w_section in this.WorksSections.OrderBy(s => s.Number))
             {
-                last_row = this.SetExcelRepresentionTree(w_section, last_row) + _SECTIONS_GAP;
+                last_row = this.AdjustExcelRepresentionTree(w_section, last_row) + _SECTIONS_GAP;
                 this.UpdateRepresentation(w_section);
             }
 
@@ -2638,7 +2165,7 @@ namespace ExellAddInsLib.MSG
 
 
 
-        public int SetExcelRepresentionTree(WorksSection w_section, int top_row)
+        public int AdjustExcelRepresentionTree(WorksSection w_section, int top_row)
         {
             int section_row = top_row;
             int rc_row = top_row;
@@ -2649,13 +2176,13 @@ namespace ExellAddInsLib.MSG
             w_section.ChangeTopRow(section_row);
             foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
             {
-                msg_row = this.SetExcelRepresentionTree(msg_work, msg_row);
+                msg_row = this.AdjustExcelRepresentionTree(msg_work, msg_row);
             }
             section_row = msg_row + 1;
             return rc_row;
         }
         
-        public int SetExcelRepresentionTree(MSGWork msg_work, int msg_row)
+        public int AdjustExcelRepresentionTree(MSGWork msg_work, int msg_row)
         {
             int msg_lowest_row = 0;
             msg_work.ChangeTopRow(msg_row);
@@ -2689,7 +2216,7 @@ namespace ExellAddInsLib.MSG
             {
 
 
-                vovr_row = this.SetExcelRepresentionTree(vovr_work, vovr_row); ;
+                vovr_row = this.AdjustExcelRepresentionTree(vovr_work, vovr_row); ;
             }
             if (vovr_row < msg_lowest_row)
                 msg_row = msg_lowest_row + 1;
@@ -2698,7 +2225,7 @@ namespace ExellAddInsLib.MSG
 
             return msg_row;
         }
-        public int SetExcelRepresentionTree(VOVRWork vovr_work, int vovr_row)
+        public int AdjustExcelRepresentionTree(VOVRWork vovr_work, int vovr_row)
         {
             vovr_work.ChangeTopRow(vovr_row);
             var duple_vovr_works = this.VOVRWorks.Where(vrw => vrw.Number == vovr_work.Number && vrw.Id != vovr_work.Id).ToList();
@@ -2711,13 +2238,14 @@ namespace ExellAddInsLib.MSG
             int ks_row = vovr_row;
             foreach (KSWork ks_work in vovr_work.KSWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
             {
-                ks_row = this.SetExcelRepresentionTree(ks_work, ks_row); ;
+                ks_row = this.AdjustExcelRepresentionTree(ks_work, ks_row); ;
             }
 
             vovr_row = ks_row;
             return vovr_row;
         }
-        public int SetExcelRepresentionTree(KSWork ks_work, int ks_row)
+
+        public int AdjustExcelRepresentionTree(KSWork ks_work, int ks_row)
         {
             ks_work.ChangeTopRow(ks_row);
             var duple_kc_works = this.KSWorks.Where(ksw => ksw.Number == ks_work.Number && ksw.Id != ks_work.Id).ToList();
@@ -2731,14 +2259,15 @@ namespace ExellAddInsLib.MSG
             int rc_row = ks_row + ks_work_cuont;
             foreach (RCWork rc_work in ks_work.RCWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
             {
-                rc_row = this.SetExcelRepresentionTree(rc_work, rc_row);
+                rc_row = this.AdjustExcelRepresentionTree(rc_work, rc_row);
                 rc_row++;
             }
 
             ks_row = rc_row;
             return ks_row;
         }
-        public int SetExcelRepresentionTree(RCWork rc_work, int rc_row)
+
+        public int AdjustExcelRepresentionTree(RCWork rc_work, int rc_row)
         {
             rc_work.ChangeTopRow(rc_row);
             ///Находимо работы с таким же номером и помещаем их ниже 
@@ -2773,75 +2302,7 @@ namespace ExellAddInsLib.MSG
             return rc_row;
         }
 
-        public void UpdateSectionWorksheetCommonPart_backup(WorksSection w_section, int top_row = FIRST_ROW_INDEX)
-        {
-            int section_row = top_row;
-            int rc_row = top_row;
-            int ks_row = top_row;
-            int vovr_row = top_row;
-            int msg_row = top_row;
-            w_section.ChangeTopRow(section_row);
-            this.UpdateExellBindableObject(w_section);
-            foreach (MSGWork msg_work in w_section.MSGWorks)
-            {
-                msg_work.ChangeTopRow(msg_row);
-                this.UpdateExellBindableObject(msg_work);
-                int sh_ch_row_iterator = 0;
-                foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
-                {
-                    w_ch.ChangeTopRow(msg_row + sh_ch_row_iterator);
-                    this.UpdateExellBindableObject(w_ch);
-                    sh_ch_row_iterator++;
-                }
-                int nw_row_iterator = 0;
-                foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
-                {
-                    n_w.ChangeTopRow(msg_row + nw_row_iterator);
-                    this.UpdateExellBindableObject(n_w);
-                    nw_row_iterator++;
-                }
-                vovr_row = section_row;
-                foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
-                {
-                    vovr_work.ChangeTopRow(vovr_row);
-                    this.UpdateExellBindableObject(vovr_work);
-                    ks_row = vovr_row;
-                    foreach (KSWork ks_work in vovr_work.KSWorks)
-                    {
-                        ks_work.ChangeTopRow(ks_row);
-                        this.UpdateExellBindableObject(ks_work);
-                        rc_row = ks_row;
-                        foreach (RCWork rc_work in ks_work.RCWorks)
-                        {
-                            rc_work.ChangeTopRow(rc_row);
-                            this.UpdateExellBindableObject(rc_work);
-
-                            rc_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).FirstOrDefault();
-                            if (rc_work.ReportCard != null)
-                            {
-                                rc_work.ReportCard.ChangeTopRow(rc_row);
-                                this.UpdateExellBindableObject(rc_work.ReportCard);
-                                foreach (WorkDay w_day in rc_work.ReportCard)
-                                {
-                                    w_day.ChangeTopRow(rc_row);
-                                    this.UpdateExellBindableObject(w_day);
-                                }
-                            }
-
-
-                            rc_row++;
-                        }
-                        ks_row = rc_row;
-                        rc_row = ks_row;
-                    }
-
-                    vovr_row = ks_row;
-                }
-                msg_row = vovr_row;
-            }
-            section_row = msg_row + 1;
-        }
-
+       
 
         public void Update()
         {
