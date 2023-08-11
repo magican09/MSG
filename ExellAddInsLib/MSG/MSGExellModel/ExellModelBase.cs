@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using ExellAddInsLib.MSG.Section;
+using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -276,52 +277,13 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-        /// <summary>
-        /// Функция обновляет документальное представление объетка (рукурсивно проходит по всем объектам 
-        /// реализующим интерфейс IExcelBindableBase). 
-        /// </summary>
-        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IExcelBindableBase </param>
-        internal void UpdateExellBindableObject(IExcelBindableBase obj)
+        public override void UpdateExcelRepresetation()
         {
-            var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
-
-            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
-            {
-                var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
-                if (val != null)
-                    kvp.Value.Cell.Value = val.ToString();
-            }
+            
         }
 
 
-        private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
-        {
-            string[] prop_names = full_prop_name.Split('.');
-            foreach (string name in prop_names)
-            {
-                string rest_prop_name_part = full_prop_name;
-                if (full_prop_name.Contains(".")) rest_prop_name_part = full_prop_name.Replace($"{name}.", "");
-                if (obj.GetType().GetProperty(name).GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) != null)
-                    return null;
-                var prop_value = obj.GetType().GetProperty(name).GetValue(obj);
 
-                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
-                {
-                    return this.GetPropertyValueByPath(excel_bimdable_prop_value, rest_prop_name_part);
-                }
-                else if (prop_value != null && prop_value.GetType().FullName.Contains("System."))
-                {
-
-                    if (prop_value is DateTime date_val)
-                        return date_val.ToString("d");
-                    else
-                        return prop_value.ToString();
-                }
-                else
-                    return "";
-            }
-            return null;
-        }
 
     }
 }

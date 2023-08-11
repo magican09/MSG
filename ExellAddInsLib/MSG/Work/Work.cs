@@ -1,11 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Office.Interop.Excel;
+using Microsoft.Win32;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
     public abstract class Work : ExcelBindableBase, IWork
     {
+        private Excel.Worksheet _worksheet;
+
+        [NonGettinInReflection]
+        [NonRegisterInUpCellAddresMap]
+        public override Excel.Worksheet Worksheet
+        {
+            get { return _worksheet; }
+            set
+            {
+                _worksheet = value;
+                this.WorkersComposition.Worksheet = _worksheet;
+                this.MachinesComposition.Worksheet = _worksheet;
+                this.ReportCard.Worksheet = _worksheet;
+                this.CellAddressesMap.SetWorksheet(_worksheet);
+            }
+        }
 
         private int _rowIndex;
 
@@ -80,7 +99,12 @@ namespace ExellAddInsLib.MSG
         public WorkReportCard ReportCard
         {
             get { return _reportCard; }
-            set { SetProperty(ref _reportCard, value); }
+            set
+            {
+                SetProperty(ref _reportCard, value);
+                if (_reportCard != null)
+                    _reportCard.Worksheet = this.Worksheet;
+            }
         }
 
         //public WorkReportCard ReportCard { get; set; }
@@ -130,7 +154,7 @@ namespace ExellAddInsLib.MSG
         {
             WorkersComposition = new WorkersComposition();
             MachinesComposition = new MachinesComposition();
-            ReportCard = new WorkReportCard();
+            //  ReportCard = new WorkReportCard();
             Children.CollectionChanged += OnChildrenAdd;
 
         }
@@ -169,6 +193,26 @@ namespace ExellAddInsLib.MSG
             new_work.MachinesComposition = (MachinesComposition)this.MachinesComposition.Clone();
 
             return new_work;
+        }
+        public override Range GetRange()
+        {
+            Excel.Range range = base.GetRange();
+            Excel.Range report_card_range = null;
+
+            Excel.Range workers_composition_range = this.WorkersComposition.GetRange();
+            Excel.Range machine_composition_range = this.MachinesComposition.GetRange();
+            if (this.ReportCard != null && this.ReportCard.GetRange() != null)
+            {
+                report_card_range = this.ReportCard.GetRange();
+                range = Worksheet.Application.Union(range, report_card_range);
+            }
+            if (workers_composition_range != null)
+                range = Worksheet.Application.Union(range, workers_composition_range);
+
+            if (machine_composition_range != null)
+                range = Worksheet.Application.Union(range, machine_composition_range);
+
+            return range;
         }
 
         public void ClearCalculatesFields()

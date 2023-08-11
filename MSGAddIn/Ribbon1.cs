@@ -137,7 +137,7 @@ namespace MSGAddIn
         {
             LoadMSG_File();
             //    CurrentMSGExellModel.SetFormulas(); 
-            CurrentMSGExellModel.SetStyleFormats();
+            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
 
         }
         private void LoadMSG_File()
@@ -215,7 +215,7 @@ namespace MSGAddIn
         {
             CurrentMSGExellModel.CalcLabourness();
             CurrentMSGExellModel.CalcQuantity();
-            CurrentMSGExellModel.SetStyleFormats();
+            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
             // CurrentMSGExellModel.SetFormulas();
         }
 
@@ -313,7 +313,7 @@ namespace MSGAddIn
             }
             CurrentMSGExellModel = empl_model;
             //   CurrentMSGExellModel.ReloadSheetModel();
-            CurrentMSGExellModel.SetStyleFormats();
+         //   CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
 
 
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
@@ -502,14 +502,14 @@ namespace MSGAddIn
         {
             CurrentMSGExellModel.ReloadSheetModel();
             // CurrentMSGExellModel.SetFormulas();
-            CurrentMSGExellModel.SetStyleFormats();
+            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
         }
 
         private void btnLoadFromModel_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.UpdateExcelRepresetation();
             CurrentMSGExellModel.SetFormulas();
-            CurrentMSGExellModel.SetStyleFormats();
+            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
         }
         private void btnUpdateAll_Click(object sender, RibbonControlEventArgs e)
         {
@@ -521,8 +521,9 @@ namespace MSGAddIn
             CurrentMSGExellModel.ReloadSheetModel();
             CurrentMSGExellModel.UpdateExcelRepresetation();
             CurrentMSGExellModel.SetFormulas();
-            CurrentMSGExellModel.SetStyleFormats();
+            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
         }
+        #region Выгрузка данных в файл МСГ шаблона
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
             //  string solutionpath = Directory.GetParent(Globals.ThisAddIn.Application.Path).Parent.Parent.Parent.FullName; 
@@ -675,8 +676,6 @@ namespace MSGAddIn
                             saved_iterator = section_local_index_iterator;
                             break;
                         }
-
-
                     }
                     section_local_index_iterator++;
                 }
@@ -688,7 +687,6 @@ namespace MSGAddIn
                 sect_row_dest.PasteSpecial(XlPasteType.xlPasteAll);
                 MSGOutWorksheet.Cells[section_local_index_iterator, 1] = $"{w_section.Number} {w_section.Name}";
 
-                //    row_index++;
                 saved_iterator = section_local_index_iterator + 1;
                 foreach (MSGWork msg_work in w_section.MSGWorks)
                 {
@@ -716,24 +714,10 @@ namespace MSGAddIn
                                 saved_iterator = work_local_index_iterator;
                                 tmp_work_rows_range.Copy();
                                 Excel.Range dest = MSGOutWorksheet.Rows[saved_iterator];
-                                // dest.PasteSpecial(XlPasteType.xlPasteAll);
                                 dest.Insert(Excel.XlInsertShiftDirection.xlShiftDown, Type.Missing);
 
                                 break;
                             }
-                            //var f = MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value;
-                            //var f2 = MSGOutWorksheet.Cells[work_local_index_iterator + 1, TMP_WORK_NUMBER_COL].Value;
-
-                            //if (MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value == null &&
-                            //     MSGOutWorksheet.Cells[work_local_index_iterator + 1, TMP_WORK_NUMBER_COL].Value == null )
-                            //{
-
-                            //    row_index = work_local_index_iterator;
-                            //    tmp_work_rows_range.Copy();
-                            //    Excel.Range dest = MSGOutWorksheet.Rows[row_index];
-                            //    dest.PasteSpecial(XlPasteType.xlPasteAll);
-                            //    break;
-                            //}
                             if (msg_work.Number == msg_work_number)
                             {
                                 saved_iterator = work_local_index_iterator;
@@ -742,20 +726,7 @@ namespace MSGAddIn
                             if (msg_work.Number != msg_work_number && msg_work_number != "")
                             {
                                 saved_iterator = work_local_index_iterator + 2;
-                                //      section_local_index_iterator = work_local_index_iterator;
-
-                                //  break;
                             }
-                            //if (MSGOutWorksheet.Cells[local_index_iterator+2, TMP_WORK_NUMBER_COL].Value == null &&
-                            //     MSGOutWorksheet.Cells[local_index_iterator + 3, TMP_WORK_NUMBER_COL].Value == null)
-                            //{
-                            //    row_index +=2;
-                            //    tmp_work_rows_range.Copy();
-                            //    Excel.Range dest = MSGOutWorksheet.Rows[row_index];
-                            //    dest.PasteSpecial(XlPasteType.xlPasteAll);
-                            //    break;
-                            //}
-
                         }
                         work_local_index_iterator++;
                     }
@@ -798,7 +769,7 @@ namespace MSGAddIn
                                 && (date.DayOfWeek != DayOfWeek.Sunday || schedule_chunk.IsSundayVacationDay == "Нет"))
                             {
                                 MSGOutWorksheet.Cells[row_index, TMP_WORKDAY_DATE_FIRST_COL + date_index] =
-                                    (msg_work.ProjectQuantity- msg_work.PreviousComplatedQuantity) / workable_days_num;
+                                    (msg_work.ProjectQuantity - msg_work.PreviousComplatedQuantity) / workable_days_num;
                             }
                             date_index++;
                         }
@@ -910,6 +881,7 @@ namespace MSGAddIn
             MSGTemplateWorkbook.SaveAs(@"D:\1234.xlsx");
             MSGTemplateWorkbook.Close();
         }
+
         private void FillMSG_OUT_File_Headers()
         {
             #region Создание календарной части - дней, недель...
@@ -941,8 +913,6 @@ namespace MSGAddIn
             if (checkBoxRerightDatePart.Checked == true)
                 for (DateTime date = CommonMSGExellModel.WorksStartDate; date <= CommonMSGExellModel.WorksEndDate; date = date.AddDays(1))
                 {
-                    MSGNeedsOutWorksheet.Activate();
-
 
                     ///Если текущий день является восскесеньем или является первым днем все ведомости -
                     /// втавляем и заполняем недельный столбец в календарь
@@ -968,14 +938,13 @@ namespace MSGAddIn
 
                         ///Заполняем из шаблона МСГ недельный столбец в каледаре 
                         string week_name_signatura =
-                          $"неделя\r\n {date.ToString("dd")} - {this.GetLastNotVocationDate(date).AddDays(1).ToString("dd")}";
+                          $"неделя\r\n {date.ToString("dd")} - {this.GetLastWeekdayDate(date).ToString("dd")}";
                         MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index] = week_name_signatura;
                         MSGOutWorksheet.Cells[WORKDAY_DATE_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index] = in_worksheet_number++;
 
 
                         first_week_day_col = date_col_index + 1;
-
-                        last_week_day_col = first_week_day_col + (this.GetLastNotVocationDate(date) - date).Days;
+                        last_week_day_col = first_week_day_col + (this.GetLastWeekdayDate(date) - date).Days;
 
                         Excel.Range project_week_pr_q = MSGOutWorksheet.Range[
                           MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, WORKDAY_DATE_FIRST_COL + date_col_index],
@@ -1001,7 +970,7 @@ namespace MSGAddIn
                             MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col],
                             MSGOutWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW + 1, WORKDAY_DATE_FIRST_COL + last_week_day_col]];
                         ///Вставляем форму для подсчета суммы планового количества работан на  неделю и фактического объема...
-                        
+
                         project_week_q.Formula = $"=SUM({Func.RangeAddress(project_week_q_first_day)}:{Func.RangeAddress(project_week_q_last_day)})"; ;
                         project_week_pr_q.Formula = $"=SUM({Func.RangeAddress(project_week_pr_q_first_day)}:{Func.RangeAddress(project_week_pr_q_last_day)})"; ;
                         #endregion
@@ -1036,31 +1005,25 @@ namespace MSGAddIn
                         }
 
                         #endregion
-                        if (last_week_day_col == 1) last_week_day_col = 0;
-                        week_signatura_first_col = first_week_day_col - 1;
-                        week_signatura_last_col = last_week_day_col + 1;
-                        last_week_name_signatura = week_name_signatura;
+
 
                         Excel.Range week_range = MSGOutWorksheet.Range[MSGOutWorksheet.Columns[WORKDAY_DATE_FIRST_COL + first_week_day_col],
-                           MSGOutWorksheet.Columns[WORKDAY_DATE_FIRST_COL + last_week_day_col + 1]];
+                           MSGOutWorksheet.Columns[WORKDAY_DATE_FIRST_COL + last_week_day_col]];
 
                         Excel.Range needs_week_range = MSGNeedsOutWorksheet.Range[MSGNeedsOutWorksheet.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + first_week_day_col],
-                            MSGNeedsOutWorksheet.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + last_week_day_col + 1]];
+                            MSGNeedsOutWorksheet.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + last_week_day_col]];
                         try
                         {
                             week_range.Group();
                             needs_week_range.Group();
-
                         }
-                        catch
-                        {
+                        catch { }
 
-                        }
-
-
+                        week_signatura_first_col = first_week_day_col - 1;
+                        week_signatura_last_col = last_week_day_col;
+                        last_week_name_signatura = week_name_signatura;
                         first_week_day_col = 0;
                         last_week_day_col = 0;
-
                         date_col_index++;
                     }
                     #region Каледарная часть МСГ рабочие дни
@@ -1073,7 +1036,6 @@ namespace MSGAddIn
                     if (date.DayOfWeek == DayOfWeek.Sunday)
                         MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index].Interior.Color
                                     = XlRgbColor.rgbOrangeRed;
-
                     #endregion
 
                     #region Календарная часть потребности ресурсов столбец ежедневных потребностей 
@@ -1082,7 +1044,10 @@ namespace MSGAddIn
                     Excel.Range needs_day_dest = MSGNeedsOutWorksheet.UsedRange.Columns[NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index];
                     needs_day_dest.PasteSpecial(XlPasteType.xlPasteAll);
 
+
                     MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index].Value = date;
+                    if (date.DayOfWeek == DayOfWeek.Sunday)
+                        MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + date_col_index].Interior.Color = XlRgbColor.rgbOrangeRed;
                     #endregion
 
                     date_col_index++;
@@ -1095,25 +1060,30 @@ namespace MSGAddIn
             const int TMP_CONTRACT_CODE_ROW = 3;
 
         }
-        private DateTime GetLastNotVocationDate(DateTime date)
+        private DateTime GetLastWeekdayDate(DateTime date)
         {
             DateTime out_date = date;
             if (out_date.DayOfWeek == DayOfWeek.Sunday) return date;
-            while (out_date.AddDays(1).DayOfWeek != DayOfWeek.Sunday)
+            while (out_date.AddDays(1).DayOfWeek != DayOfWeek.Monday)
                 out_date = out_date.AddDays(1);
             return out_date;
         }
-
+        #endregion
 
         private void checkBoxRerightDatePart_Click(object sender, RibbonControlEventArgs e)
         {
 
         }
 
+        #region Редактивроние данных
         private List<IExcelBindableBase> CopyedObjectsList = new List<IExcelBindableBase>();
         private string commands_group_label = "";
-
-        private void buttonCopy_Click(object sender, RibbonControlEventArgs e)
+        /// <summary>
+        /// Копировать разделы
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void buttonCopyWorkSection_Click(object sender, RibbonControlEventArgs e)
         {
             CopyedObjectsList.Clear();
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
@@ -1130,6 +1100,11 @@ namespace MSGAddIn
             //dlg.Show();
             groupCommands.Label = commands_group_label;
         }
+        /// <summary>
+        /// Копировать МСГ работы
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnCopyMSGWork_Click(object sender, RibbonControlEventArgs e)
         {
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
@@ -1146,6 +1121,11 @@ namespace MSGAddIn
             groupCommands.Label = commands_group_label;
 
         }
+        /// <summary>
+        /// Допивать в пустые МСГ все ВОВР, КС и табельные работы
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnInitMSGContent_Click(object sender, RibbonControlEventArgs e)
         {
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
@@ -1206,18 +1186,24 @@ namespace MSGAddIn
                     vovr_work.KSWorks.Add(ks_work);
                     ks_work.RCWorks.Add(rc_work);
 
-                    CurrentMSGExellModel.AdjustExcelRepresentionTree(msg_work, rowIndex);
-                    CurrentMSGExellModel.UpdateExcelRepresetation(msg_work);
-                    CurrentMSGExellModel.SetStyleFormats(msg_work, MSGExellModel.W_SECTION_COLOR + 1);
+                    msg_work.AdjustExcelRepresentionTree(rowIndex);
+                    msg_work.UpdateExcelRepresetation();
+                    msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
                 }
             }
         }
 
+        /// <summary>
+        /// Вставить из беферного списка объекты
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="Exception"></exception>
         private void buttonPaste_Click(object sender, RibbonControlEventArgs e)
         {
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
             //var sected_object = CurrentMSGExellModel.GetObjectBySelection(selection, typeof(WorksSection));
-            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(IExcelBindableBase));
+            //    var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(IExcelBindableBase));
             if (CopyedObjectsList.Count > 0)
                 switch (CopyedObjectsList[0]?.GetType().Name)
                 {
@@ -1227,21 +1213,23 @@ namespace MSGAddIn
                             try
                             {
                                 if (selection.Column != MSGExellModel.WSEC_NUMBER_COL) return;
-                                int cell_val = Int32.Parse(selection.Value.ToString());
+                                int cell_val;
+                                Int32.TryParse(selection.Value.ToString(), out cell_val);
                                 int _serction_row = selection.Row;
+                                if (cell_val == 0) return;
                                 foreach (WorksSection section in CopyedObjectsList)
                                 {
                                     CurrentMSGExellModel.WorksSections.Add(section);
                                     CurrentMSGExellModel.SetCommonModelCollections();
 
                                     section.SetNumberItem(0, cell_val.ToString());
-                                    _serction_row = CurrentMSGExellModel.AdjustExcelRepresentionTree(section, _serction_row);
-                                    CurrentMSGExellModel.UpdateExcelRepresetation(section);
+                                    _serction_row = section.AdjustExcelRepresentionTree(_serction_row);
+                                    section.UpdateExcelRepresetation();
                                     CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
                                     cell_val++;
                                 }
 
-                                CurrentMSGExellModel.SetStyleFormats();
+                                CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
                                 commands_group_label = "";
                             }
                             catch
@@ -1253,57 +1241,63 @@ namespace MSGAddIn
                         }
                     case nameof(MSGWork):
                         {
-                            if (selection.Column >= MSGExellModel.WSEC_NUMBER_COL | selection.Column <= MSGExellModel.WSEC_NAME_COL) return;
-                            int insert_work_number = 0;
-                            //MSGWork nearest_msg_work = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork))[0] as MSGWork;
+                            if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+                            //  int insert_work_number = 0;
+                            //  MSGWork nearest_msg_work = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork))[0] as MSGWork;
                             //if(nearest_msg_work.GetTopRow()<selection.Row)
-                            //    nearest_msg_work.
-                            //var selected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection,(obj)=>obj is MSGWork msg_obj 
-                            //                                                                                  &&  msg_obj.Owner is WorksSection section_obj 
-                            //                                                                                  && section_obj.MSGWorks.OrderBy(w=>w.GetBottomRow()).Last ));
+                            //  nearest_msg_work.
+                            var selected_above_msg_works = CurrentMSGExellModel
+                                      .GetObjectsBySelection(selection, (obj) => obj is MSGWork msg_obj
+                                                                                               && msg_obj.GetTopRow() <= selection.Rows[1].Row);
+                            MSGWork selected_work = selected_above_msg_works[0] as MSGWork;
+                            WorksSection selected_section = selected_work.Owner as WorksSection;
+
+                            if (selected_section == null) return;
+                            int selected_work_index = selected_section.MSGWorks.IndexOf(selected_work);
+                            selected_section.MSGWorks.Insert(selected_work_index + 1, CopyedObjectsList[0] as MSGWork);
                             //WorksSection picked_section = null;
                             //if (selected_objects[0] is MSGWork selected_msg_work)
                             //    picked_section = selected_msg_work.Owner as WorksSection;
                             //if (selected_objects[0] is WorksSection selecte_section)
                             //    picked_section = selecte_section;
 
-                            var picked_section = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(WorksSection))[0] as WorksSection;
+                            var picked_section = selected_section;
 
-                            if (picked_section != null)
-                                foreach (MSGWork msg_work in CopyedObjectsList)
-                                {
-                                    int last_row = picked_section
-                                       .MSGWorks.OrderBy(w => w.GetBottomRow()).Last()
-                                       .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
-                                        .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
-                                        .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
-                                    int last_msg_work_row = msg_work
-                                        .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
-                                         .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
-                                         .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
-                                    int msg_work_rows_number = last_msg_work_row - msg_work.CellAddressesMap["Number"].Row;
+                            //if (picked_section != null)
+                            //    foreach (MSGWork msg_work in CopyedObjectsList)
+                            //    {
+                            //        int last_row = picked_section
+                            //           .MSGWorks.OrderBy(w => w.GetBottomRow()).Last()
+                            //           .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
+                            //            .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
+                            //            .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
+                            //        int last_msg_work_row = msg_work
+                            //            .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
+                            //             .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
+                            //             .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
+                            //        int msg_work_rows_number = last_msg_work_row - msg_work.CellAddressesMap["Number"].Row;
 
-                                    int selection_row = picked_section.CellAddressesMap["Number"].Row;
+                            //        int selection_row = picked_section.CellAddressesMap["Number"].Row;
 
-                                    while (msg_work_rows_number > 0)
-                                    {
-                                        CurrentMSGExellModel.RegisterSheet.Rows[last_row + 2].Insert();
-                                        msg_work_rows_number--;
-                                    }
+                            //        while (msg_work_rows_number > 0)
+                            //        {
+                            //            CurrentMSGExellModel.RegisterSheet.Rows[last_row + 2].Insert();
+                            //            msg_work_rows_number--;
+                            //        }
 
-                                    msg_work.SetNumberItem(0, picked_section.Number);
-                                    var last_msg_work = picked_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))).LastOrDefault();
-                                    int last_w_namber = Int32.Parse(last_msg_work.GetSelfNamber()) + 1;
-                                    if (last_msg_work != null)
-                                        msg_work.SetNumberItem(1, last_w_namber.ToString());
+                            //        msg_work.SetNumberItem(0, picked_section.Number);
+                            //        var last_msg_work = picked_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))).LastOrDefault();
+                            //        int last_w_namber = Int32.Parse(last_msg_work.GetSelfNamber()) + 1;
+                            //        if (last_msg_work != null)
+                            //            msg_work.SetNumberItem(1, last_w_namber.ToString());
 
-                                    picked_section.MSGWorks.Add(msg_work);
-                                    CurrentMSGExellModel.SetCommonModelCollections();
-                                    CurrentMSGExellModel.AdjustExcelRepresentionTree(picked_section, selection_row);
-                                    CurrentMSGExellModel.UpdateExcelRepresetation();
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
-                                    CurrentMSGExellModel.SetStyleFormats(msg_work, MSGExellModel.W_SECTION_COLOR + 1);
-                                }
+                            //        picked_section.MSGWorks.Add(msg_work);
+                            //        CurrentMSGExellModel.SetCommonModelCollections();
+                            //        picked_section.AdjustExcelRepresentionTree(selection_row);
+                            //        CurrentMSGExellModel.UpdateExcelRepresetation();
+                            //        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                            //        msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
+                            //    }
                             commands_group_label = "";
                             break;
                         }
@@ -1336,9 +1330,9 @@ namespace MSGAddIn
                                             var beneath_works_insection = CurrentMSGExellModel.MSGWorks.Where(w => w.GetTopRow() > rowIndex && w.Owner.Id == msg_work.Owner.Id).ToList();
                                             var beneath_sections = CurrentMSGExellModel.WorksSections.Where(s => s.GetBottomRow() > msg_work.GetTopRow()).ToList();
                                             foreach (MSGWork w in beneath_works_insection)
-                                                CurrentMSGExellModel.AdjustExcelRepresentionTree(w, w.GetBottomRow() + 1);
+                                                w.AdjustExcelRepresentionTree(w.GetBottomRow() + 1);
                                             foreach (WorksSection s in beneath_sections)
-                                                CurrentMSGExellModel.AdjustExcelRepresentionTree(s, s.GetBottomRow() + 1);
+                                                s.AdjustExcelRepresentionTree(s.GetBottomRow() + 1);
 
                                             rowIndex++;
                                         }
@@ -1346,16 +1340,16 @@ namespace MSGAddIn
                                         CurrentMSGExellModel.Register(new_n_w, "Quantity", rowIndex, MSGExellModel.MSG_NEEDS_OF_WORKERS_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
                                         new_n_w.Name = n_w.Name;
                                         new_n_w.Quantity = n_w.Quantity;
-                                        new_n_w.Number = $"{msg_work.Number}.{(msg_work.WorkersComposition.Count+1).ToString()}";
+                                        new_n_w.Number = $"{msg_work.Number}.{(msg_work.WorkersComposition.Count + 1).ToString()}";
                                         msg_work.WorkersComposition.Add(new_n_w);
-                                       if(!CurrentMSGExellModel.WorkersComposition.Contains(new_n_w))
+                                        if (!CurrentMSGExellModel.WorkersComposition.Contains(new_n_w))
                                             CurrentMSGExellModel.WorkersComposition.Add(new_n_w);
                                     }
 
                                 }
                             }
                             CurrentMSGExellModel.UpdateExcelRepresetation();
-                            CurrentMSGExellModel.SetStyleFormats();
+                            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
                             break;
                         }
                     case nameof(NeedsOfMachine):
@@ -1386,9 +1380,9 @@ namespace MSGAddIn
                                             var beneath_works_insection = CurrentMSGExellModel.MSGWorks.Where(w => w.GetTopRow() > rowIndex && w.Owner.Id == msg_work.Owner.Id).ToList();
                                             var beneath_sections = CurrentMSGExellModel.WorksSections.Where(s => s.GetBottomRow() > msg_work.GetTopRow()).ToList();
                                             foreach (MSGWork w in beneath_works_insection)
-                                                CurrentMSGExellModel.AdjustExcelRepresentionTree(w, w.GetBottomRow() + 1);
+                                                w.AdjustExcelRepresentionTree(w.GetBottomRow() + 1);
                                             foreach (WorksSection s in beneath_sections)
-                                                CurrentMSGExellModel.AdjustExcelRepresentionTree(s, s.GetBottomRow() + 1);
+                                                s.AdjustExcelRepresentionTree(s.GetBottomRow() + 1);
 
                                             rowIndex++;
                                         }
@@ -1405,7 +1399,7 @@ namespace MSGAddIn
                                 }
                             }
                             CurrentMSGExellModel.UpdateExcelRepresetation();
-                            CurrentMSGExellModel.SetStyleFormats();
+                            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
                             break;
                         }
                     default:
@@ -1452,5 +1446,7 @@ namespace MSGAddIn
             }
             groupCommands.Label = commands_group_label;
         }
+        #endregion
     }
+
 }

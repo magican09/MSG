@@ -17,5 +17,6 @@ namespace ExellAddInsLib.MSG
             Number = number;
             Name = name;
         }
+
     }
 }

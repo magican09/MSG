@@ -1,7 +1,16 @@
-﻿namespace ExellAddInsLib.MSG
+﻿using Microsoft.Office.Interop.Excel;
+using System.Linq;
+using Excel = Microsoft.Office.Interop.Excel;
+
+namespace ExellAddInsLib.MSG
 {
     public class WorkReportCard : ExcelNotifyChangedCollection<WorkDay>
     {
+        public const int WRC_DATE_ROW = 6;
+
+        public const int WRC_NUMBER_COL = 38;
+        public const int WRC_PC_QUANTITY_COL = WRC_NUMBER_COL + 1;
+        public const int WRC_DATE_COL = WRC_PC_QUANTITY_COL + 1;
 
         private string _number;
 
@@ -41,5 +50,33 @@
             set { _owner = value; }
         }
 
+        public  override void SetStyleFormats(int col)
+        {
+
+            var cr_range = this.GetRange();
+            if (cr_range != null)
+            {
+                cr_range.Interior.ColorIndex = col;
+                cr_range.SetBordersBoldLine(XlLineStyle.xlDashDotDot, XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+            }
+
+             if(this.Count>0)
+            {
+                Excel.Range last_day_range = this.OrderBy(d => d.Date).LastOrDefault().GetRange();
+                Excel.Range days_row_range = Worksheet.Application.Union(this.GetRange(), last_day_range);
+                //Excel.Range days_row_range = this.Worksheet.Range[
+                //       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1],
+                //       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + this.Count]];
+
+                //   Excel.Range days_row_range = this.GetRange();
+                days_row_range.Interior.ColorIndex = col;
+                days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
+
+                days_row_range.SetBordersBoldLine(XlLineStyle.xlContinuous, XlLineStyle.xlContinuous,
+                                                  XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+            }
+          
+
+        }
     }
 }

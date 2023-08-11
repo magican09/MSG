@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using ExellAddInsLib.MSG.Section;
+using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,6 +14,21 @@ namespace ExellAddInsLib.MSG
     public abstract class ExcelBindableBase : INotifyPropertyChanged, IExcelBindableBase
     {
         public event PropertyChangedEventHandler PropertyChanged;
+      
+        private Excel.Worksheet _worksheet;
+
+        [NonGettinInReflection]
+        [NonRegisterInUpCellAddresMap]
+        public virtual Excel.Worksheet Worksheet
+        {
+            get { return _worksheet; }
+            set
+            {
+                _worksheet = value;
+                this.CellAddressesMap.SetWorksheet(_worksheet);
+             
+            }
+        }
 
         public string Name { get; set; }
 
@@ -100,7 +116,10 @@ namespace ExellAddInsLib.MSG
         public IExcelBindableBase Owner
         {
             get { return _owner; }
-            set { _owner = value; }
+            set {
+
+                _owner = value;
+            }
         }
 
         private void RegisterNewValInCellAddresMap(IExcelBindableBase excell_bindable_new_val, string property_name)
@@ -153,44 +172,39 @@ namespace ExellAddInsLib.MSG
         }
 
 
-        public Excel.Range GetRange(Excel.Worksheet worksheet, int right_border, int low_borde = 100000000, int left_border = 0, int up_border = 0)
+        public virtual Excel.Range GetRange(int right_border, int low_border = 100000000, int left_border = 0, int up_border = 0)
         {
+            Excel.Range _range = this.GetRange();
             Excel.Range range = null;
-            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name);
-            if (cell_maps.Any())
+
+            Excel.Worksheet worksheet = this.Worksheet;
+          
+             foreach(Excel.Range r in _range.Columns)
             {
-                int upper_row = cell_maps.OrderBy(c => c.Value.Row).First().Value.Row;
-                int lower_row = cell_maps.OrderBy(c => c.Value.Row).Last().Value.Row;
-                int left_col = cell_maps.OrderBy(c => c.Value.Column).First().Value.Column;
-                int right_col = cell_maps.OrderBy(c => c.Value.Column).Last().Value.Column;
-                if (lower_row > low_borde) lower_row = low_borde;
-                if (upper_row < up_border) upper_row = up_border;
-                if (left_col < left_border) left_col = left_border;
-                if (right_col > right_border) right_col = right_border;
-
-                var left_upper_cell = worksheet.Cells[upper_row, left_col];
-                var rigth_lower_cell = worksheet.Cells[lower_row, right_col]; ;
-
-                range = worksheet.Range[left_upper_cell, rigth_lower_cell];
+                if (r.Column >= left_border && r.Column <= right_border && r.Row>=up_border && r.Row<=low_border)
+                { if (range == null) range = r;
+                    range = Worksheet.Application.Union(range, r);
+                }
+                
             }
+          
             return range;
         }
-        public Excel.Range GetRange(Excel.Worksheet worksheet)
+        public virtual Excel.Range GetRange()
         {
             Excel.Range range = null;
+            Excel.Worksheet worksheet = this.Worksheet;
             var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name);
             if (cell_maps.Any())
             {
-
                 var left_upper_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).First().Value.Cell;
                 var rigth_lower_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).Last().Value.Cell;
 
                 range = worksheet.Range[left_upper_cell, rigth_lower_cell];
             }
-
             return range;
         }
-        public void SetInvalidateCellsColor(XlRgbColor color)
+        public virtual void SetInvalidateCellsColor(XlRgbColor color)
         {
             var invalide_cells = this.CellAddressesMap.Where(cm => cm.Value.IsValid == false);
             foreach (var kvp in invalide_cells)
@@ -198,7 +212,7 @@ namespace ExellAddInsLib.MSG
                 kvp.Value.Cell.Interior.Color = color;
             }
         }
-        public void ChangeTopRow(int row)
+        public virtual void ChangeTopRow(int row)
         {
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             int row_delta = row - top_row;
@@ -209,19 +223,19 @@ namespace ExellAddInsLib.MSG
                 kvp.Value.Row += row_delta;
             }
         }
-        public int GetRowsCount()
+        public virtual int GetRowsCount()
         {
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
             return bottom_row - top_row;
         }
-        public int GetBottomRow()
+        public virtual  int GetBottomRow()
         {
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
             return bottom_row;
         }
-        public int GetTopRow()
+        public virtual  int GetTopRow()
         {
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             return top_row;
@@ -277,7 +291,68 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
+        public  virtual void   UpdateExcelRepresetation()
+        {
+            this.UpdateExellBindableObject();
+        }
+        public virtual int AdjustExcelRepresentionTree( int row)
+        {
+            this.ChangeTopRow(row);
+            return row;
+        }
 
+        public virtual void  SetStyleFormats(int col)
+        {
+
+
+        }
+
+
+        /// <summary>
+        /// Функция обновляет документальное представление объетка (рукурсивно проходит по всем объектам 
+        /// реализующим интерфейс IExcelBindableBase). 
+        /// </summary>
+        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IExcelBindableBase </param>
+        internal void UpdateExellBindableObject()
+        {
+            var obj = this;
+            var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
+
+            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
+            {
+                var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
+                if (val != null)
+                    kvp.Value.Cell.Value = val.ToString();
+            }
+        }
+        private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
+        {
+            string[] prop_names = full_prop_name.Split('.');
+            foreach (string name in prop_names)
+            {
+                string rest_prop_name_part = full_prop_name;
+                if (full_prop_name.Contains(".")) rest_prop_name_part = full_prop_name.Replace($"{name}.", "");
+                if (obj.GetType().GetProperty(name).GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) != null)
+                    return null;
+                var prop_value = obj.GetType().GetProperty(name).GetValue(obj);
+
+                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
+                {
+                    return this.GetPropertyValueByPath(excel_bimdable_prop_value, rest_prop_name_part);
+                }
+                else if (prop_value != null && prop_value.GetType().FullName.Contains("System."))
+                {
+
+                    if (prop_value is DateTime date_val)
+                        return date_val.ToString("d");
+                    else
+                        return prop_value.ToString();
+                }
+                else
+                    return "";
+            }
+            return null;
+        }
         public string GetSelfNamber()
         {
             if (this.Number != null && !this.Number.Contains('.')) return this.Number;
@@ -285,6 +360,9 @@ namespace ExellAddInsLib.MSG
             string[] str_array = this.Number.Split('.');
             return str_array[str_array.Length - 1];
         }
+       
+
+
         public virtual object Clone()
         {
             IExcelBindableBase new_obj = (IExcelBindableBase)Activator.CreateInstance(this.GetType());
@@ -311,54 +389,6 @@ namespace ExellAddInsLib.MSG
             return new_obj;
 
         }
-        //public object Clone()
-        //{
-        //    if (this is UnitOfMeasurement)
-        //        ;
-        //    if (this is RCWork)
-        //        ;
-        //    if (this is WorkReportCard)
-        //        ;
-        //    var new_obj =  Activator.CreateInstance(this.GetType());
-        //    var prop_infoes = new_obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
-        //                                                         && pr.CanWrite
-        //                                                        && pr.GetValue(this) != null);
-        //    foreach (PropertyInfo prop_info in prop_infoes)
-        //    {
-        //        var this_prop_value = prop_info.GetValue(this);
-        //        var new_obj_prop_value = prop_info.GetValue(new_obj);
-        //        if (prop_info.Name == "WorkReportCard")
-        //            ;
-        //        if (prop_info.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null)
-        //        {
-        //            if (!prop_info.PropertyType.FullName.Contains("System."))
-        //            {
-        //                if(this_prop_value is ICloneable clonable_prop_value && prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) == null)
-        //                {
-        //                    new_obj_prop_value = clonable_prop_value.Clone();
-        //                }
-        //                else if (prop_info.GetCustomAttribute(typeof(DontCloneAttribute)) != null)
-        //                {
-        //                    new_obj_prop_value = this_prop_value;
-        //                }
-        //                else
-        //                {
-        //                    var constr_method = new_obj_prop_value.GetType().GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
-        //                    new_obj_prop_value = constr_method.Invoke(null);
-        //                }
-        //            }
-        //            else
-        //            {
-        //               if(prop_info.CanWrite)
-        //                    prop_info.SetValue(new_obj, this_prop_value);
-        //            }
-        //        }
-        //        else
-        //            ;
-        //    }
-
-        //    return new_obj;
-
-        //}
+       
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using ExellAddInsLib.MSG.Section;
+using Microsoft.Office.Interop.Excel;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -7,7 +8,7 @@ namespace ExellAddInsLib.MSG
 {
     public interface IExcelBindableBase : ICloneable, INameable, IPropertyChnagedIsSubscribed
     {
-
+        Excel.Worksheet Worksheet { get; set; }
         event PropertyChangedEventHandler PropertyChanged;
         void PropertyChange(object sender, string property_name);
         void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
@@ -20,8 +21,8 @@ namespace ExellAddInsLib.MSG
         bool IsValid { get; set; }
 
         //   ObservableCollection<IExcelBindableBase> Owners { get; set; }
-        Excel.Range GetRange(Excel.Worksheet worksheet);
-        Excel.Range GetRange(Excel.Worksheet worksheet, int right_border = 100000000, int low_borde = 1000000000, int left_border = 0, int up_border = 0);
+        Excel.Range GetRange();
+        Excel.Range GetRange(int right_border = 100000000, int low_borde = 1000000000, int left_border = 0, int up_border = 0);
         void SetInvalidateCellsColor(XlRgbColor color);
         void ChangeTopRow(int row);
         int GetBottomRow();
@@ -30,7 +31,16 @@ namespace ExellAddInsLib.MSG
         void SetNumberItem(int possition, string number, bool first_itaration = true);
         string GetSelfNamber();
 
-
+        void UpdateExcelRepresetation();
+        int AdjustExcelRepresentionTree(int top_row);
+        void  SetStyleFormats(int col);
+        //void SetBordersBoldLine(Excel.Range range);
+        //void SetBordersBoldLine(Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true);
+        //void SetBordersBoldLine(Excel.Range range,
+        // Excel.XlLineStyle right = Excel.XlLineStyle.xlDouble,
+        // Excel.XlLineStyle left = Excel.XlLineStyle.xlDouble,
+        // Excel.XlLineStyle top = Excel.XlLineStyle.xlDouble,
+        // Excel.XlLineStyle bottom = Excel.XlLineStyle.xlDouble);
 
     }
 }

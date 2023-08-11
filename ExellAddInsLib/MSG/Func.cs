@@ -47,6 +47,60 @@ namespace ExellAddInsLib.MSG
         {
             return @event.GetInvocationList().Contains(evHandler);
         }
+     
+        public static void SetBordersBoldLine(this Excel.Range range)
+        {
+            if (range == null) return;
+            //range.Borders.LineStyle = Excel.XlLineStyle.xlDot;
+            range.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Excel.XlLineStyle.xlDouble;
+            range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = Excel.XlLineStyle.xlDouble;
+            range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlDouble;
+            range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlDouble;
+        }
+
+        /// <summary>
+        /// Функция устанавливает границы диапазона двойной линей
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="right"></param>
+        /// <param name="left"></param>
+        /// <param name="top"></param>
+        /// <param name="bottom"></param>
+        public static void SetBordersBoldLine(this Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true)
+        {
+            if (range == null) return;
+
+            if (left) range.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Excel.XlLineStyle.xlDouble;
+            else range.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+            if (top) range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = Excel.XlLineStyle.xlDouble;
+            else range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+            if (bottom) range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlDouble;
+            else range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+            if (right) range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlDouble;
+            else range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+        }
+
+        /// <summary>
+        /// Функция устанавливает границы диапазона соовествующими типами линий
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="right"></param>
+        /// <param name="left"></param>
+        /// <param name="top"></param>
+        /// <param name="bottom"></param>
+        public static  void SetBordersBoldLine(this Excel.Range range,
+            Excel.XlLineStyle right = Excel.XlLineStyle.xlDouble,
+            Excel.XlLineStyle left = Excel.XlLineStyle.xlDouble,
+            Excel.XlLineStyle top = Excel.XlLineStyle.xlDouble,
+            Excel.XlLineStyle bottom = Excel.XlLineStyle.xlDouble)
+        {
+            if (range == null) return;
+
+            range.Borders[Excel.XlBordersIndex.xlEdgeLeft].LineStyle = left;
+            range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = top;
+            range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = bottom;
+            range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = right;
+        }
     }
 
 }

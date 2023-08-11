@@ -16,6 +16,24 @@ namespace ExellAddInsLib.MSG
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private bool _isValid = true;
+        private Excel.Worksheet _worksheet;
+
+        [NonGettinInReflection]
+        [NonRegisterInUpCellAddresMap]
+        public Excel.Worksheet Worksheet
+        {
+            get { return _worksheet; }
+            set
+            {
+                _worksheet = value;
+                this.CellAddressesMap.SetWorksheet(_worksheet);
+                foreach (T itm in this)
+                {
+                    itm.Worksheet = _worksheet;
+                    itm.CellAddressesMap.SetWorksheet(_worksheet);
+                }
+            }
+        }
 
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
@@ -147,9 +165,25 @@ namespace ExellAddInsLib.MSG
             if (item is IExcelBindableBase excel_bindable_element/* && !excel_bindable_element.Owners.Contains(this)*/)
             {
                 excel_bindable_element.Owner = this.Owner;
+                if (item.Number != null)
+                {
+                    var _subsequent_items = this.Where(itm => this.IndexOf(itm) > index).ToList();
+                    int ii = index + 1;
+
+                    int number_level = item.Number.Split('.').Length - 1;
+                    if (_subsequent_items.Count > 0)
+                        item.SetNumberItem(number_level, ii.ToString());
+                    ii++;
+                    foreach (T itm in _subsequent_items)
+                    {
+
+                        itm.SetNumberItem(number_level, ii.ToString());
+                        ii++;
+                    }
+                }
                 foreach (var kvp in excel_bindable_element.CellAddressesMap)
                 {
-                    string key_str = $"{excel_bindable_element.Id.ToString()}_{kvp.Value.ProprertyName}";
+                    string key_str = $"{excel_bindable_element.Id}_{kvp.Value.ProprertyName}";
                     if (!this.CellAddressesMap.ContainsKey(key_str))
                         this.CellAddressesMap.Add(key_str, kvp.Value);
                 }
@@ -194,32 +228,31 @@ namespace ExellAddInsLib.MSG
                 this.CellAddressesMap.Add(key_str, pAddEventArgs.Value);
             }
         }
-        public Excel.Range GetRange(Excel.Worksheet worksheet, int right_border, int low_borde = 100000000, int left_border = 0, int up_border = 0)
+        public virtual Excel.Range GetRange(int right_border, int low_border = 100000000, int left_border = 0, int up_border = 0)
         {
+            Excel.Range _range = this.GetRange();
             Excel.Range range = null;
-            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name);
-            if (cell_maps.Any())
+
+            Excel.Worksheet worksheet = this.Worksheet;
+
+            foreach (Excel.Range r in _range.Columns)
             {
-                int upper_row = cell_maps.OrderBy(c => c.Value.Row).First().Value.Row;
-                int lower_row = cell_maps.OrderBy(c => c.Value.Row).Last().Value.Row;
-                int left_col = cell_maps.OrderBy(c => c.Value.Column).First().Value.Column;
-                int right_col = cell_maps.OrderBy(c => c.Value.Column).Last().Value.Column;
-                if (lower_row > low_borde) lower_row = low_borde;
-                if (upper_row < up_border) upper_row = up_border;
-                if (left_col < left_border) left_col = left_border;
-                if (right_col > right_border) right_col = right_border;
+                if (r.Column >= left_border && r.Column <= right_border && r.Row >= up_border && r.Row <= low_border)
+                {
+                    if (range == null) range = r;
+                    range = Worksheet.Application.Union(range, r);
+                }
 
-                var left_upper_cell = worksheet.Cells[upper_row, left_col];
-                var rigth_lower_cell = worksheet.Cells[lower_row, right_col]; ;
-
-                range = worksheet.Range[left_upper_cell, rigth_lower_cell];
             }
+
             return range;
         }
-        public Excel.Range GetRange(Excel.Worksheet worksheet)
+
+        public virtual Excel.Range GetRange()
         {
             Excel.Range range = null;
-            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name);
+            Excel.Worksheet worksheet = this.Worksheet;
+            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name/*&& cm.Key.Contains('_')*/); //Выбираем записи элементов коллекции
             if (cell_maps.Any())
             {
                 var lu = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).First().Value;
@@ -228,8 +261,16 @@ namespace ExellAddInsLib.MSG
                 var rigth_lower_cell = cell_maps.OrderBy(c => c.Value.Column).OrderBy(c => c.Value.Row).Last().Value.Cell;
                 range = worksheet.Range[left_upper_cell, rigth_lower_cell];
             }
+            foreach (T itm in this)
+            {
+                Excel.Range rg = itm.GetRange();
+                if (rg != null)
+                    range = Worksheet.Application.Union(range, rg);
+            }
+
             return range;
         }
+
         public void SetInvalidateCellsColor(XlRgbColor color)
         {
             var invalide_cells = this.CellAddressesMap.Where(cm => cm.Value.IsValid == false);
@@ -338,6 +379,71 @@ namespace ExellAddInsLib.MSG
             if (this.Number == null) return "";
             string[] str_array = this.Number.Split('.');
             return str_array[str_array.Length - 1];
+        }
+
+        public void UpdateExcelRepresetation()
+        {
+            this.UpdateExellBindableObject();
+            foreach (T itm in this)
+                itm.UpdateExcelRepresetation();
+        }
+        public int AdjustExcelRepresentionTree(int row)
+        {
+            this.ChangeTopRow(row);
+
+            return row;
+        }
+        public virtual void SetStyleFormats(int col)
+        {
+            foreach (T itm in this)
+                itm.SetStyleFormats(col);
+
+        }
+
+        /// <summary>
+        /// Функция обновляет документальное представление объетка (рукурсивно проходит по всем объектам 
+        /// реализующим интерфейс IExcelBindableBase). 
+        /// </summary>
+        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IExcelBindableBase </param>
+        internal void UpdateExellBindableObject()
+        {
+            var obj = this;
+            var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
+
+            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
+            {
+                var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
+                if (val != null)
+                    kvp.Value.Cell.Value = val.ToString();
+            }
+        }
+        private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
+        {
+            string[] prop_names = full_prop_name.Split('.');
+            foreach (string name in prop_names)
+            {
+                string rest_prop_name_part = full_prop_name;
+                if (full_prop_name.Contains(".")) rest_prop_name_part = full_prop_name.Replace($"{name}.", "");
+                if (obj.GetType().GetProperty(name).GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) != null)
+                    return null;
+                var prop_value = obj.GetType().GetProperty(name).GetValue(obj);
+
+                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
+                {
+                    return this.GetPropertyValueByPath(excel_bimdable_prop_value, rest_prop_name_part);
+                }
+                else if (prop_value != null && prop_value.GetType().FullName.Contains("System."))
+                {
+
+                    if (prop_value is DateTime date_val)
+                        return date_val.ToString("d");
+                    else
+                        return prop_value.ToString();
+                }
+                else
+                    return "";
+            }
+            return null;
         }
         public virtual object Clone()
         {
