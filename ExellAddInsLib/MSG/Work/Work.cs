@@ -206,11 +206,7 @@ namespace ExellAddInsLib.MSG
                 report_card_range = this.ReportCard.GetRange();
                 range = Worksheet.Application.Union(range, report_card_range);
             }
-            if (workers_composition_range != null)
-                range = Worksheet.Application.Union(range, workers_composition_range);
-
-            if (machine_composition_range != null)
-                range = Worksheet.Application.Union(range, machine_composition_range);
+            range = Worksheet.Application.Union(new List<Excel.Range>() { range, workers_composition_range, machine_composition_range });
 
             return range;
         }

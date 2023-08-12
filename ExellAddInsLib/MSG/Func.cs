@@ -57,16 +57,38 @@ namespace ExellAddInsLib.MSG
             range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlDouble;
             range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = Excel.XlLineStyle.xlDouble;
         }
-
-        /// <summary>
-        /// Функция устанавливает границы диапазона двойной линей
-        /// </summary>
-        /// <param name="range"></param>
-        /// <param name="right"></param>
-        /// <param name="left"></param>
-        /// <param name="top"></param>
-        /// <param name="bottom"></param>
-        public static void SetBordersBoldLine(this Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true)
+        public static Excel.Range GetRangeWithLowestEdge(this Excel.Range range)
+        {
+            Excel.Range lowest_range = null;
+            foreach (Excel.Range r in range)
+            {
+                if (lowest_range == null)
+                    lowest_range = r;
+                else if (lowest_range.Rows[lowest_range.Rows.Count].Row < r.Row)
+                    lowest_range = r;
+            }
+            return lowest_range;
+        }
+        public static Excel.Range Union(this Excel._Application aplication,List<Excel.Range> ranges)
+        {
+            Excel.Range union_range = null;
+            foreach(Excel.Range r in ranges.Where(r=>r!=null))
+            {
+                if (union_range == null) union_range = r;
+                else
+                    union_range = aplication.Union(union_range,r);
+            }
+            return union_range;
+        }
+            /// <summary>
+            /// Функция устанавливает границы диапазона двойной линей
+            /// </summary>
+            /// <param name="range"></param>
+            /// <param name="right"></param>
+            /// <param name="left"></param>
+            /// <param name="top"></param>
+            /// <param name="bottom"></param>
+            public static void SetBordersBoldLine(this Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true)
         {
             if (range == null) return;
 

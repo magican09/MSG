@@ -165,22 +165,7 @@ namespace ExellAddInsLib.MSG
             if (item is IExcelBindableBase excel_bindable_element/* && !excel_bindable_element.Owners.Contains(this)*/)
             {
                 excel_bindable_element.Owner = this.Owner;
-                if (item.Number != null)
-                {
-                    var _subsequent_items = this.Where(itm => this.IndexOf(itm) > index).ToList();
-                    int ii = index + 1;
-
-                    int number_level = item.Number.Split('.').Length - 1;
-                    if (_subsequent_items.Count > 0)
-                        item.SetNumberItem(number_level, ii.ToString());
-                    ii++;
-                    foreach (T itm in _subsequent_items)
-                    {
-
-                        itm.SetNumberItem(number_level, ii.ToString());
-                        ii++;
-                    }
-                }
+               
                 foreach (var kvp in excel_bindable_element.CellAddressesMap)
                 {
                     string key_str = $"{excel_bindable_element.Id}_{kvp.Value.ProprertyName}";

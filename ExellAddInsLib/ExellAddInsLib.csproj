@@ -99,6 +99,7 @@
     <Compile Include="MSG\MSGWork\VOVRWork\KSWork\RCWork\RCWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\VOVRWork.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\WorkReportCard\WorkDay\WorkDay.cs" />
+    <Compile Include="MSG\AdjustableCollection\AdjustableCollection.cs" />
     <Compile Include="MSG\WorksSection\WorksSection.cs" />
     <Compile Include="MSG\Work\IWork.cs" />
     <Compile Include="MSG\Work\UnitOfMeasurement.cs" />

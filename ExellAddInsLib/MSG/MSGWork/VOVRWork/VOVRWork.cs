@@ -1,5 +1,6 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -7,7 +8,7 @@ namespace ExellAddInsLib.MSG
 {
     public class VOVRWork : Work
     {
-        private ExcelNotifyChangedCollection<KSWork> _kSWorks = new ExcelNotifyChangedCollection<KSWork>();
+        private AdjustableCollection<KSWork> _kSWorks = new AdjustableCollection<KSWork>();
       
         private Excel.Worksheet _worksheet;
 
@@ -29,7 +30,7 @@ namespace ExellAddInsLib.MSG
 
 
         [NonRegisterInUpCellAddresMap]
-        public ExcelNotifyChangedCollection<KSWork> KSWorks
+        public AdjustableCollection<KSWork> KSWorks
         {
             get { return _kSWorks; }
             set { SetProperty(ref _kSWorks, value); }
@@ -103,16 +104,16 @@ namespace ExellAddInsLib.MSG
       
         public override Range GetRange()
         {
-            Excel.Range base_range = base.GetRange();
+            Excel.Range range = base.GetRange();
             Excel.Range ks_works_range = this.KSWorks.GetRange();
-            Excel.Range range = Worksheet.Application.Union(base_range, ks_works_range);
+            range = Worksheet.Application.Union(new List<Excel.Range>() { range, ks_works_range });
             return range;
         }
 
         public override object Clone()
         {
             VOVRWork new_work = (VOVRWork)base.Clone();
-            new_work.KSWorks = (ExcelNotifyChangedCollection<KSWork>)this.KSWorks.Clone();
+            new_work.KSWorks = (AdjustableCollection<KSWork>)this.KSWorks.Clone();
             new_work.KSWorks.Owner = new_work;
             return new_work;
         }

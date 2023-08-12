@@ -1,5 +1,6 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -39,10 +40,10 @@ namespace ExellAddInsLib.MSG
             get { return _code; }
             set { SetProperty(ref _code, value); }
         }
-        private ExcelNotifyChangedCollection<RCWork> _rCWorks = new ExcelNotifyChangedCollection<RCWork>();
+        private AdjustableCollection<RCWork> _rCWorks = new AdjustableCollection<RCWork>();
 
         [NonRegisterInUpCellAddresMap]
-        public ExcelNotifyChangedCollection<RCWork> RCWorks
+        public AdjustableCollection<RCWork> RCWorks
         {
             get { return _rCWorks; }
             set { SetProperty(ref _rCWorks, value); }
@@ -114,18 +115,18 @@ namespace ExellAddInsLib.MSG
         }
         public override Range GetRange()
         {
-            Excel.Range base_range = base.GetRange();
+            Excel.Range range = base.GetRange();
             Excel.Range rc_works_range = this.RCWorks.GetRange();
-            Excel.Range range = Worksheet.Application.Union(base_range, rc_works_range);
+            range = Worksheet.Application.Union(new List<Excel.Range>() { range, rc_works_range });
             return range;
-            return base.GetRange();
+          
         }
 
         public override object Clone()
         {
             KSWork new_work = (KSWork)base.Clone();
             new_work.Code = Code;
-            new_work.RCWorks = (ExcelNotifyChangedCollection<RCWork>)this.RCWorks.Clone();
+            new_work.RCWorks = (AdjustableCollection<RCWork>)this.RCWorks.Clone();
             new_work.RCWorks.Owner = new_work;
             return new_work;
         }

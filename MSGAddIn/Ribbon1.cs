@@ -313,7 +313,7 @@ namespace MSGAddIn
             }
             CurrentMSGExellModel = empl_model;
             //   CurrentMSGExellModel.ReloadSheetModel();
-         //   CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+            //   CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
 
 
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
@@ -1136,6 +1136,7 @@ namespace MSGAddIn
                 if (msg_work.VOVRWorks.Count == 0)
                 {
                     VOVRWork vovr_work = new VOVRWork();
+                    vovr_work.Worksheet = CurrentMSGExellModel.RegisterSheet;
                     vovr_work.Number = $"{msg_work.Number}.1";
                     vovr_work.Name = msg_work.Name;
                     vovr_work.UnitOfMeasurement = msg_work.UnitOfMeasurement;
@@ -1150,7 +1151,7 @@ namespace MSGAddIn
                     CurrentMSGExellModel.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, MSGExellModel.VOVR_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
 
                     KSWork ks_work = new KSWork();
-
+                    ks_work.Worksheet = CurrentMSGExellModel.RegisterSheet;
                     ks_work.Number = $"{vovr_work.Number}.1";
                     ks_work.Code = "-";
                     ks_work.Name = msg_work.Name;
@@ -1166,7 +1167,7 @@ namespace MSGAddIn
                     CurrentMSGExellModel.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, MSGExellModel.KS_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
 
                     RCWork rc_work = new RCWork();
-
+                    rc_work.Worksheet = CurrentMSGExellModel.RegisterSheet;
                     rc_work.Number = $"{ks_work.Number}.1";
                     rc_work.Code = "-";
                     rc_work.Name = msg_work.Name;
@@ -1254,7 +1255,7 @@ namespace MSGAddIn
 
                             if (selected_section == null) return;
                             int selected_work_index = selected_section.MSGWorks.IndexOf(selected_work);
-                            selected_section.MSGWorks.Insert(selected_work_index + 1, CopyedObjectsList[0] as MSGWork);
+                            selected_section.MSGWorks.Insert(selected_work_index, CopyedObjectsList[0] as MSGWork);
                             //WorksSection picked_section = null;
                             //if (selected_objects[0] is MSGWork selected_msg_work)
                             //    picked_section = selected_msg_work.Owner as WorksSection;
@@ -1298,6 +1299,8 @@ namespace MSGAddIn
                             //        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
                             //        msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
                             //    }
+                            CurrentMSGExellModel.UpdateExcelRepresetation();
+                            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
                             commands_group_label = "";
                             break;
                         }
@@ -1323,9 +1326,36 @@ namespace MSGAddIn
                                             rowIndex = msg_work.GetTopRow();
                                         else
                                         {
-                                            rowIndex = msg_work.WorkersComposition.OrderBy(n => n.GetTopRow()).Last().GetTopRow();
-                                            Excel.Range _range = CurrentMSGExellModel.RegisterSheet.Rows[rowIndex];
-                                            _range.Insert(XlInsertShiftDirection.xlShiftDown, 0);
+                                            //  rowIndex = msg_work.WorkersComposition.OrderBy(n => n.GetTopRow()).Last().GetTopRow();
+                                            var section = (msg_work.Owner as WorksSection);
+                                            int msg_work_row = msg_work.GetRange().Row;
+                                            Excel.Range need_of_worker_range = msg_work.WorkersComposition.GetRange();
+                                            int msg_need_of_worker_last_row = need_of_worker_range.Rows[need_of_worker_range.Rows.Count].Row;
+
+                                            int msg_work_index = section.MSGWorks.IndexOf(msg_work);
+                                            int next_work_row = 0;
+                                            if (msg_work_index < section.MSGWorks.Count-1)
+                                                next_work_row = section.MSGWorks[msg_work_index + 1].GetRange().Row;
+                                            else
+                                            {
+                                                var model = section.Owner as MSGExellModel;
+                                                int section_index = model.WorksSections.IndexOf(section);
+                                                if (section_index < model.WorksSections.Count-1)
+                                                    next_work_row = model.WorksSections[section_index + 1].GetRange().Row;
+                                                else
+                                                {
+                                                    Excel.Range lowest_range = model.WorksSections[section_index + 1].GetRange().GetRangeWithLowestEdge();
+
+                                                    next_work_row = lowest_range.Rows[lowest_range.Rows.Count].Row;
+                                                }
+                                            }
+
+                                            if (next_work_row - msg_need_of_worker_last_row <= 2)
+                                            {
+                                                Excel.Range _range = CurrentMSGExellModel.RegisterSheet.Rows[next_work_row - 1];
+                                                _range.Insert(XlInsertShiftDirection.xlShiftDown, 0);
+                                            }
+                                            rowIndex = msg_need_of_worker_last_row + 1;
 
                                             var beneath_works_insection = CurrentMSGExellModel.MSGWorks.Where(w => w.GetTopRow() > rowIndex && w.Owner.Id == msg_work.Owner.Id).ToList();
                                             var beneath_sections = CurrentMSGExellModel.WorksSections.Where(s => s.GetBottomRow() > msg_work.GetTopRow()).ToList();

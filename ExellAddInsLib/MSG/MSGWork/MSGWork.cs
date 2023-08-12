@@ -1,6 +1,8 @@
 ﻿using ExellAddInsLib.MSG.Section;
 using Microsoft.Office.Interop.Excel;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -53,10 +55,10 @@ namespace ExellAddInsLib.MSG
             set { _workSchedules = value; }
         }
 
-        private ExcelNotifyChangedCollection<VOVRWork> _vOVRWorks = new ExcelNotifyChangedCollection<VOVRWork>();
+        private AdjustableCollection<VOVRWork> _vOVRWorks = new AdjustableCollection<VOVRWork>();
 
         [NonRegisterInUpCellAddresMap]
-        public ExcelNotifyChangedCollection<VOVRWork> VOVRWorks
+        public AdjustableCollection<VOVRWork> VOVRWorks
         {
             get { return _vOVRWorks; }
             set { _vOVRWorks = value; }
@@ -133,30 +135,17 @@ namespace ExellAddInsLib.MSG
                 n_m.AdjustExcelRepresentionTree(msg_row + nm_row_iterator);
                 nm_row_iterator++;
             }
-
-            //var duple_msg_works = this.MSGWorks.Where(msgw => msgw.Number == msg_work.Number && msgw.Id != msg_work.Id).ToList();
-            //int msg_work_cuont = 0;
-            //foreach (var msgw in duple_msg_works)
-            //{
-            //    msg_work_cuont++;
-            //    msgw.ChangeTopRow(msg_row + msg_work_cuont);
-            //}
             if (msg_row + sh_ch_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + sh_ch_row_iterator;
             if (msg_row + nw_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + nw_row_iterator;
-           // if (msg_row + msg_work_cuont > msg_lowest_row) msg_lowest_row = msg_row + msg_work_cuont;
             if (msg_row + nm_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + nm_row_iterator;
-
-          //  msg_row += msg_work_cuont;
             int vovr_row = msg_row;
             foreach (VOVRWork vovr_work in msg_work.VOVRWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
-            {
-
                 vovr_row = vovr_work.AdjustExcelRepresentionTree(vovr_row); ;
-            }
+      
             if (vovr_row < msg_lowest_row)
-                msg_row = msg_lowest_row + 1;
+                msg_row = msg_lowest_row ;
             else
-                msg_row = vovr_row + 1;
+                msg_row = vovr_row;
 
             return msg_row;
         }
@@ -208,9 +197,11 @@ namespace ExellAddInsLib.MSG
 
             try
             {
-                var msg_work_full_range = msg_work.GetRange();
-                Excel.Range range = Worksheet.Range[Worksheet.Rows[msg_work_full_range.Row + 1], msg_work_full_range.Rows[msg_work_full_range.Rows.Count]];
+                var msg_work_full_range =   msg_work.GetRange();
+                Excel.Range lowest_edge_range = msg_work_full_range.GetRangeWithLowestEdge();
+                Excel.Range range = Worksheet.Range[Worksheet.Rows[msg_work_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count]];
                 range.Group();
+               
             }
             catch
             {
@@ -226,8 +217,7 @@ namespace ExellAddInsLib.MSG
             Excel.Range base_range = base.GetRange();
             Excel.Range vovr_works_range = this.VOVRWorks.GetRange();
             Excel.Range w_schedules_works_range = this.WorkSchedules.GetRange();
-           
-            Excel.Range range = Worksheet.Application.Union(base_range, vovr_works_range,w_schedules_works_range);
+            Excel.Range range = Worksheet.Application.Union(new List<Excel.Range>() { base_range, vovr_works_range, w_schedules_works_range });
             return range;
         }
 
@@ -235,7 +225,7 @@ namespace ExellAddInsLib.MSG
         {
             MSGWork new_obj = (MSGWork)base.Clone();
             new_obj.WorkSchedules = (WorkSchedule)this.WorkSchedules.Clone();
-            new_obj.VOVRWorks = (ExcelNotifyChangedCollection<VOVRWork>)this.VOVRWorks.Clone();
+            new_obj.VOVRWorks = (AdjustableCollection<VOVRWork>)this.VOVRWorks.Clone();
             new_obj.WorkSchedules.Owner = new_obj;
             new_obj.VOVRWorks.Owner = new_obj;
             return new_obj;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -11,7 +12,7 @@ namespace ExellAddInsLib.MSG.Section
         public const int WSEC_NUMBER_COL = 2;
         public const int WSEC_NAME_COL = WSEC_NUMBER_COL + 1;
         public const int _SECTIONS_GAP = 2;
-     
+        public const int _MSG_WORKS_GAP = 1;
         private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
@@ -45,7 +46,7 @@ namespace ExellAddInsLib.MSG.Section
         /// <summary>
         /// Коллекция с работами типа МСГ модели
         /// </summary>
-        public ExcelNotifyChangedCollection<MSGWork> MSGWorks { get; private set; } = new ExcelNotifyChangedCollection<MSGWork>();
+        public AdjustableCollection<MSGWork> MSGWorks { get; private set; } = new AdjustableCollection<MSGWork>();
 
         public override void UpdateExcelRepresetation()
         {
@@ -58,14 +59,13 @@ namespace ExellAddInsLib.MSG.Section
         public override int AdjustExcelRepresentionTree(int row)
         {
             int section_row = row;
-            int msg_row = row;
+            int msg_row = row- _MSG_WORKS_GAP;
             var w_section = this;
             w_section.ChangeTopRow(section_row);
             foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
-            {
-                msg_row = msg_work.AdjustExcelRepresentionTree(msg_row);
-            }
-            section_row = msg_row + 1;
+                msg_row = msg_work.AdjustExcelRepresentionTree(msg_row+ _MSG_WORKS_GAP);
+        
+            section_row = msg_row;
             return section_row;
         }
 
@@ -82,12 +82,15 @@ namespace ExellAddInsLib.MSG.Section
             int last_section_row = 0;
             foreach (MSGWork msg_work in section.MSGWorks)
                 msg_work.SetStyleFormats(msg_work_col);
-           
-           
+
+
             try
             {
                 var section_full_range = section.GetRange();
-                Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], section_full_range.Rows[section_full_range.Rows.Count+_SECTIONS_GAP]];
+                var lowest_edge_range = section_full_range.GetRangeWithLowestEdge();
+
+                // Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _SECTIONS_GAP]];
+                Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count]];
                 range.Group();
             }
             catch
@@ -100,18 +103,19 @@ namespace ExellAddInsLib.MSG.Section
         {
             this.MSGWorks.Worksheet = this.Worksheet;
         }
-      
+
         public override Range GetRange()
         {
-            Excel.Range base_range = base.GetRange();
+            Excel.Range range = base.GetRange();
             Excel.Range msg_works_range = this.MSGWorks.GetRange();
-            Excel.Range range = Worksheet.Application.Union(base_range, msg_works_range);
+            range = Worksheet.Application.Union(new List<Excel.Range>() { range, msg_works_range });
+
             return range;
         }
         public override object Clone()
         {
             WorksSection new_obj = (WorksSection)base.Clone();
-            new_obj.MSGWorks = (ExcelNotifyChangedCollection<MSGWork>)this.MSGWorks.Clone();
+            new_obj.MSGWorks = (AdjustableCollection<MSGWork>)this.MSGWorks.Clone();
             new_obj.MSGWorks.Owner = new_obj;
             return new_obj;
         }
