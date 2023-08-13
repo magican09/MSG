@@ -114,7 +114,7 @@ namespace ExellAddInsLib.MSG
 
         public const int _SECTIONS_GAP = 2;
         public const int _MSG_WORKS_GAP = 1;
-        
+
         public const int _SECTIONS_GAP_FOR_INVALID_OBJECTS = 5;
 
 
@@ -221,7 +221,7 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _workReportCards, value); }
         }
 
-     
+
 
         private ExcelNotifyChangedCollection<UnitOfMeasurement> _unitOfMeasurements;
         /// <summary>
@@ -817,7 +817,7 @@ namespace ExellAddInsLib.MSG
                 rowIndex++;
             }
         }
-    
+
         /// <summary>
         /// Функция из части  ВОВР листа Worksheet создает и помещает в модель работы типа VOVRWork 
         /// </summary>
@@ -1272,15 +1272,15 @@ namespace ExellAddInsLib.MSG
             }
 
         }
-     
+
         public void AdjustObjectModel()
         {
-            foreach(WorksSection section in this.WorksSections.ToList())
+            foreach (WorksSection section in this.WorksSections.ToList())
             {
                 var sections = this.WorksSections.Where(s => s.Number == section.Number && !InvalidObjects.Contains(s)).ToList();
                 if (sections.Count > 1)
                 {
-                    sections[0].CellAddressesMap["Number"].IsValid = false; 
+                    sections[0].CellAddressesMap["Number"].IsValid = false;
                     sections.Remove(sections[0]);
                     foreach (WorksSection s in sections)
                     {
@@ -1366,46 +1366,50 @@ namespace ExellAddInsLib.MSG
                 }
             }
 
-            foreach (MSGWork msg_work in this.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+            foreach (MSGWork msg_work in this.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
             {
-                WorksSection w_section = this.WorksSections.Where(ws => ws.Number.StartsWith(msg_work.Number.Remove(msg_work.Number.LastIndexOf(".")))).FirstOrDefault();
+                WorksSection w_section = this.WorksSections.Where(ws => ws.Number == msg_work.NumberPrefix).FirstOrDefault();
                 if (w_section != null)
                 {
-                        w_section.MSGWorks.Add(msg_work);
-                        msg_work.Owner = w_section;
-                 }
-                foreach (VOVRWork vovr_work in this.VOVRWorks.Where(w => w.NumberSuffix == msg_work.Number).OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+                    msg_work.Owner = w_section;
+                    w_section.MSGWorks.Add(msg_work);
+
+                }
+                foreach (VOVRWork vovr_work in this.VOVRWorks.Where(w => w.NumberPrefix == msg_work.Number).OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
                 {
                     VOVRWork finded_vovr_work = msg_work.VOVRWorks.FirstOrDefault(vr_w => vr_w.Number == vovr_work.Number);
                     if (finded_vovr_work == null)
                     {
-                        msg_work.VOVRWorks.Add(vovr_work);
                         vovr_work.Owner = msg_work;
+                        msg_work.VOVRWorks.Add(vovr_work);
+
                     }
-                   
-                    foreach (KSWork ks_work in this.KSWorks.Where(w => w.NumberSuffix == vovr_work.Number).OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+
+                    foreach (KSWork ks_work in this.KSWorks.Where(w => w.NumberPrefix == vovr_work.Number).OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
                     {
                         KSWork finded_ks_work = vovr_work.KSWorks.FirstOrDefault(kcw => kcw.Number == ks_work.Number);
                         if (finded_ks_work == null)
                         {
-                            vovr_work.KSWorks.Add(ks_work);
                             ks_work.Owner = vovr_work;
+                            vovr_work.KSWorks.Add(ks_work);
+
                         }
-                        
-                        foreach (RCWork rc_work in this.RCWorks.Where(w => w.NumberSuffix == ks_work.Number).OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+
+                        foreach (RCWork rc_work in this.RCWorks.Where(w => w.NumberPrefix == ks_work.Number).OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
                         {
                             RCWork finded_rc_work = ks_work.RCWorks.FirstOrDefault(rcw => rcw.Number == rc_work.Number);
                             if (finded_rc_work == null)
                             {
-                                ks_work.RCWorks.Add(rc_work);
                                 rc_work.Owner = ks_work;
+                                ks_work.RCWorks.Add(rc_work);
+
                             }
-                           
+
                             var report_card = this.WorkReportCards.Where(r => r.Number == rc_work.Number).FirstOrDefault();
-                            if (report_card!=null)
+                            if (report_card != null)
                             {
+                                report_card.Owner = rc_work;
                                 rc_work.ReportCard = report_card;
-                                rc_work.ReportCard.Owner = rc_work;
                             }
 
                         }
@@ -1415,13 +1419,25 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
-        
+        private void AdjustRCWorksRecorCard()
+        {
+            foreach (RCWork rc_work in this.RCWorks)
+            {
+                WorkReportCard finded_rc = this.WorkReportCards.FirstOrDefault(rc => rc.Number == rc_work.Number);
+                if (finded_rc != null)
+                {
+                    finded_rc.Owner = rc_work;
+                    rc_work.ReportCard = finded_rc;
+
+                }
+            }
+        }
         /// <summary>
         /// Заргужает(перезагружает)  данныхе из соотвествующих листов в модель
         /// </summary>
         public void ReloadSheetModel()
         {
-            this.UpdateCellAddressMapsWorkSheets();
+
             this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
             this.ContractCode = this.CommonSheet.Cells[CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
@@ -1434,7 +1450,7 @@ namespace ExellAddInsLib.MSG
             this.InvalidObjects.Clear();
             if (this.Owner == null)
             {
-               
+
                 this.LoadWorksSections();
                 this.LoadMSGWorks();
                 this.LoadVOVRWorks();
@@ -1452,8 +1468,10 @@ namespace ExellAddInsLib.MSG
             else
             {
                 this.CopyOwnerObjectModels();
+
                 this.LoadWorksReportCards();
-             
+                this.AdjustRCWorksRecorCard();
+
                 this.LoadWorkerConsumptions();
                 this.LoadMachineConsumptions();
             }
@@ -1517,7 +1535,6 @@ namespace ExellAddInsLib.MSG
         {
             int days_number = (this.WorksEndDate - this.WorksStartDate).Days;
 
-            // Excel.Range tmp_first_rc_work_quantity_cell = null;
             Excel.Range tmp_first_rc_card_days_row = null;
             if (this.Owner == null && this.WorksSections.Count > 0
                 && this.WorksSections[0].MSGWorks.Count > 0
@@ -1874,17 +1891,17 @@ namespace ExellAddInsLib.MSG
             this.WorksSections.Worksheet = this.RegisterSheet;
             this.ClearWorksheetCommonPart();
 
-            int last_row = FIRST_ROW_INDEX- _SECTIONS_GAP;
+            int last_row = FIRST_ROW_INDEX - _SECTIONS_GAP;
             foreach (WorksSection w_section in this.WorksSections.OrderBy(s => s.Number))
             {
-                last_row = w_section.AdjustExcelRepresentionTree(last_row+_SECTIONS_GAP);
+                last_row = w_section.AdjustExcelRepresentionTree(last_row + _SECTIONS_GAP);
                 w_section.UpdateExcelRepresetation();
             }
             Excel.Range all_sections_lowest_range = this.WorksSections.GetRange().GetRangeWithLowestEdge();
             int lowest_row = all_sections_lowest_range.Rows[all_sections_lowest_range.Rows.Count].Row;
 
-            int section_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS-_SECTIONS_GAP;
-            int msg_work_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS- _MSG_WORKS_GAP;
+            int section_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS - _SECTIONS_GAP;
+            int msg_work_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS - _MSG_WORKS_GAP;
             int vovr_work_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS;
             int ks_work_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS;
             int rc_work_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS;
@@ -1892,17 +1909,16 @@ namespace ExellAddInsLib.MSG
 
             foreach (IExcelBindableBase obj in this.InvalidObjects)
             {
-                
-                if (obj is WorksSection section) section_first_row =  section.AdjustExcelRepresentionTree(section_first_row+_SECTIONS_GAP);
-                if (obj is MSGWork msg_work) msg_work_first_row = msg_work.AdjustExcelRepresentionTree(msg_work_first_row +_MSG_WORKS_GAP);
+
+                if (obj is WorksSection section) section_first_row = section.AdjustExcelRepresentionTree(section_first_row + _SECTIONS_GAP);
+                if (obj is MSGWork msg_work) msg_work_first_row = msg_work.AdjustExcelRepresentionTree(msg_work_first_row + _MSG_WORKS_GAP);
                 if (obj is VOVRWork vovr_work) vovr_work_first_row = vovr_work.AdjustExcelRepresentionTree(vovr_work_first_row);
-                if (obj is KSWork ks_work) ks_work_first_row = ks_work.AdjustExcelRepresentionTree(ks_work_first_row );
-                if (obj is RCWork rc_work) rc_work_first_row =  rc_work.AdjustExcelRepresentionTree(rc_work_first_row );
-                if (obj is WorkReportCard reportCard) repordCard_first_row= reportCard.AdjustExcelRepresentionTree(repordCard_first_row++);
+                if (obj is KSWork ks_work) ks_work_first_row = ks_work.AdjustExcelRepresentionTree(ks_work_first_row);
+                if (obj is RCWork rc_work) rc_work_first_row = rc_work.AdjustExcelRepresentionTree(rc_work_first_row);
+                if (obj is WorkReportCard reportCard) repordCard_first_row = reportCard.AdjustExcelRepresentionTree(repordCard_first_row++);
                 obj.UpdateExcelRepresetation();
             }
         }
-
 
         /// <summary>
         /// Функция копирует часть объектой модели из родительской модеи в текущую
@@ -1917,7 +1933,7 @@ namespace ExellAddInsLib.MSG
                 this.WorksSections.Owner = this;
                 this.SetCommonModelCollections();
 
-                this.UpdateCellAddressMapsWorkSheets();
+
                 foreach (var section in this.WorksSections)
                     this.RegisterObjectInObjectPropertyNameRegister(section);
             }
@@ -1928,27 +1944,38 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public void SetCommonModelCollections()
         {
+            this.WorksSections.Worksheet = this.RegisterSheet;
+            this.MSGWorks.Worksheet = this.RegisterSheet;
+            this.VOVRWorks.Worksheet = this.RegisterSheet;
+            this.KSWorks.Worksheet = this.RegisterSheet;
+            this.RCWorks.Worksheet = this.RegisterSheet;
+            this.WorkReportCards.Worksheet = this.RegisterSheet;
             this.MSGWorks.Clear();
             this.VOVRWorks.Clear();
             this.KSWorks.Clear();
             this.RCWorks.Clear();
             foreach (WorksSection w_section in this.WorksSections)
             {
+                w_section.Worksheet = this.RegisterSheet;
                 foreach (MSGWork msg_work in w_section.MSGWorks)
                 {
+                    msg_work.Worksheet = this.RegisterSheet;
                     msg_work.Owner = w_section;
                     if (!this.MSGWorks.Contains(msg_work)) this.MSGWorks.Add(msg_work);
                     foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
                     {
+                        vovr_work.Worksheet = this.RegisterSheet;
                         vovr_work.Owner = msg_work;
                         if (!this.VOVRWorks.Contains(vovr_work)) this.VOVRWorks.Add(vovr_work);
 
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
+                            ks_work.Worksheet = this.RegisterSheet;
                             ks_work.Owner = vovr_work;
                             if (!this.KSWorks.Contains(ks_work)) this.KSWorks.Add(ks_work);
                             foreach (RCWork rc_work in ks_work.RCWorks)
                             {
+                                rc_work.Worksheet = this.RegisterSheet;
                                 rc_work.Owner = ks_work;
                                 if (!this.RCWorks.Contains(rc_work)) this.RCWorks.Add(rc_work);
                             }
@@ -1959,17 +1986,6 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-
-        /// <summary>
-        /// Функция устанавливаетв объектах текущией модели соотвествующие worksheet-ы 
-        /// Применяется в основном после применения Clone()  к объектоной модели MSGExcellModel
-        /// </summary>
-        public void UpdateCellAddressMapsWorkSheets()
-        {
-
-
-
-        }
         public void UpdateCellAddressMapsWorkSheets_bk()
         {
 

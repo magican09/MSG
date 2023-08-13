@@ -15,6 +15,7 @@ namespace ExellAddInsLib.MSG
         ExellCellAddressMapDictationary CellAddressesMap { get; set; }
         Guid Id { get; }
         string Number { get; set; }
+        string NumberPrefix { get; }
         string NumberSuffix { get; }
         IExcelBindableBase Owner { get; set; }
 

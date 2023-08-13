@@ -107,7 +107,6 @@
     <Compile Include="MSG\MSGWork\WorkSchedule\WorkSchedule.cs" />
     <Compile Include="MSG\Work\Work.cs" />
     <Compile Include="MSG\MSGWork\VOVRWork\WorkReportCard\WorkReportCard.cs" />
-    <Compile Include="MSG\Work\WorkColletion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

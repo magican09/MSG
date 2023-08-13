@@ -1107,6 +1107,7 @@ namespace MSGAddIn
         /// <param name="e"></param>
         private void btnCopyMSGWork_Click(object sender, RibbonControlEventArgs e)
         {
+            CopyedObjectsList.Clear();
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
             var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
             if (sected_objects != null)
@@ -1243,62 +1244,20 @@ namespace MSGAddIn
                     case nameof(MSGWork):
                         {
                             if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
-                            //  int insert_work_number = 0;
-                            //  MSGWork nearest_msg_work = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork))[0] as MSGWork;
-                            //if(nearest_msg_work.GetTopRow()<selection.Row)
-                            //  nearest_msg_work.
-                            var selected_above_msg_works = CurrentMSGExellModel
+                              var selected_above_msg_works = CurrentMSGExellModel
                                       .GetObjectsBySelection(selection, (obj) => obj is MSGWork msg_obj
-                                                                                               && msg_obj.GetTopRow() <= selection.Rows[1].Row);
+                                                                                 && msg_obj.GetTopRow() <= selection.Rows[1].Row 
+                                                                                 && obj.Owner!=null);
                             MSGWork selected_work = selected_above_msg_works[0] as MSGWork;
                             WorksSection selected_section = selected_work.Owner as WorksSection;
 
                             if (selected_section == null) return;
                             int selected_work_index = selected_section.MSGWorks.IndexOf(selected_work);
-                            selected_section.MSGWorks.Insert(selected_work_index, CopyedObjectsList[0] as MSGWork);
-                            //WorksSection picked_section = null;
-                            //if (selected_objects[0] is MSGWork selected_msg_work)
-                            //    picked_section = selected_msg_work.Owner as WorksSection;
-                            //if (selected_objects[0] is WorksSection selecte_section)
-                            //    picked_section = selecte_section;
-
-                            var picked_section = selected_section;
-
-                            //if (picked_section != null)
-                            //    foreach (MSGWork msg_work in CopyedObjectsList)
-                            //    {
-                            //        int last_row = picked_section
-                            //           .MSGWorks.OrderBy(w => w.GetBottomRow()).Last()
-                            //           .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
-                            //            .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
-                            //            .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
-                            //        int last_msg_work_row = msg_work
-                            //            .VOVRWorks.OrderBy(w => w.GetBottomRow()).Last()
-                            //             .KSWorks.OrderBy(w => w.GetBottomRow()).Last()
-                            //             .RCWorks.OrderBy(w => w.GetBottomRow()).Last().GetBottomRow();
-                            //        int msg_work_rows_number = last_msg_work_row - msg_work.CellAddressesMap["Number"].Row;
-
-                            //        int selection_row = picked_section.CellAddressesMap["Number"].Row;
-
-                            //        while (msg_work_rows_number > 0)
-                            //        {
-                            //            CurrentMSGExellModel.RegisterSheet.Rows[last_row + 2].Insert();
-                            //            msg_work_rows_number--;
-                            //        }
-
-                            //        msg_work.SetNumberItem(0, picked_section.Number);
-                            //        var last_msg_work = picked_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))).LastOrDefault();
-                            //        int last_w_namber = Int32.Parse(last_msg_work.GetSelfNamber()) + 1;
-                            //        if (last_msg_work != null)
-                            //            msg_work.SetNumberItem(1, last_w_namber.ToString());
-
-                            //        picked_section.MSGWorks.Add(msg_work);
-                            //        CurrentMSGExellModel.SetCommonModelCollections();
-                            //        picked_section.AdjustExcelRepresentionTree(selection_row);
-                            //        CurrentMSGExellModel.UpdateExcelRepresetation();
-                            //        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
-                            //        msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
-                            //    }
+                            foreach (MSGWork msg_work in CopyedObjectsList)
+                            {
+                                selected_section.MSGWorks.Insert(selected_work_index + 1, msg_work);
+                                CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work); 
+                            }
                             CurrentMSGExellModel.UpdateExcelRepresetation();
                             CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
                             commands_group_label = "";
@@ -1326,7 +1285,6 @@ namespace MSGAddIn
                                             rowIndex = msg_work.GetTopRow();
                                         else
                                         {
-                                            //  rowIndex = msg_work.WorkersComposition.OrderBy(n => n.GetTopRow()).Last().GetTopRow();
                                             var section = (msg_work.Owner as WorksSection);
                                             int msg_work_row = msg_work.GetRange().Row;
                                             Excel.Range need_of_worker_range = msg_work.WorkersComposition.GetRange();
@@ -1344,7 +1302,7 @@ namespace MSGAddIn
                                                     next_work_row = model.WorksSections[section_index + 1].GetRange().Row;
                                                 else
                                                 {
-                                                    Excel.Range lowest_range = model.WorksSections[section_index + 1].GetRange().GetRangeWithLowestEdge();
+                                                    Excel.Range lowest_range = model.WorksSections[section_index].GetRange().GetRangeWithLowestEdge();
 
                                                     next_work_row = lowest_range.Rows[lowest_range.Rows.Count].Row;
                                                 }

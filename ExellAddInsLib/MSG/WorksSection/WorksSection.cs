@@ -46,8 +46,14 @@ namespace ExellAddInsLib.MSG.Section
         /// <summary>
         /// Коллекция с работами типа МСГ модели
         /// </summary>
-        public AdjustableCollection<MSGWork> MSGWorks { get; private set; } = new AdjustableCollection<MSGWork>();
+          private AdjustableCollection<MSGWork> _mSGWorks = new AdjustableCollection<MSGWork>();
 
+        [NonRegisterInUpCellAddresMap]
+        public AdjustableCollection<MSGWork> MSGWorks
+        {
+            get { return _mSGWorks; }
+            set { _mSGWorks = value; }
+        }
         public override void UpdateExcelRepresetation()
         {
             WorksSection w_section = this;
@@ -62,7 +68,7 @@ namespace ExellAddInsLib.MSG.Section
             int msg_row = row- _MSG_WORKS_GAP;
             var w_section = this;
             w_section.ChangeTopRow(section_row);
-            foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+            foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
                 msg_row = msg_work.AdjustExcelRepresentionTree(msg_row+ _MSG_WORKS_GAP);
         
             section_row = msg_row;
@@ -101,6 +107,8 @@ namespace ExellAddInsLib.MSG.Section
         }
         public WorksSection()
         {
+            
+            this.MSGWorks.Owner = this;
             this.MSGWorks.Worksheet = this.Worksheet;
         }
 

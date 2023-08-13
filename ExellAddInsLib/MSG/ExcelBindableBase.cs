@@ -35,7 +35,7 @@ namespace ExellAddInsLib.MSG
         public virtual string Number { get; set; }
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
-        public string NumberSuffix
+        public string NumberPrefix
         {
             get
             {
@@ -53,6 +53,25 @@ namespace ExellAddInsLib.MSG
                             out_str += $"{s}.";
                         out_str = out_str.TrimEnd('.');
                         return out_str;
+                    }
+                    else return null;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+        public string NumberSuffix
+        {
+            get
+            {
+                try
+                {
+                    if (Number != null )
+                    {
+                        var str = this.Number.Split('.');
+                        return str[str.Length-1]; ;
                     }
                     else return null;
                 }

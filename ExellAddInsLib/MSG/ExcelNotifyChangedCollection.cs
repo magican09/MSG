@@ -55,7 +55,7 @@ namespace ExellAddInsLib.MSG
         public virtual string Number { get; set; }
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
-        public string NumberSuffix
+        public string NumberPrefix
         {
             get
             {
@@ -82,6 +82,25 @@ namespace ExellAddInsLib.MSG
                     return null;
                 }
 
+            }
+        }
+        public string NumberSuffix
+        {
+            get
+            {
+                try
+                {
+                    if (Number != null)
+                    {
+                        var str = this.Number.Split('.');
+                        return str[str.Length]; ;
+                    }
+                    else return null;
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
         public Guid Id

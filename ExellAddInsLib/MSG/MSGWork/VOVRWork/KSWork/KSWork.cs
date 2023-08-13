@@ -50,7 +50,7 @@ namespace ExellAddInsLib.MSG
         }
         public KSWork() : base()
         {
-
+            this.RCWorks.Owner = this;
         }
         public override void SetSectionNumber(string section_number)
         {
@@ -88,7 +88,7 @@ namespace ExellAddInsLib.MSG
             //}
             
             int rc_row = ks_row + ks_work_cuont;
-            foreach (RCWork rc_work in ks_work.RCWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+            foreach (RCWork rc_work in ks_work.RCWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
             {
                 rc_row = rc_work.AdjustExcelRepresentionTree( rc_row);
                 rc_row++;
@@ -106,6 +106,8 @@ namespace ExellAddInsLib.MSG
             ks_work_range.Interior.ColorIndex = ks_work_col;
             int last_row = ks_work_range.Row;
             Excel.Range rc_works_range =  ks_work.RCWorks.GetRange();
+            if (rc_works_range == null)
+                ks_work.RCWorks.GetRange();
             rc_works_range.SetBordersBoldLine(XlLineStyle.xlDouble);
             rc_works_range.Interior.ColorIndex = ks_work_col;
             ks_work_range.SetBordersBoldLine(XlLineStyle.xlLineStyleNone);

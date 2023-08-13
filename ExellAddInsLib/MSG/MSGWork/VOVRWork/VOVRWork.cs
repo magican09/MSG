@@ -8,8 +8,7 @@ namespace ExellAddInsLib.MSG
 {
     public class VOVRWork : Work
     {
-        private AdjustableCollection<KSWork> _kSWorks = new AdjustableCollection<KSWork>();
-      
+       
         private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
@@ -28,6 +27,7 @@ namespace ExellAddInsLib.MSG
             }
         }
 
+        private AdjustableCollection<KSWork> _kSWorks = new AdjustableCollection<KSWork>();
 
         [NonRegisterInUpCellAddresMap]
         public AdjustableCollection<KSWork> KSWorks
@@ -38,7 +38,7 @@ namespace ExellAddInsLib.MSG
 
         public VOVRWork() : base()
         {
-
+            this.KSWorks.Owner = this;
         }
 
         public override void SetSectionNumber(string section_number)
@@ -72,7 +72,7 @@ namespace ExellAddInsLib.MSG
             //    vrw.ChangeTopRow(vovr_row + vovr_work_cuont);
             //}
             int ks_row = vovr_row;
-            foreach (KSWork ks_work in vovr_work.KSWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberSuffix}.", ""))))
+            foreach (KSWork ks_work in vovr_work.KSWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
             {
                 ks_row = ks_work.AdjustExcelRepresentionTree( ks_row); ;
             }
