@@ -124,8 +124,13 @@ namespace MSGAddIn
             btnCalcAll.Enabled = state;
             btnCreateTemplateFile.Enabled = state;
             buttonCalc.Enabled = state;
-            menuEditCommands.Enabled = state;
-            btnRefillTemlate.Enabled = state;
+
+            menuSection.Enabled = state;
+            menuMSG.Enabled = state;
+            menuVOVR.Enabled = state;
+            menuKS.Enabled = state;
+            menuRC.Enabled = state;
+            buttonPaste.Enabled = state;
 
         }
         private void AjastBtnsState()
@@ -197,9 +202,10 @@ namespace MSGAddIn
             btnCalcLabournes.Enabled = true;
             btnCalcAll.Enabled = true;
             btnLoadFromModel.Enabled = true;
-            menuEditCommands.Enabled = true;
+            menuSection.Enabled = true;
             btnCreateTemplateFile.Enabled = true;
-            btnRefillTemlate.Enabled = true;
+
+            groupCommands.Visible = true;
             labelCurrentEmployerName.Label = $"ОБЩИЕ ДАННЫЕ";
         }
         private void btnCalcLabournes_Click(object sender, RibbonControlEventArgs e)
@@ -323,9 +329,10 @@ namespace MSGAddIn
             empl_model.RegisterSheet.Activate();
 
             labelCurrentEmployerName.Label = $"ОТВЕСТВЕННЫЙ: {empl_model.Employer.Name}";
-            menuEditCommands.Enabled = false;
+            menuSection.Enabled = false;
             btnCreateTemplateFile.Enabled = false;
-            btnRefillTemlate.Enabled = false;
+
+            groupCommands.Visible = false;
             //       CurrentMSGExellModel.ResetCalculatesFields();
         }
         private void bntChangeEmployerWorkersConsumption_Click(object sender, RibbonControlEventArgs e)
@@ -553,7 +560,7 @@ namespace MSGAddIn
                 MSGTemplateWorkbook.Activate();
                 if (CommonMSGExellModel != null)
                     this.FillMSG_OUT_File();
-                btnRefillTemlate.Enabled = true;
+
             }
         }
 
@@ -1078,7 +1085,7 @@ namespace MSGAddIn
         #region Редактивроние данных
         private List<IExcelBindableBase> CopyedObjectsList = new List<IExcelBindableBase>();
         private string commands_group_label = "";
-      
+
         /// <summary>
         /// Допивать в пустые МСГ все ВОВР, КС и табельные работы
         /// </summary>
@@ -1147,7 +1154,7 @@ namespace MSGAddIn
 
                     msg_work.AdjustExcelRepresentionTree(rowIndex);
                     msg_work.UpdateExcelRepresetation();
-                    msg_work.SetStyleFormats( + 1);
+                    msg_work.SetStyleFormats(+1);
                 }
             }
         }
@@ -1201,10 +1208,10 @@ namespace MSGAddIn
                     case nameof(MSGWork):
                         {
                             if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
-                              var selected_above_msg_works = CurrentMSGExellModel
-                                      .GetObjectsBySelection(selection, (obj) => obj is MSGWork msg_obj
-                                                                                 && msg_obj.GetTopRow() <= selection.Rows[1].Row 
-                                                                                 && obj.Owner!=null);
+                            var selected_above_msg_works = CurrentMSGExellModel
+                                    .GetObjectsBySelection(selection, (obj) => obj is MSGWork msg_obj
+                                                                               && msg_obj.GetTopRow() <= selection.Rows[1].Row
+                                                                               && obj.Owner != null);
                             MSGWork selected_work = selected_above_msg_works[0] as MSGWork;
                             WorksSection selected_section = selected_work.Owner as WorksSection;
 
@@ -1213,7 +1220,7 @@ namespace MSGAddIn
                             foreach (MSGWork msg_work in CopyedObjectsList)
                             {
                                 selected_section.MSGWorks.Insert(selected_work_index + 1, msg_work);
-                                CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work); 
+                                CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
                             }
                             CurrentMSGExellModel.UpdateExcelRepresetation();
                             CurrentMSGExellModel.SetStyleFormats();
@@ -1232,7 +1239,7 @@ namespace MSGAddIn
 
                             if (selected_msg_work == null) return;
                             int selected_work_index = selected_msg_work.VOVRWorks.IndexOf(selected_work);
-                            foreach (VOVRWork  work in CopyedObjectsList)
+                            foreach (VOVRWork work in CopyedObjectsList)
                             {
                                 selected_msg_work.VOVRWorks.Insert(selected_work_index + 1, work);
                                 CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
@@ -1265,7 +1272,7 @@ namespace MSGAddIn
                             break;
                         }
 
-                              case nameof(RCWork):
+                    case nameof(RCWork):
                         {
                             if (selection.Column <= MSGExellModel.RC_NUMBER_COL | selection.Column >= MSGExellModel.RC_LABOURNESS_COL) return;
                             var selected_above_works = CurrentMSGExellModel
@@ -1304,7 +1311,9 @@ namespace MSGAddIn
                                     else
                                     {
                                         NeedsOfWorker new_n_w = new NeedsOfWorker();
+                                        new_n_w.Worksheet = msg_work.Worksheet;
                                         int rowIndex = 0;
+
                                         if (msg_work.WorkersComposition.Count == 0)
                                             rowIndex = msg_work.GetTopRow();
                                         else
@@ -1316,13 +1325,13 @@ namespace MSGAddIn
 
                                             int msg_work_index = section.MSGWorks.IndexOf(msg_work);
                                             int next_work_row = 0;
-                                            if (msg_work_index < section.MSGWorks.Count-1)
+                                            if (msg_work_index < section.MSGWorks.Count - 1)
                                                 next_work_row = section.MSGWorks[msg_work_index + 1].GetRange().Row;
                                             else
                                             {
                                                 var model = section.Owner as MSGExellModel;
                                                 int section_index = model.WorksSections.IndexOf(section);
-                                                if (section_index < model.WorksSections.Count-1)
+                                                if (section_index < model.WorksSections.Count - 1)
                                                     next_work_row = model.WorksSections[section_index + 1].GetRange().Row;
                                                 else
                                                 {
@@ -1380,6 +1389,7 @@ namespace MSGAddIn
                                     else
                                     {
                                         NeedsOfMachine new_n_w = new NeedsOfMachine();
+                                        new_n_w.Worksheet = msg_work.Worksheet;
                                         int rowIndex = 0;
                                         if (msg_work.MachinesComposition.Count == 0)
                                             rowIndex = msg_work.GetTopRow();
@@ -1492,6 +1502,8 @@ namespace MSGAddIn
         {
             CopyedObjectsList.Clear();
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+
             var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork)).Where(ob => !CopyedObjectsList.Contains(ob));
             if (sected_objects != null)
             {
@@ -1509,6 +1521,7 @@ namespace MSGAddIn
         {
             CopyedObjectsList.Clear();
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            if (selection.Column <= MSGExellModel.VOVR_NUMBER_COL | selection.Column >= MSGExellModel.VOVR_LABOURNESS_COL) return;
             var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(VOVRWork)).Where(ob => !CopyedObjectsList.Contains(ob));
             if (sected_objects != null)
             {
@@ -1521,11 +1534,11 @@ namespace MSGAddIn
             }
             groupCommands.Label = commands_group_label;
         }
-    
         private void btnCopyKSWork_Click(object sender, RibbonControlEventArgs e)
         {
             CopyedObjectsList.Clear();
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            if (selection.Column <= MSGExellModel.KS_NUMBER_COL | selection.Column >= MSGExellModel.KS_LABOURNESS_COL) return;
             var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(KSWork)).Where(ob => !CopyedObjectsList.Contains(ob));
             if (sected_objects != null)
             {
@@ -1538,12 +1551,12 @@ namespace MSGAddIn
             }
             groupCommands.Label = commands_group_label;
         }
-     
         private void btnCopyRCWork_Click(object sender, RibbonControlEventArgs e)
         {
             CopyedObjectsList.Clear();
             var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(RCWork)).Where(ob=>!CopyedObjectsList.Contains(ob));
+            if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(RCWork)).Where(ob => !CopyedObjectsList.Contains(ob));
             if (sected_objects != null)
             {
                 foreach (var obj in sected_objects)
@@ -1556,7 +1569,7 @@ namespace MSGAddIn
             groupCommands.Label = commands_group_label;
         }
 
-       
+
     }
 
 }

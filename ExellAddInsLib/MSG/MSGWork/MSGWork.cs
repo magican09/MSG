@@ -1,10 +1,7 @@
-﻿using ExellAddInsLib.MSG.Section;
-using Microsoft.Office.Interop.Excel;
+﻿using Microsoft.Office.Interop.Excel;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -20,8 +17,9 @@ namespace ExellAddInsLib.MSG
         public const int MSG_START_DATE_COL = MSG_NUMBER_COL + 6;
         public const int MSG_END_DATE_COL = MSG_NUMBER_COL + 7;
         public const int MSG_SUNDAY_IS_VOCATION_COL = MSG_NUMBER_COL + 8;
-        
-        private   Excel.Worksheet _worksheet;
+
+        public const int _MSG_WORKS_GAP = 1;
+        private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
@@ -79,7 +77,7 @@ namespace ExellAddInsLib.MSG
                     else
                         is_sunday_vocation = false;
 
-                   int worked_day_number = 0;
+                    int worked_day_number = 0;
                     for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1)) //Находим количество рабочих дней
                         if (is_sunday_vocation == false || date.DayOfWeek != DayOfWeek.Sunday)
                             worked_day_number++;
@@ -108,9 +106,9 @@ namespace ExellAddInsLib.MSG
                 n_m.UpdateExellBindableObject();
             foreach (VOVRWork vovr_work in msg_work.VOVRWorks.OrderBy(w => w.Number))
                 vovr_work.UpdateExcelRepresetation();
-            
+
         }
-     
+
         public override int AdjustExcelRepresentionTree(int row)
         {
             MSGWork msg_work = this;
@@ -141,26 +139,26 @@ namespace ExellAddInsLib.MSG
             int vovr_row = msg_row;
             foreach (VOVRWork vovr_work in msg_work.VOVRWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
                 vovr_row = vovr_work.AdjustExcelRepresentionTree(vovr_row); ;
-      
+
             if (vovr_row < msg_lowest_row)
-                msg_row = msg_lowest_row ;
+                msg_row = msg_lowest_row;
             else
                 msg_row = vovr_row;
 
             return msg_row;
         }
 
-        public override void  SetStyleFormats(int col)
+        public override void SetStyleFormats(int col)
         {
             MSGWork msg_work = this;
             int msg_work_col = col;
             var msg_work_range = msg_work.GetRange(MSG_LABOURNESS_COL);
             msg_work_range.Interior.ColorIndex = msg_work_col;
-            msg_work_range.SetBordersBoldLine();
+            msg_work_range.SetBordersLine();
             int first_row = msg_work.GetTopRow();
             int last_row = msg_work.GetTopRow();
 
-            msg_work.WorkersComposition.GetRange().SetBordersBoldLine();
+            msg_work.WorkersComposition.GetRange().SetBordersLine();
             int need_of_workers_count = 0;
             foreach (NeedsOfWorker need_of_worker in msg_work.WorkersComposition)
             {
@@ -169,7 +167,7 @@ namespace ExellAddInsLib.MSG
                 need_of_workers_count++;
             }
 
-            msg_work.MachinesComposition.GetRange().SetBordersBoldLine();
+            msg_work.MachinesComposition.GetRange().SetBordersLine();
 
             int need_of_machine_count = 0;
             foreach (NeedsOfMachine need_of_machine in msg_work.MachinesComposition)
@@ -179,7 +177,7 @@ namespace ExellAddInsLib.MSG
                 need_of_machine_count++;
             }
 
-            msg_work.WorkSchedules.GetRange().SetBordersBoldLine();
+            msg_work.WorkSchedules.GetRange().SetBordersLine();
             int chunks_count = 0;
             foreach (WorkScheduleChunk chunk in msg_work.WorkSchedules)
             {
@@ -187,21 +185,26 @@ namespace ExellAddInsLib.MSG
                 work_composition_range.Interior.ColorIndex = msg_work_col;
                 chunks_count++;
             }
+            if (msg_work.VOVRWorks.Count > 0)
+            {
+                Excel.Range _works_left_edge_range = msg_work.VOVRWorks.Worksheet.Range[msg_work.VOVRWorks[0].CellAddressesMap["Number"].Cell,
+                                                                            msg_work.VOVRWorks[msg_work.VOVRWorks.Count - 1].CellAddressesMap["Number"].Cell];
+                _works_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
+                int vovr_work_col = msg_work_col + 1;
+                foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
+                    vovr_work.SetStyleFormats(vovr_work_col++);
+            }
 
-            msg_work.VOVRWorks.GetRange().SetBordersBoldLine( XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
-            int vovr_work_col = msg_work_col + 1;
-            foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
-                vovr_work.SetStyleFormats(vovr_work_col++);
 
 
 
             try
             {
-                var msg_work_full_range =   msg_work.GetRange();
+                var msg_work_full_range = msg_work.GetRange();
                 Excel.Range lowest_edge_range = msg_work_full_range.GetRangeWithLowestEdge();
-                Excel.Range range = Worksheet.Range[Worksheet.Rows[msg_work_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count]];
+                Excel.Range range = Worksheet.Range[Worksheet.Rows[msg_work_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _MSG_WORKS_GAP]];
                 range.Group();
-               
+
             }
             catch
             {

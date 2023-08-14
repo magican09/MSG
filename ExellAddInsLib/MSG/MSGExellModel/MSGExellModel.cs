@@ -1,14 +1,9 @@
 ﻿using ExellAddInsLib.MSG.Section;
 using Microsoft.Office.Interop.Excel;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
-using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -663,87 +658,7 @@ namespace ExellAddInsLib.MSG
                 rowIndex++;
             }
         }
-        //public void LoadMSGWorkerCompositions_backup(int rowIndex = FIRST_ROW_INDEX)
-        //{
-        //    Excel.Worksheet registerSheet = this.RegisterSheet;
-        //    foreach (var work_coposition in this.WorkersComposition)
-        //        this.Unregister(work_coposition);
-        //    this.WorkersComposition.Clear();
-        //    foreach (var work in this.MSGWorks)
-        //        work.WorkersComposition.Clear();
 
-        //    null_str_count = 0;
-        //    while (null_str_count < 100)
-        //    {
-        //        var number = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL].Value;
-        //        if (number == null) null_str_count++;
-        //        else
-        //        {
-        //            null_str_count = 0;
-        //            NeedsOfWorker msg_needs_of_workers = new NeedsOfWorker();
-
-        //            this.Register(msg_needs_of_workers, "Number", rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL, this.RegisterSheet);
-        //            this.Register(msg_needs_of_workers, "Name", rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL, this.RegisterSheet);
-        //            this.Register(msg_needs_of_workers, "Quantity", rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL, this.RegisterSheet);
-
-        //            msg_needs_of_workers.Number = number.ToString();
-        //            msg_needs_of_workers.Name = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL].Value;
-
-        //            var quantity = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value;
-        //            if (quantity != null)
-        //                msg_needs_of_workers.Quantity = Decimal.Parse(quantity.ToString());
-        //            else
-        //                msg_needs_of_workers.CellAddressesMap["Quantity"].IsValid = false;
-
-        //            MSGWork msg_work = this.MSGWorks.Where(w => w.Number.StartsWith(msg_needs_of_workers.Number.Remove(msg_needs_of_workers.Number.LastIndexOf(".")))).FirstOrDefault();
-        //            if (msg_work != null)
-        //            {
-        //                msg_work.WorkersComposition.Add(msg_needs_of_workers);
-        //                msg_needs_of_workers.Owner = msg_work;
-        //                foreach (WorkScheduleChunk chunk in msg_work.WorkSchedules)
-        //                {
-        //                    for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1))
-        //                    {
-        //                        NeedsOfWorkersDay needsOfWorkersDay = new NeedsOfWorkersDay();
-        //                        needsOfWorkersDay.Date = date;
-        //                        needsOfWorkersDay.Quantity = msg_needs_of_workers.Quantity;
-        //                        msg_needs_of_workers.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
-        //                    }
-        //                }
-        //            }
-
-        //            NeedsOfWorker global_needs_of_worker = this.WorkersComposition.FirstOrDefault(nw => nw.Name == msg_needs_of_workers.Name);
-        //            if (global_needs_of_worker == null)
-        //            {
-        //                global_needs_of_worker = new NeedsOfWorker();
-        //                global_needs_of_worker.Number = msg_needs_of_workers.Number;
-        //                global_needs_of_worker.Name = msg_needs_of_workers.Name;
-        //                foreach (NeedsOfWorkersDay needsOfWorkersDay in msg_needs_of_workers.NeedsOfWorkersReportCard)
-        //                    global_needs_of_worker.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
-        //                this.WorkersComposition.Add(global_needs_of_worker);
-        //            }
-        //            else
-        //            {
-        //                foreach (NeedsOfWorkersDay needsOfWorkersDay in msg_needs_of_workers.NeedsOfWorkersReportCard)
-        //                {
-        //                    var nw_day = global_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == needsOfWorkersDay.Date);
-        //                    if (nw_day != null)
-        //                    {
-        //                        nw_day.Quantity += needsOfWorkersDay.Quantity;
-        //                    }
-        //                    else
-        //                    {
-        //                        NeedsOfWorkersDay new_nw_day = new NeedsOfWorkersDay(needsOfWorkersDay);
-        //                        global_needs_of_worker.NeedsOfWorkersReportCard.Add(new_nw_day);
-        //                    }
-        //                }
-
-        //            }
-
-        //        }
-        //        rowIndex++;
-        //    }
-        //}
         /// <summary>
         /// Функция из части МСГ листа Worksheet 
         /// </summary>
@@ -1484,7 +1399,14 @@ namespace ExellAddInsLib.MSG
             //  this.UpdateCellAddressMapsWorkSheets();
             this.RemoveGroups(this.RegisterSheet);
             int selectin_col = col;
-            this.WorksSections.GetRange().SetBordersBoldLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
+            if (this.WorksSections.Count > 0)
+            {
+                Excel.Range _sections_left_edge_range = this.WorksSections.Worksheet.Range[this.WorksSections[0].CellAddressesMap["Number"].Cell,
+                                                                      this.WorksSections[this.WorksSections.Count - 1].CellAddressesMap["Number"].Cell];
+                _sections_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
+
+            }
+
             foreach (WorksSection section in this.WorksSections)
                 section.SetStyleFormats(selectin_col);
 
@@ -1499,7 +1421,7 @@ namespace ExellAddInsLib.MSG
             this.WorkReportCards.SetInvalidateCellsColor(XlRgbColor.rgbRed);
             this.InvalidObjects.SetInvalidateCellsColor(XlRgbColor.rgbRed);
 
-            this.WorkerConsumptions.GetRange().SetBordersBoldLine();
+            this.WorkerConsumptions.GetRange().SetBordersLine();
             int w_consumption_col = W_SECTION_COLOR;
             foreach (WorkerConsumption consumption in this.WorkerConsumptions)
             {
@@ -1510,7 +1432,7 @@ namespace ExellAddInsLib.MSG
                     this.WorkerConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, days_namber]];
                 cons_range.Interior.ColorIndex = w_consumption_col++;
                 cons_range.Borders.LineStyle = XlLineStyle.xlDashDotDot;
-                cons_range.SetBordersBoldLine(XlLineStyle.xlDouble, XlLineStyle.xlDouble,
+                cons_range.SetBordersLine(XlLineStyle.xlDouble, XlLineStyle.xlDouble,
                     XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
             }
             w_consumption_col = W_SECTION_COLOR;
@@ -1523,7 +1445,7 @@ namespace ExellAddInsLib.MSG
                     this.MachineConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, days_namber]];
                 cons_range.Interior.ColorIndex = w_consumption_col++;
                 cons_range.Borders.LineStyle = XlLineStyle.xlDashDotDot;
-                cons_range.SetBordersBoldLine(XlLineStyle.xlDouble, XlLineStyle.xlDouble,
+                cons_range.SetBordersLine(XlLineStyle.xlDouble, XlLineStyle.xlDouble,
                     XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
             }
 

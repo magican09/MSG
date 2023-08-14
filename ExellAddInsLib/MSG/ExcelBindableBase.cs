@@ -1,5 +1,4 @@
-﻿using ExellAddInsLib.MSG.Section;
-using Microsoft.Office.Interop.Excel;
+﻿using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ namespace ExellAddInsLib.MSG
     public abstract class ExcelBindableBase : INotifyPropertyChanged, IExcelBindableBase
     {
         public event PropertyChangedEventHandler PropertyChanged;
-      
+
         private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
@@ -26,7 +25,7 @@ namespace ExellAddInsLib.MSG
             {
                 _worksheet = value;
                 this.CellAddressesMap.SetWorksheet(_worksheet);
-             
+
             }
         }
 
@@ -68,10 +67,10 @@ namespace ExellAddInsLib.MSG
             {
                 try
                 {
-                    if (Number != null )
+                    if (Number != null)
                     {
                         var str = this.Number.Split('.');
-                        return str[str.Length-1]; ;
+                        return str[str.Length - 1]; ;
                     }
                     else return null;
                 }
@@ -135,7 +134,8 @@ namespace ExellAddInsLib.MSG
         public IExcelBindableBase Owner
         {
             get { return _owner; }
-            set {
+            set
+            {
 
                 _owner = value;
             }
@@ -197,16 +197,17 @@ namespace ExellAddInsLib.MSG
             Excel.Range range = null;
 
             Excel.Worksheet worksheet = this.Worksheet;
-          
-             foreach(Excel.Range r in _range.Columns)
+
+            foreach (Excel.Range r in _range.Columns)
             {
-                if (r.Column >= left_border && r.Column <= right_border && r.Row>=up_border && r.Row<=low_border)
-                { if (range == null) range = r;
+                if (r.Column >= left_border && r.Column <= right_border && r.Row >= up_border && r.Row <= low_border)
+                {
+                    if (range == null) range = r;
                     range = Worksheet.Application.Union(range, r);
                 }
-                
+
             }
-          
+
             return range;
         }
         public virtual Excel.Range GetRange()
@@ -248,13 +249,13 @@ namespace ExellAddInsLib.MSG
             int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
             return bottom_row - top_row;
         }
-        public virtual  int GetBottomRow()
+        public virtual int GetBottomRow()
         {
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
             return bottom_row;
         }
-        public virtual  int GetTopRow()
+        public virtual int GetTopRow()
         {
             int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             return top_row;
@@ -310,17 +311,17 @@ namespace ExellAddInsLib.MSG
                 }
             }
         }
-        public  virtual void   UpdateExcelRepresetation()
+        public virtual void UpdateExcelRepresetation()
         {
             this.UpdateExellBindableObject();
         }
-        public virtual int AdjustExcelRepresentionTree( int row)
+        public virtual int AdjustExcelRepresentionTree(int row)
         {
             this.ChangeTopRow(row);
             return row;
         }
 
-        public virtual void  SetStyleFormats(int col)
+        public virtual void SetStyleFormats(int col)
         {
 
 
@@ -379,7 +380,7 @@ namespace ExellAddInsLib.MSG
             string[] str_array = this.Number.Split('.');
             return str_array[str_array.Length - 1];
         }
-       
+
 
 
         public virtual object Clone()
@@ -408,6 +409,6 @@ namespace ExellAddInsLib.MSG
             return new_obj;
 
         }
-       
+
     }
 }

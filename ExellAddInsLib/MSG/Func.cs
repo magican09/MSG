@@ -47,8 +47,8 @@ namespace ExellAddInsLib.MSG
         {
             return @event.GetInvocationList().Contains(evHandler);
         }
-     
-        public static void SetBordersBoldLine(this Excel.Range range)
+
+        public static void SetBordersLine(this Excel.Range range)
         {
             if (range == null) return;
             //range.Borders.LineStyle = Excel.XlLineStyle.xlDot;
@@ -69,26 +69,26 @@ namespace ExellAddInsLib.MSG
             }
             return lowest_range;
         }
-        public static Excel.Range Union(this Excel._Application aplication,List<Excel.Range> ranges)
+        public static Excel.Range Union(this Excel._Application aplication, List<Excel.Range> ranges)
         {
             Excel.Range union_range = null;
-            foreach(Excel.Range r in ranges.Where(r=>r!=null))
+            foreach (Excel.Range r in ranges.Where(r => r != null))
             {
                 if (union_range == null) union_range = r;
                 else
-                    union_range = aplication.Union(union_range,r);
+                    union_range = aplication.Union(union_range, r);
             }
             return union_range;
         }
-            /// <summary>
-            /// Функция устанавливает границы диапазона двойной линей
-            /// </summary>
-            /// <param name="range"></param>
-            /// <param name="right"></param>
-            /// <param name="left"></param>
-            /// <param name="top"></param>
-            /// <param name="bottom"></param>
-            public static void SetBordersBoldLine(this Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true)
+        /// <summary>
+        /// Функция устанавливает границы диапазона двойной линей
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="right"></param>
+        /// <param name="left"></param>
+        /// <param name="top"></param>
+        /// <param name="bottom"></param>
+        public static void SetBordersLine(this Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true)
         {
             if (range == null) return;
 
@@ -110,7 +110,7 @@ namespace ExellAddInsLib.MSG
         /// <param name="left"></param>
         /// <param name="top"></param>
         /// <param name="bottom"></param>
-        public static  void SetBordersBoldLine(this Excel.Range range,
+        public static void SetBordersLine(this Excel.Range range,
             Excel.XlLineStyle right = Excel.XlLineStyle.xlDouble,
             Excel.XlLineStyle left = Excel.XlLineStyle.xlDouble,
             Excel.XlLineStyle top = Excel.XlLineStyle.xlDouble,

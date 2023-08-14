@@ -51,13 +51,19 @@
             this.separator2 = this.Factory.CreateRibbonSeparator();
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
             this.groupCommands = this.Factory.CreateRibbonGroup();
-            this.menuEditCommands = this.Factory.CreateRibbonMenu();
+            this.menuSection = this.Factory.CreateRibbonMenu();
             this.buttonCopyWorkSection = this.Factory.CreateRibbonButton();
             this.menuMSG = this.Factory.CreateRibbonMenu();
             this.btnCopyMSGWork = this.Factory.CreateRibbonButton();
             this.btnInitMSGContent = this.Factory.CreateRibbonButton();
             this.btnCopyWorkerComposition = this.Factory.CreateRibbonButton();
             this.btnCopyMachineComposition = this.Factory.CreateRibbonButton();
+            this.menuVOVR = this.Factory.CreateRibbonMenu();
+            this.btnCopyVOVRWork = this.Factory.CreateRibbonButton();
+            this.menuKS = this.Factory.CreateRibbonMenu();
+            this.btnCopyKSWork = this.Factory.CreateRibbonButton();
+            this.menuRC = this.Factory.CreateRibbonMenu();
+            this.btnCopyRCWork = this.Factory.CreateRibbonButton();
             this.buttonPaste = this.Factory.CreateRibbonButton();
             this.grpInChargePersons = this.Factory.CreateRibbonGroup();
             this.separator1 = this.Factory.CreateRibbonSeparator();
@@ -70,18 +76,11 @@
             this.btnCreateTemplateFile = this.Factory.CreateRibbonButton();
             this.checkBoxRerightDatePart = this.Factory.CreateRibbonCheckBox();
             this.separator3 = this.Factory.CreateRibbonSeparator();
-            this.btnRefillTemlate = this.Factory.CreateRibbonButton();
             this.group2 = this.Factory.CreateRibbonGroup();
             this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.menuVOVR = this.Factory.CreateRibbonMenu();
-            this.btnCopyVOVRWork = this.Factory.CreateRibbonButton();
-            this.menuRC = this.Factory.CreateRibbonMenu();
-            this.btnCopyRCWork = this.Factory.CreateRibbonButton();
-            this.menuKS = this.Factory.CreateRibbonMenu();
-            this.btnCopyKSWork = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -211,21 +210,21 @@
             // 
             // groupCommands
             // 
-            this.groupCommands.Items.Add(this.menuEditCommands);
+            this.groupCommands.Items.Add(this.menuSection);
             this.groupCommands.Items.Add(this.menuMSG);
             this.groupCommands.Items.Add(this.menuVOVR);
             this.groupCommands.Items.Add(this.menuKS);
             this.groupCommands.Items.Add(this.menuRC);
             this.groupCommands.Items.Add(this.buttonPaste);
-            this.groupCommands.Label = "_______";
+            this.groupCommands.Label = "Команды";
             this.groupCommands.Name = "groupCommands";
             // 
-            // menuEditCommands
+            // menuSection
             // 
-            this.menuEditCommands.Enabled = false;
-            this.menuEditCommands.Items.Add(this.buttonCopyWorkSection);
-            this.menuEditCommands.Label = "РАЗДЕЛ";
-            this.menuEditCommands.Name = "menuEditCommands";
+            this.menuSection.Enabled = false;
+            this.menuSection.Items.Add(this.buttonCopyWorkSection);
+            this.menuSection.Label = "РАЗДЕЛ";
+            this.menuSection.Name = "menuSection";
             // 
             // buttonCopyWorkSection
             // 
@@ -236,6 +235,7 @@
             // 
             // menuMSG
             // 
+            this.menuMSG.Enabled = false;
             this.menuMSG.Items.Add(this.btnCopyMSGWork);
             this.menuMSG.Items.Add(this.btnInitMSGContent);
             this.menuMSG.Items.Add(this.btnCopyWorkerComposition);
@@ -270,6 +270,48 @@
             this.btnCopyMachineComposition.Name = "btnCopyMachineComposition";
             this.btnCopyMachineComposition.ShowImage = true;
             this.btnCopyMachineComposition.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyMachineComposition_Click);
+            // 
+            // menuVOVR
+            // 
+            this.menuVOVR.Enabled = false;
+            this.menuVOVR.Items.Add(this.btnCopyVOVRWork);
+            this.menuVOVR.Label = " ВОВР";
+            this.menuVOVR.Name = "menuVOVR";
+            // 
+            // btnCopyVOVRWork
+            // 
+            this.btnCopyVOVRWork.Label = "Копировать";
+            this.btnCopyVOVRWork.Name = "btnCopyVOVRWork";
+            this.btnCopyVOVRWork.ShowImage = true;
+            this.btnCopyVOVRWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyVOVRWork_Click);
+            // 
+            // menuKS
+            // 
+            this.menuKS.Enabled = false;
+            this.menuKS.Items.Add(this.btnCopyKSWork);
+            this.menuKS.Label = "КС-2";
+            this.menuKS.Name = "menuKS";
+            // 
+            // btnCopyKSWork
+            // 
+            this.btnCopyKSWork.Label = "Копировать";
+            this.btnCopyKSWork.Name = "btnCopyKSWork";
+            this.btnCopyKSWork.ShowImage = true;
+            this.btnCopyKSWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyKSWork_Click);
+            // 
+            // menuRC
+            // 
+            this.menuRC.Enabled = false;
+            this.menuRC.Items.Add(this.btnCopyRCWork);
+            this.menuRC.Label = "ТУВР";
+            this.menuRC.Name = "menuRC";
+            // 
+            // btnCopyRCWork
+            // 
+            this.btnCopyRCWork.Label = "Копировать";
+            this.btnCopyRCWork.Name = "btnCopyRCWork";
+            this.btnCopyRCWork.ShowImage = true;
+            this.btnCopyRCWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyRCWork_Click);
             // 
             // buttonPaste
             // 
@@ -328,7 +370,6 @@
             this.groupMSG_OUT.Items.Add(this.btnCreateTemplateFile);
             this.groupMSG_OUT.Items.Add(this.checkBoxRerightDatePart);
             this.groupMSG_OUT.Items.Add(this.separator3);
-            this.groupMSG_OUT.Items.Add(this.btnRefillTemlate);
             this.groupMSG_OUT.Label = "МСГ выход";
             this.groupMSG_OUT.Name = "groupMSG_OUT";
             // 
@@ -349,13 +390,6 @@
             // separator3
             // 
             this.separator3.Name = "separator3";
-            // 
-            // btnRefillTemlate
-            // 
-            this.btnRefillTemlate.Enabled = false;
-            this.btnRefillTemlate.Label = "Обновить существующий  МСГ";
-            this.btnRefillTemlate.Name = "btnRefillTemlate";
-            this.btnRefillTemlate.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnFillTemlate_Click);
             // 
             // group2
             // 
@@ -384,45 +418,6 @@
             // openMSGTemplateFileDialog
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
-            // 
-            // menuVOVR
-            // 
-            this.menuVOVR.Items.Add(this.btnCopyVOVRWork);
-            this.menuVOVR.Label = " ВОВР";
-            this.menuVOVR.Name = "menuVOVR";
-            // 
-            // btnCopyVOVRWork
-            // 
-            this.btnCopyVOVRWork.Label = "Копировать";
-            this.btnCopyVOVRWork.Name = "btnCopyVOVRWork";
-            this.btnCopyVOVRWork.ShowImage = true;
-            this.btnCopyVOVRWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyVOVRWork_Click);
-            // 
-            // menuRC
-            // 
-            this.menuRC.Items.Add(this.btnCopyRCWork);
-            this.menuRC.Label = "ТУВР";
-            this.menuRC.Name = "menuRC";
-            // 
-            // btnCopyRCWork
-            // 
-            this.btnCopyRCWork.Label = "Копировать";
-            this.btnCopyRCWork.Name = "btnCopyRCWork";
-            this.btnCopyRCWork.ShowImage = true;
-            this.btnCopyRCWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyRCWork_Click);
-            // 
-            // menuKS
-            // 
-            this.menuKS.Items.Add(this.btnCopyKSWork);
-            this.menuKS.Label = "КС-2";
-            this.menuKS.Name = "menuKS";
-            // 
-            // btnCopyKSWork
-            // 
-            this.btnCopyKSWork.Label = "Копировать";
-            this.btnCopyKSWork.Name = "btnCopyKSWork";
-            this.btnCopyKSWork.ShowImage = true;
-            this.btnCopyKSWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyKSWork_Click);
             // 
             // Ribbon1
             // 
@@ -465,7 +460,6 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton bntChangeEmployerMSG;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeCommonMSG;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadFromModel;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnRefillTemlate;
         private System.Windows.Forms.OpenFileDialog openMSGTemplateFileDialog;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupMSG_OUT;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCreateTemplateFile;
@@ -482,7 +476,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonPaste;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonCalc;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator4;
-        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuEditCommands;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuSection;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyMSGWork;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnUpdateAll;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadInModel;

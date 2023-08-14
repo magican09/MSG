@@ -1,5 +1,4 @@
 ﻿using Microsoft.Office.Interop.Excel;
-using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -50,24 +49,24 @@ namespace ExellAddInsLib.MSG
             set { _owner = value; }
         }
 
-        public  override void SetStyleFormats(int col)
+        public override void SetStyleFormats(int col)
         {
 
             var cr_range = this.GetRange();
             if (cr_range != null)
             {
                 cr_range.Interior.ColorIndex = col;
-                cr_range.SetBordersBoldLine(XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+                cr_range.SetBordersLine(XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
 
                 Excel.Range days_row_range = this.Worksheet.Range[
                        this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1],
-                       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 30+this.Count]];
+                       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 30 + this.Count]];
                 days_row_range.Interior.ColorIndex = col;
                 days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
 
-                days_row_range.SetBordersBoldLine(XlLineStyle.xlDashDot, XlLineStyle.xlDashDot,
+                days_row_range.SetBordersLine(XlLineStyle.xlDashDot, XlLineStyle.xlDashDot,
                                                   XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
-               
+
             }
 
             //if (this.Count>0)
@@ -77,11 +76,9 @@ namespace ExellAddInsLib.MSG
             //    days_row_range.Interior.ColorIndex = col;
             //    days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
 
-            //    days_row_range.SetBordersBoldLine(XlLineStyle.xlDashDot, XlLineStyle.xlDashDot,
+            //    days_row_range.SetBordersLine(XlLineStyle.xlDashDot, XlLineStyle.xlDashDot,
             //                                      XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
             //}
-           
-
 
         }
     }

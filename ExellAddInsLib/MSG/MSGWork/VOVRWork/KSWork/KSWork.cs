@@ -86,11 +86,11 @@ namespace ExellAddInsLib.MSG
             //    ks_work_cuont++;
             //    ksw.ChangeTopRow(ks_row + ks_work_cuont);
             //}
-            
+
             int rc_row = ks_row + ks_work_cuont;
             foreach (RCWork rc_work in ks_work.RCWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
             {
-                rc_row = rc_work.AdjustExcelRepresentionTree( rc_row);
+                rc_row = rc_work.AdjustExcelRepresentionTree(rc_row);
                 rc_row++;
             }
 
@@ -98,24 +98,27 @@ namespace ExellAddInsLib.MSG
             return ks_row;
         }
 
-        public override void  SetStyleFormats(int row)
+        public override void SetStyleFormats(int row)
         {
             KSWork ks_work = this;
             int ks_work_col = row;
             var ks_work_range = ks_work.GetRange(KS_LABOURNESS_COL);
             ks_work_range.Interior.ColorIndex = ks_work_col;
-            
+
             Excel.Range rc_works_range = ks_work.RCWorks.GetRange();
-            rc_works_range.SetBordersBoldLine(XlLineStyle.xlDouble);
+            rc_works_range.SetBordersLine(XlLineStyle.xlDouble);
             rc_works_range.Interior.ColorIndex = ks_work_col;
-            //if (rc_works_range == null)
-             //   ks_work.RCWorks.GetRange();
-            
-            foreach (RCWork rc_work in ks_work.RCWorks)
-                if (rc_work.ReportCard != null)
-                    rc_work.ReportCard.SetStyleFormats(ks_work_col);
-         
-            ks_work_range.SetBordersBoldLine(XlLineStyle.xlLineStyleNone);
+            if (ks_work.RCWorks.Count > 0)
+            {
+
+
+                foreach (RCWork rc_work in ks_work.RCWorks)
+                    if (rc_work.ReportCard != null)
+                        rc_work.ReportCard.SetStyleFormats(ks_work_col);
+            }
+
+
+            ks_work_range.SetBordersLine(XlLineStyle.xlLineStyleNone);
         }
         public override Range GetRange()
         {
@@ -123,7 +126,7 @@ namespace ExellAddInsLib.MSG
             Excel.Range rc_works_range = this.RCWorks.GetRange();
             range = Worksheet.Application.Union(new List<Excel.Range>() { range, rc_works_range });
             return range;
-          
+
         }
 
         public override object Clone()

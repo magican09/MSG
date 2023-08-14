@@ -35,7 +35,7 @@ namespace ExellAddInsLib.MSG
             get { return _laborСosts; }
             set { SetProperty(ref _laborСosts, value); }
         }
-        public  override void UpdateExcelRepresetation()
+        public override void UpdateExcelRepresetation()
         {
             base.UpdateExcelRepresetation();
         }

@@ -1,5 +1,4 @@
-﻿using Microsoft.Office.Interop.Excel;
-using Excel = Microsoft.Office.Interop.Excel;
+﻿using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
@@ -25,7 +24,7 @@ namespace ExellAddInsLib.MSG
             set
             {
                 _worksheet = value;
-               if(this.ReportCard!=null) this.ReportCard.Worksheet = _worksheet;
+                if (this.ReportCard != null) this.ReportCard.Worksheet = _worksheet;
                 this.WorkersComposition.Worksheet = _worksheet;
                 this.MachinesComposition.Worksheet = _worksheet;
                 this.CellAddressesMap.SetWorksheet(_worksheet);
@@ -100,7 +99,7 @@ namespace ExellAddInsLib.MSG
             RCWork rc_work = this;
             int ks_work_col = col;
             var rc_work_range = rc_work.GetRange(RC_LABOURNESS_COL);
-       //     rc_work_range.SetBordersBoldLine();
+            //     rc_work_range.SetBordersLine();
             rc_work_range.Interior.ColorIndex = ks_work_col;
             if (rc_work.ReportCard != null)
                 rc_work.ReportCard.SetStyleFormats(ks_work_col);
@@ -113,7 +112,7 @@ namespace ExellAddInsLib.MSG
             new_work.LabournessCoefficient = LabournessCoefficient;
             return new_work;
         }
-        
-       
+
+
     }
 }

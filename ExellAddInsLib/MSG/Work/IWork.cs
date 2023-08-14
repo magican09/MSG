@@ -1,8 +1,6 @@
-﻿using Microsoft.Office.Interop.Excel;
-
-namespace ExellAddInsLib.MSG
+﻿namespace ExellAddInsLib.MSG
 {
-    public interface IWork:IExcelBindableBase
+    public interface IWork : IExcelBindableBase
     {
         System.Collections.ObjectModel.ObservableCollection<IWork> Children { get; set; }
         decimal Laboriousness { get; set; }

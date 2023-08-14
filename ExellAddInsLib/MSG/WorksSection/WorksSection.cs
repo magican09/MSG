@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG.Section
@@ -46,7 +45,7 @@ namespace ExellAddInsLib.MSG.Section
         /// <summary>
         /// Коллекция с работами типа МСГ модели
         /// </summary>
-          private AdjustableCollection<MSGWork> _mSGWorks = new AdjustableCollection<MSGWork>();
+        private AdjustableCollection<MSGWork> _mSGWorks = new AdjustableCollection<MSGWork>();
 
         [NonRegisterInUpCellAddresMap]
         public AdjustableCollection<MSGWork> MSGWorks
@@ -65,15 +64,16 @@ namespace ExellAddInsLib.MSG.Section
         public override int AdjustExcelRepresentionTree(int row)
         {
             int section_row = row;
-            int msg_row = row- _MSG_WORKS_GAP;
+            int msg_row = row - _MSG_WORKS_GAP;
             var w_section = this;
             w_section.ChangeTopRow(section_row);
             foreach (MSGWork msg_work in w_section.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
-                msg_row = msg_work.AdjustExcelRepresentionTree(msg_row+ _MSG_WORKS_GAP);
-        
+                msg_row = msg_work.AdjustExcelRepresentionTree(msg_row + _MSG_WORKS_GAP);
+
             section_row = msg_row;
             return section_row;
         }
+
 
         public override void SetStyleFormats(int col)
         {
@@ -81,22 +81,26 @@ namespace ExellAddInsLib.MSG.Section
             int selectin_col = col;
             var section_range = section.GetRange(WSEC_NAME_COL);
             section_range.Interior.ColorIndex = selectin_col;
-            section_range.SetBordersBoldLine();
+            section_range.SetBordersLine();
             int first_row = section.GetTopRow();
-            section.MSGWorks.GetRange().SetBordersBoldLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
-            int msg_work_col = selectin_col + 1;
-            int last_section_row = 0;
-            foreach (MSGWork msg_work in section.MSGWorks)
-                msg_work.SetStyleFormats(msg_work_col);
+            if (section.MSGWorks.Count > 0)
+            {
+                Excel.Range msg_works_left_edge_range = section.MSGWorks.Worksheet.Range[section.MSGWorks[0].CellAddressesMap["Number"].Cell, section.MSGWorks[section.MSGWorks.Count - 1].CellAddressesMap["Number"].Cell];
+                msg_works_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
 
+                int msg_work_col = selectin_col + 1;
+                int last_section_row = 0;
+                foreach (MSGWork msg_work in section.MSGWorks)
+                    msg_work.SetStyleFormats(msg_work_col);
+
+            }
 
             try
             {
                 var section_full_range = section.GetRange();
                 var lowest_edge_range = section_full_range.GetRangeWithLowestEdge();
-
                 // Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _SECTIONS_GAP]];
-                Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count]];
+                Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _SECTIONS_GAP]];
                 range.Group();
             }
             catch
@@ -107,7 +111,7 @@ namespace ExellAddInsLib.MSG.Section
         }
         public WorksSection()
         {
-            
+
             this.MSGWorks.Owner = this;
             this.MSGWorks.Worksheet = this.Worksheet;
         }

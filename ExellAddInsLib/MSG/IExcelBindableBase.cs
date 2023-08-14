@@ -1,5 +1,4 @@
-﻿using ExellAddInsLib.MSG.Section;
-using Microsoft.Office.Interop.Excel;
+﻿using Microsoft.Office.Interop.Excel;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -34,10 +33,10 @@ namespace ExellAddInsLib.MSG
 
         void UpdateExcelRepresetation();
         int AdjustExcelRepresentionTree(int top_row);
-        void  SetStyleFormats(int col);
-        //void SetBordersBoldLine(Excel.Range range);
-        //void SetBordersBoldLine(Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true);
-        //void SetBordersBoldLine(Excel.Range range,
+        void SetStyleFormats(int col);
+        //void SetBordersLine(Excel.Range range);
+        //void SetBordersLine(Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true);
+        //void SetBordersLine(Excel.Range range,
         // Excel.XlLineStyle right = Excel.XlLineStyle.xlDouble,
         // Excel.XlLineStyle left = Excel.XlLineStyle.xlDouble,
         // Excel.XlLineStyle top = Excel.XlLineStyle.xlDouble,

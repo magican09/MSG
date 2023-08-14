@@ -1,5 +1,4 @@
-﻿using ExellAddInsLib.MSG.Section;
-using Microsoft.Office.Interop.Excel;
+﻿using Microsoft.Office.Interop.Excel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,14 +6,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class ExellModelBase: ExcelBindableBase
+    public class ExellModelBase : ExcelBindableBase
     {
 
         public ObservableCollection<Excel.Worksheet> AllWorksheets = new ObservableCollection<Excel.Worksheet>();
@@ -44,6 +41,8 @@ namespace ExellAddInsLib.MSG
             try
             {
                 var prop_names = prop_name.Split(new char[] { '.' });
+                if (this.IsRegistered(notified_object, prop_names[0]))
+                    return;
                 RelateRecord local_register = new RelateRecord(notified_object);
                 if (register == null)
                 {
@@ -57,11 +56,14 @@ namespace ExellAddInsLib.MSG
                         local_register.ExellPropAddress.Owner = notified_object;
                         notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
                     }
+
+                    local_register.PropertyName = prop_names[0];
                     this.RegistedObjects.Add(local_register);
+                    this.ObjectPropertyNameRegister.Add(local_register);
+
                     RegisterTemporalStopList.Clear();
                     RegisterTemporalStopList.Add(local_register.Entity, prop_names[0]);
-                    local_register.PropertyName = prop_names[0];
-                    this.ObjectPropertyNameRegister.Add(local_register);
+
                 }
                 else
                     register.Items.Add(local_register);
@@ -97,6 +99,15 @@ namespace ExellAddInsLib.MSG
             }
 
         }
+
+        private bool IsRegistered(IExcelBindableBase obj, string prop_name)
+        {
+            if (this.RegistedObjects.FirstOrDefault(r => r.Entity.Id == obj.Id && r.PropertyName == prop_name) != null)
+                return true;
+            else
+                return false;
+        }
+
         ObservableCollection<IExcelBindableBase> unregistedObjects = new ObservableCollection<IExcelBindableBase>();
         /// <summary>
         /// Удаления регистрации объекта из системы отслеживания
@@ -280,7 +291,7 @@ namespace ExellAddInsLib.MSG
 
         public override void UpdateExcelRepresetation()
         {
-            
+
         }
 
 
