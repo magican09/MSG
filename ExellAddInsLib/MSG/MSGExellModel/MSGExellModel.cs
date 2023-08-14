@@ -1479,7 +1479,7 @@ namespace ExellAddInsLib.MSG
         /// <summary>
         /// Функция форматирует представления модели на листе Excel
         /// </summary>
-        public override void SetStyleFormats(int col)
+        public override void SetStyleFormats(int col = W_SECTION_COLOR)
         {
             //  this.UpdateCellAddressMapsWorkSheets();
             this.RemoveGroups(this.RegisterSheet);
@@ -1500,7 +1500,7 @@ namespace ExellAddInsLib.MSG
             this.InvalidObjects.SetInvalidateCellsColor(XlRgbColor.rgbRed);
 
             this.WorkerConsumptions.GetRange().SetBordersBoldLine();
-            int w_consumption_col = 33;
+            int w_consumption_col = W_SECTION_COLOR;
             foreach (WorkerConsumption consumption in this.WorkerConsumptions)
             {
                 // consumption.GetRange(this.WorkerConsumptionsSheet).Interior.ColorIndex = w_consumption_col++;
@@ -1508,6 +1508,19 @@ namespace ExellAddInsLib.MSG
                 Excel.Range cons_range = this.WorkerConsumptionsSheet.Range[
                     this.WorkerConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, W_CONSUMPTIONS_NUMBER_COL],
                     this.WorkerConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, days_namber]];
+                cons_range.Interior.ColorIndex = w_consumption_col++;
+                cons_range.Borders.LineStyle = XlLineStyle.xlDashDotDot;
+                cons_range.SetBordersBoldLine(XlLineStyle.xlDouble, XlLineStyle.xlDouble,
+                    XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+            }
+            w_consumption_col = W_SECTION_COLOR;
+            foreach (MachineConsumption consumption in this.MachineConsumptions)
+            {
+                // consumption.GetRange(this.WorkerConsumptionsSheet).Interior.ColorIndex = w_consumption_col++;
+                int days_namber = (this.WorksEndDate - this.WorksStartDate).Days;
+                Excel.Range cons_range = this.MachineConsumptionsSheet.Range[
+                    this.MachineConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, MCH_CONSUMPTIONS_NUMBER_COL],
+                    this.MachineConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, days_namber]];
                 cons_range.Interior.ColorIndex = w_consumption_col++;
                 cons_range.Borders.LineStyle = XlLineStyle.xlDashDotDot;
                 cons_range.SetBordersBoldLine(XlLineStyle.xlDouble, XlLineStyle.xlDouble,
@@ -2129,15 +2142,15 @@ namespace ExellAddInsLib.MSG
             int bottom_row = selection.Rows[selection.Rows.Count].Row;
             List<IExcelBindableBase> uniq_objcts = new List<IExcelBindableBase>();
 
-            foreach (var kvp in this.RegistedObjects.Where(rr => (rr.Entity.GetType() == object_type
-            || rr.Entity.GetType().GetInterface(object_type.Name) != null)
+            foreach (var kvp in this.RegistedObjects.Where(rr => (rr.Entity.GetType() == object_type || rr.Entity.GetType().GetInterface(object_type.Name) != null)
+                                                               && rr.Entity.Owner != null
                                                                && rr.Entity.GetTopRow() >= top_row
                                                                && rr.Entity.GetTopRow() <= bottom_row))
             {
                 int obj_row = kvp.ExellPropAddress.Row;
                 int obj_col = kvp.ExellPropAddress.Column;
                 double dist = Math.Sqrt(Math.Pow(obj_row - selection.Row, 2) + Math.Pow(obj_col - selection.Column, 2));
-                if (!uniq_objcts.Contains(kvp.Entity))
+                if (uniq_objcts.FirstOrDefault(ob => ob.Id == kvp.Entity.Id) == null)
                 {
                     objects_distation.Add(new Tuple<double, IExcelBindableBase>(dist, kvp.Entity));
                     uniq_objcts.Add(kvp.Entity);

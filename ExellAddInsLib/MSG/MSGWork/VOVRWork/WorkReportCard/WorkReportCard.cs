@@ -57,25 +57,31 @@ namespace ExellAddInsLib.MSG
             if (cr_range != null)
             {
                 cr_range.Interior.ColorIndex = col;
-                cr_range.SetBordersBoldLine(XlLineStyle.xlDashDotDot, XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
-            }
+                cr_range.SetBordersBoldLine(XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
 
-             if(this.Count>0)
-            {
-                Excel.Range last_day_range = this.OrderBy(d => d.Date).LastOrDefault().GetRange();
-                Excel.Range days_row_range = Worksheet.Application.Union(this.GetRange(), last_day_range);
-                //Excel.Range days_row_range = this.Worksheet.Range[
-                //       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1],
-                //       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + this.Count]];
-
-                //   Excel.Range days_row_range = this.GetRange();
+                Excel.Range days_row_range = this.Worksheet.Range[
+                       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1],
+                       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 30+this.Count]];
                 days_row_range.Interior.ColorIndex = col;
                 days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
 
-                days_row_range.SetBordersBoldLine(XlLineStyle.xlContinuous, XlLineStyle.xlContinuous,
+                days_row_range.SetBordersBoldLine(XlLineStyle.xlDashDot, XlLineStyle.xlDashDot,
                                                   XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+               
             }
-          
+
+            //if (this.Count>0)
+            //{
+            //    Excel.Range last_day_range = this.OrderBy(d => d.Date).LastOrDefault().GetRange();
+            //    Excel.Range days_row_range = Worksheet.Application.Union(this.GetRange(), last_day_range);
+            //    days_row_range.Interior.ColorIndex = col;
+            //    days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
+
+            //    days_row_range.SetBordersBoldLine(XlLineStyle.xlDashDot, XlLineStyle.xlDashDot,
+            //                                      XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
+            //}
+           
+
 
         }
     }

@@ -107,10 +107,11 @@ namespace ExellAddInsLib.MSG
         {
             if (first_iteration) unregistedObjects.Clear();
             if (unregistedObjects.Contains(notified_object)) return;
-            var all_registed_rrecords = this.RegistedObjects.Where(ro => ro.Entity.Id == notified_object.Id);
+            var all_registed_rrecords = this.RegistedObjects.Where(ro => ro.Entity.Id == notified_object.Id).ToList();
             foreach (var r_obj in all_registed_rrecords)
             {
                 notified_object.PropertyChanged -= OnPropertyChange;
+                this.RegistedObjects.Remove(r_obj);
             }
             if (notified_object is IList exbb_list)
                 foreach (IExcelBindableBase elm in exbb_list)

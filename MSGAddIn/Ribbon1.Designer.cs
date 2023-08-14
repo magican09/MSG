@@ -68,7 +68,6 @@
             this.btnMachines = this.Factory.CreateRibbonButton();
             this.groupMSG_OUT = this.Factory.CreateRibbonGroup();
             this.btnCreateTemplateFile = this.Factory.CreateRibbonButton();
-            this.checkBoxSandayVocationrStatus = this.Factory.CreateRibbonCheckBox();
             this.checkBoxRerightDatePart = this.Factory.CreateRibbonCheckBox();
             this.separator3 = this.Factory.CreateRibbonSeparator();
             this.btnRefillTemlate = this.Factory.CreateRibbonButton();
@@ -77,6 +76,12 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.menuVOVR = this.Factory.CreateRibbonMenu();
+            this.btnCopyVOVRWork = this.Factory.CreateRibbonButton();
+            this.menuRC = this.Factory.CreateRibbonMenu();
+            this.btnCopyRCWork = this.Factory.CreateRibbonButton();
+            this.menuKS = this.Factory.CreateRibbonMenu();
+            this.btnCopyKSWork = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -208,6 +213,9 @@
             // 
             this.groupCommands.Items.Add(this.menuEditCommands);
             this.groupCommands.Items.Add(this.menuMSG);
+            this.groupCommands.Items.Add(this.menuVOVR);
+            this.groupCommands.Items.Add(this.menuKS);
+            this.groupCommands.Items.Add(this.menuRC);
             this.groupCommands.Items.Add(this.buttonPaste);
             this.groupCommands.Label = "_______";
             this.groupCommands.Name = "groupCommands";
@@ -318,7 +326,6 @@
             // groupMSG_OUT
             // 
             this.groupMSG_OUT.Items.Add(this.btnCreateTemplateFile);
-            this.groupMSG_OUT.Items.Add(this.checkBoxSandayVocationrStatus);
             this.groupMSG_OUT.Items.Add(this.checkBoxRerightDatePart);
             this.groupMSG_OUT.Items.Add(this.separator3);
             this.groupMSG_OUT.Items.Add(this.btnRefillTemlate);
@@ -331,13 +338,6 @@
             this.btnCreateTemplateFile.Label = "Создать МСГ из шаблона";
             this.btnCreateTemplateFile.Name = "btnCreateTemplateFile";
             this.btnCreateTemplateFile.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadTeplateFile_Click);
-            // 
-            // checkBoxSandayVocationrStatus
-            // 
-            this.checkBoxSandayVocationrStatus.Checked = true;
-            this.checkBoxSandayVocationrStatus.Enabled = false;
-            this.checkBoxSandayVocationrStatus.Label = "Вых. восскресенье";
-            this.checkBoxSandayVocationrStatus.Name = "checkBoxSandayVocationrStatus";
             // 
             // checkBoxRerightDatePart
             // 
@@ -385,6 +385,45 @@
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
             // 
+            // menuVOVR
+            // 
+            this.menuVOVR.Items.Add(this.btnCopyVOVRWork);
+            this.menuVOVR.Label = " ВОВР";
+            this.menuVOVR.Name = "menuVOVR";
+            // 
+            // btnCopyVOVRWork
+            // 
+            this.btnCopyVOVRWork.Label = "Копировать";
+            this.btnCopyVOVRWork.Name = "btnCopyVOVRWork";
+            this.btnCopyVOVRWork.ShowImage = true;
+            this.btnCopyVOVRWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyVOVRWork_Click);
+            // 
+            // menuRC
+            // 
+            this.menuRC.Items.Add(this.btnCopyRCWork);
+            this.menuRC.Label = "ТУВР";
+            this.menuRC.Name = "menuRC";
+            // 
+            // btnCopyRCWork
+            // 
+            this.btnCopyRCWork.Label = "Копировать";
+            this.btnCopyRCWork.Name = "btnCopyRCWork";
+            this.btnCopyRCWork.ShowImage = true;
+            this.btnCopyRCWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyRCWork_Click);
+            // 
+            // menuKS
+            // 
+            this.menuKS.Items.Add(this.btnCopyKSWork);
+            this.menuKS.Label = "КС-2";
+            this.menuKS.Name = "menuKS";
+            // 
+            // btnCopyKSWork
+            // 
+            this.btnCopyKSWork.Label = "Копировать";
+            this.btnCopyKSWork.Name = "btnCopyKSWork";
+            this.btnCopyKSWork.ShowImage = true;
+            this.btnCopyKSWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyKSWork_Click);
+            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -429,7 +468,6 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnRefillTemlate;
         private System.Windows.Forms.OpenFileDialog openMSGTemplateFileDialog;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupMSG_OUT;
-        internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox checkBoxSandayVocationrStatus;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCreateTemplateFile;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupFileLaod;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadMSGFile;
@@ -454,6 +492,12 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitMSGContent;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyWorkerComposition;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyMachineComposition;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuVOVR;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyVOVRWork;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuRC;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyRCWork;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuKS;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyKSWork;
     }
 
     partial class ThisRibbonCollection

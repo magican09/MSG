@@ -137,7 +137,7 @@ namespace MSGAddIn
         {
             LoadMSG_File();
             //    CurrentMSGExellModel.SetFormulas(); 
-            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+            CurrentMSGExellModel.SetStyleFormats();
 
         }
         private void LoadMSG_File()
@@ -215,7 +215,7 @@ namespace MSGAddIn
         {
             CurrentMSGExellModel.CalcLabourness();
             CurrentMSGExellModel.CalcQuantity();
-            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+            CurrentMSGExellModel.SetStyleFormats();
             // CurrentMSGExellModel.SetFormulas();
         }
 
@@ -313,7 +313,7 @@ namespace MSGAddIn
             }
             CurrentMSGExellModel = empl_model;
             //   CurrentMSGExellModel.ReloadSheetModel();
-            //   CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+            //   CurrentMSGExellModel.SetStyleFormats();
 
 
             this.SetAllWorksheetsVisibleState(XlSheetVisibility.xlSheetHidden);
@@ -501,15 +501,15 @@ namespace MSGAddIn
         private void btnLoadInModel_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.ReloadSheetModel();
-            // CurrentMSGExellModel.SetFormulas();
-            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+            //CurrentMSGExellModel.SetFormulas();
+            CurrentMSGExellModel.SetStyleFormats();
         }
 
         private void btnLoadFromModel_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.UpdateExcelRepresetation();
             CurrentMSGExellModel.SetFormulas();
-            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+            CurrentMSGExellModel.SetStyleFormats();
         }
         private void btnUpdateAll_Click(object sender, RibbonControlEventArgs e)
         {
@@ -521,7 +521,7 @@ namespace MSGAddIn
             CurrentMSGExellModel.ReloadSheetModel();
             CurrentMSGExellModel.UpdateExcelRepresetation();
             CurrentMSGExellModel.SetFormulas();
-            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+            CurrentMSGExellModel.SetStyleFormats();
         }
         #region Выгрузка данных в файл МСГ шаблона
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
@@ -1078,50 +1078,7 @@ namespace MSGAddIn
         #region Редактивроние данных
         private List<IExcelBindableBase> CopyedObjectsList = new List<IExcelBindableBase>();
         private string commands_group_label = "";
-        /// <summary>
-        /// Копировать разделы
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void buttonCopyWorkSection_Click(object sender, RibbonControlEventArgs e)
-        {
-            CopyedObjectsList.Clear();
-            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(WorksSection));
-            if (sected_objects != null)
-            {
-                foreach (var obj in sected_objects)
-                    CopyedObjectsList.Add((WorksSection)obj.Clone()); ;
-
-                buttonPaste.Enabled = true;
-                commands_group_label = $"Разадел(ы) скопирован.\n Выбрерите ячеку с номеров нового раздела.";
-            }
-            //Excel.Dialog dlg = Globals.ThisAddIn.Application.Dialogs[Excel.XlBuiltInDialog.xlDialogFont];
-            //dlg.Show();
-            groupCommands.Label = commands_group_label;
-        }
-        /// <summary>
-        /// Копировать МСГ работы
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnCopyMSGWork_Click(object sender, RibbonControlEventArgs e)
-        {
-            CopyedObjectsList.Clear();
-            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
-            if (sected_objects != null)
-            {
-                foreach (var obj in sected_objects)
-                    CopyedObjectsList.Add((MSGWork)obj.Clone()); ;
-
-                buttonPaste.Enabled = true;
-                commands_group_label = $"МСГ скопированы.\n Выбрерите разде куда вставить МСГ";
-
-            }
-            groupCommands.Label = commands_group_label;
-
-        }
+      
         /// <summary>
         /// Допивать в пустые МСГ все ВОВР, КС и табельные работы
         /// </summary>
@@ -1190,7 +1147,7 @@ namespace MSGAddIn
 
                     msg_work.AdjustExcelRepresentionTree(rowIndex);
                     msg_work.UpdateExcelRepresetation();
-                    msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
+                    msg_work.SetStyleFormats( + 1);
                 }
             }
         }
@@ -1231,7 +1188,7 @@ namespace MSGAddIn
                                     cell_val++;
                                 }
 
-                                CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+                                CurrentMSGExellModel.SetStyleFormats();
                                 commands_group_label = "";
                             }
                             catch
@@ -1259,7 +1216,74 @@ namespace MSGAddIn
                                 CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work); 
                             }
                             CurrentMSGExellModel.UpdateExcelRepresetation();
-                            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+                            CurrentMSGExellModel.SetStyleFormats();
+                            commands_group_label = "";
+                            break;
+                        }
+                    case nameof(VOVRWork):
+                        {
+                            if (selection.Column <= MSGExellModel.VOVR_NUMBER_COL | selection.Column >= MSGExellModel.VOVR_LABOURNESS_COL) return;
+                            var selected_above_vovr_works = CurrentMSGExellModel
+                                    .GetObjectsBySelection(selection, (obj) => obj is VOVRWork msg_obj
+                                                                               && msg_obj.GetTopRow() <= selection.Rows[1].Row
+                                                                               && obj.Owner != null);
+                            VOVRWork selected_work = selected_above_vovr_works[0] as VOVRWork;
+                            MSGWork selected_msg_work = selected_work.Owner as MSGWork;
+
+                            if (selected_msg_work == null) return;
+                            int selected_work_index = selected_msg_work.VOVRWorks.IndexOf(selected_work);
+                            foreach (VOVRWork  work in CopyedObjectsList)
+                            {
+                                selected_msg_work.VOVRWorks.Insert(selected_work_index + 1, work);
+                                CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
+                            }
+                            CurrentMSGExellModel.UpdateExcelRepresetation();
+                            CurrentMSGExellModel.SetStyleFormats();
+                            commands_group_label = "";
+                            break;
+                        }
+                    case nameof(KSWork):
+                        {
+                            if (selection.Column <= MSGExellModel.KS_NUMBER_COL | selection.Column >= MSGExellModel.KS_LABOURNESS_COL) return;
+                            var selected_above_works = CurrentMSGExellModel
+                                    .GetObjectsBySelection(selection, (obj) => obj is KSWork msg_obj
+                                                                               && msg_obj.GetTopRow() <= selection.Rows[1].Row
+                                                                               && obj.Owner != null);
+                            KSWork selected_work = selected_above_works[0] as KSWork;
+                            VOVRWork selected_owner_work = selected_work.Owner as VOVRWork;
+
+                            if (selected_owner_work == null) return;
+                            int selected_work_index = selected_owner_work.KSWorks.IndexOf(selected_work);
+                            foreach (KSWork work in CopyedObjectsList)
+                            {
+                                selected_owner_work.KSWorks.Insert(selected_work_index + 1, work);
+                                CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
+                            }
+                            CurrentMSGExellModel.UpdateExcelRepresetation();
+                            CurrentMSGExellModel.SetStyleFormats();
+                            commands_group_label = "";
+                            break;
+                        }
+
+                              case nameof(RCWork):
+                        {
+                            if (selection.Column <= MSGExellModel.RC_NUMBER_COL | selection.Column >= MSGExellModel.RC_LABOURNESS_COL) return;
+                            var selected_above_works = CurrentMSGExellModel
+                                    .GetObjectsBySelection(selection, (obj) => obj is RCWork msg_obj
+                                                                               && msg_obj.GetTopRow() <= selection.Rows[1].Row
+                                                                               && obj.Owner != null);
+                            RCWork selected_work = selected_above_works[0] as RCWork;
+                            KSWork selected_owner_work = selected_work.Owner as KSWork;
+
+                            if (selected_owner_work == null) return;
+                            int selected_work_index = selected_owner_work.RCWorks.IndexOf(selected_work);
+                            foreach (RCWork work in CopyedObjectsList)
+                            {
+                                selected_owner_work.RCWorks.Insert(selected_work_index + 1, work);
+                                CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
+                            }
+                            CurrentMSGExellModel.UpdateExcelRepresetation();
+                            CurrentMSGExellModel.SetStyleFormats();
                             commands_group_label = "";
                             break;
                         }
@@ -1337,7 +1361,7 @@ namespace MSGAddIn
                                 }
                             }
                             CurrentMSGExellModel.UpdateExcelRepresetation();
-                            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+                            CurrentMSGExellModel.SetStyleFormats();
                             break;
                         }
                     case nameof(NeedsOfMachine):
@@ -1387,9 +1411,11 @@ namespace MSGAddIn
                                 }
                             }
                             CurrentMSGExellModel.UpdateExcelRepresetation();
-                            CurrentMSGExellModel.SetStyleFormats(MSGExellModel.W_SECTION_COLOR);
+                            CurrentMSGExellModel.SetStyleFormats();
                             break;
                         }
+
+
                     default:
                         {
                             break;
@@ -1435,6 +1461,102 @@ namespace MSGAddIn
             groupCommands.Label = commands_group_label;
         }
         #endregion
+        /// <summary>
+        /// Копировать разделы
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void buttonCopyWorkSection_Click(object sender, RibbonControlEventArgs e)
+        {
+            CopyedObjectsList.Clear();
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(WorksSection)).Where(ob => !CopyedObjectsList.Contains(ob));
+            if (sected_objects != null)
+            {
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((WorksSection)obj.Clone()); ;
+
+                buttonPaste.Enabled = true;
+                commands_group_label = $"Разадел(ы) скопирован.\n Выбрерите ячеку с номеров нового раздела.";
+            }
+            //Excel.Dialog dlg = Globals.ThisAddIn.Application.Dialogs[Excel.XlBuiltInDialog.xlDialogFont];
+            //dlg.Show();
+            groupCommands.Label = commands_group_label;
+        }
+        /// <summary>
+        /// Копировать МСГ работы
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnCopyMSGWork_Click(object sender, RibbonControlEventArgs e)
+        {
+            CopyedObjectsList.Clear();
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork)).Where(ob => !CopyedObjectsList.Contains(ob));
+            if (sected_objects != null)
+            {
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((MSGWork)obj.Clone()); ;
+
+                buttonPaste.Enabled = true;
+                commands_group_label = $"МСГ скопированы.\n Выбрерите разде куда вставить МСГ";
+
+            }
+            groupCommands.Label = commands_group_label;
+
+        }
+        private void btnCopyVOVRWork_Click(object sender, RibbonControlEventArgs e)
+        {
+            CopyedObjectsList.Clear();
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(VOVRWork)).Where(ob => !CopyedObjectsList.Contains(ob));
+            if (sected_objects != null)
+            {
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((VOVRWork)obj.Clone()); ;
+
+                buttonPaste.Enabled = true;
+                commands_group_label = $"ВОВР скопированы.\n Выбрерите разде куда вставить МСГ";
+
+            }
+            groupCommands.Label = commands_group_label;
+        }
+    
+        private void btnCopyKSWork_Click(object sender, RibbonControlEventArgs e)
+        {
+            CopyedObjectsList.Clear();
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(KSWork)).Where(ob => !CopyedObjectsList.Contains(ob));
+            if (sected_objects != null)
+            {
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((KSWork)obj.Clone()); ;
+
+                buttonPaste.Enabled = true;
+                commands_group_label = $"RC-2 скопированы.\n Выбрерите разде куда вставить МСГ";
+
+            }
+            groupCommands.Label = commands_group_label;
+        }
+     
+        private void btnCopyRCWork_Click(object sender, RibbonControlEventArgs e)
+        {
+            CopyedObjectsList.Clear();
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(RCWork)).Where(ob=>!CopyedObjectsList.Contains(ob));
+            if (sected_objects != null)
+            {
+                foreach (var obj in sected_objects)
+                    CopyedObjectsList.Add((RCWork)obj.Clone()); ;
+
+                buttonPaste.Enabled = true;
+                commands_group_label = $"ТУВР скопированы.\n Выбрерите разде куда вставить МСГ";
+
+            }
+            groupCommands.Label = commands_group_label;
+        }
+
+       
     }
 
 }

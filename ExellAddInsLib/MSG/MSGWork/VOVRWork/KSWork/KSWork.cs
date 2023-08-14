@@ -104,16 +104,18 @@ namespace ExellAddInsLib.MSG
             int ks_work_col = row;
             var ks_work_range = ks_work.GetRange(KS_LABOURNESS_COL);
             ks_work_range.Interior.ColorIndex = ks_work_col;
-            int last_row = ks_work_range.Row;
-            Excel.Range rc_works_range =  ks_work.RCWorks.GetRange();
-            if (rc_works_range == null)
-                ks_work.RCWorks.GetRange();
+            
+            Excel.Range rc_works_range = ks_work.RCWorks.GetRange();
             rc_works_range.SetBordersBoldLine(XlLineStyle.xlDouble);
             rc_works_range.Interior.ColorIndex = ks_work_col;
-            ks_work_range.SetBordersBoldLine(XlLineStyle.xlLineStyleNone);
+            //if (rc_works_range == null)
+             //   ks_work.RCWorks.GetRange();
+            
             foreach (RCWork rc_work in ks_work.RCWorks)
-                if(rc_work.ReportCard!=null) rc_work.ReportCard.SetStyleFormats(ks_work_col);
-           // ks_work_range.SetBordersBoldLine(XlLineStyle.xlLineStyleNone);
+                if (rc_work.ReportCard != null)
+                    rc_work.ReportCard.SetStyleFormats(ks_work_col);
+         
+            ks_work_range.SetBordersBoldLine(XlLineStyle.xlLineStyleNone);
         }
         public override Range GetRange()
         {

@@ -184,7 +184,7 @@ namespace ExellAddInsLib.MSG
             if (item is IExcelBindableBase excel_bindable_element/* && !excel_bindable_element.Owners.Contains(this)*/)
             {
                 excel_bindable_element.Owner = this.Owner;
-               
+
                 foreach (var kvp in excel_bindable_element.CellAddressesMap)
                 {
                     string key_str = $"{excel_bindable_element.Id}_{kvp.Value.ProprertyName}";
@@ -256,20 +256,23 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Range range = null;
             Excel.Worksheet worksheet = this.Worksheet;
-            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name/*&& cm.Key.Contains('_')*/); //Выбираем записи элементов коллекции
+            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name && !cm.Key.Contains('_')); //Выбираем записи элементов коллекции
             if (cell_maps.Any())
             {
-                var lu = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).First().Value;
-                var rl = cell_maps.OrderBy(c => c.Value.Column).OrderBy(c => c.Value.Row).Last().Value;
                 var left_upper_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).First().Value.Cell;
                 var rigth_lower_cell = cell_maps.OrderBy(c => c.Value.Column).OrderBy(c => c.Value.Row).Last().Value.Cell;
                 range = worksheet.Range[left_upper_cell, rigth_lower_cell];
             }
+
             foreach (T itm in this)
             {
                 Excel.Range rg = itm.GetRange();
                 if (rg != null)
-                    range = Worksheet.Application.Union(range, rg);
+                {
+                    if (range == null) range = rg;
+                    else
+                        range = Worksheet.Application.Union(range, rg);
+                }
             }
 
             return range;
