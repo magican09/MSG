@@ -52,7 +52,8 @@ namespace ExellAddInsLib.MSG
                         local_register.ExellPropAddress = notified_object.CellAddressesMap[prop_name];
                     else
                     {
-                        local_register.ExellPropAddress = new ExellPropAddress(row, column, worksheet, prop_name);
+                        Type prop_type = notified_object.GetType().GetProperty(prop_names[0]).PropertyType;
+                        local_register.ExellPropAddress = new ExellPropAddress(row, column, worksheet, prop_type, prop_name);
                         local_register.ExellPropAddress.Owner = notified_object;
                         notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
                     }

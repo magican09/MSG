@@ -342,7 +342,10 @@ namespace ExellAddInsLib.MSG
             {
                 var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
                 if (val != null)
-                    kvp.Value.Cell.Value = val.ToString();
+                {
+                    kvp.Value.Cell.Value = val;
+                    
+                }
             }
         }
         private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
@@ -363,10 +366,11 @@ namespace ExellAddInsLib.MSG
                 else if (prop_value != null && prop_value.GetType().FullName.Contains("System."))
                 {
 
-                    if (prop_value is DateTime date_val)
-                        return date_val.ToString("d");
-                    else
-                        return prop_value.ToString();
+                    //if (prop_value is DateTime date_val)
+                    //    return date_val.ToString("d");
+                    //else
+                    //    return prop_value.ToString();
+                    return prop_value;
                 }
                 else
                     return "";

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Office.Interop.Excel;
+using System;
+using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -46,13 +48,31 @@ namespace ExellAddInsLib.MSG
         {
 
         }
-        public ExellPropAddress(int row, int column, Excel.Worksheet worksheet, string prop_name = "")//,)
+        public ExellPropAddress(int row, int column, Excel.Worksheet worksheet, Type val_type, string prop_name = "")
         {
             Row = row;
             Column = column;
             Worksheet = worksheet;
             ProprertyName = prop_name;
             this.Cell.Interior.Color = XlRgbColor.rgbGreenYellow;
+
+         
+            if (val_type == typeof(int) || val_type == typeof(double) || val_type == typeof(decimal))
+            {
+                Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
+               this.Cell.NumberFormat = $"0.00";
+            }
+            if (val_type == typeof(DateTime))
+            {
+                Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
+                this.Cell.NumberFormat = $"mm.dd.yyyy";
+            }
+            if (val_type == typeof(string))
+            {
+                this.Cell.NumberFormat = $"@";
+            }
+           
+
 
         }
         public ExellPropAddress(ExellPropAddress ex_addr)
