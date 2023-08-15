@@ -95,7 +95,7 @@ namespace ExellAddInsLib.MSG
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при геристрации объектов в MSGExelModel: {ex.Message}");
+                MessageBox.Show($"Ошибка при регистрации объектов в MSGExelModel. MSHExcelModel.Register(..): {ex.Message}");
             }
 
         }

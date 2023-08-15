@@ -57,7 +57,7 @@ namespace ExellAddInsLib.MSG
                 }
                 catch
                 {
-                    return null;
+                    throw new Exception($"Ошибка при получении свойства ExelBindableBase.NumberPrfix:{this.ToString()}:{this.Number}");
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace ExellAddInsLib.MSG
                 }
                 catch
                 {
-                    return null;
+                    throw new Exception($"Ошибка при получении свойства ExelBindableBase.NumberSuffix:{this.ToString()}:{this.Number}");
                 }
             }
         }

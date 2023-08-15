@@ -77,9 +77,10 @@ namespace ExellAddInsLib.MSG
                     }
                     else return null;
                 }
-                catch
+                catch(Exception exp)
                 {
-                    return null;
+                    throw new Exception($"Ошибка при получении свойства  ExcelNotifyChangedCollection<T>..NumberPrefix:{this.ToString()}:{this.Number}.Ошибка:{exp.Message}");
+
                 }
 
             }
@@ -97,9 +98,9 @@ namespace ExellAddInsLib.MSG
                     }
                     else return null;
                 }
-                catch
+                catch(Exception exp)
                 {
-                    return null;
+                    throw new Exception($"Ошибка при получении свойства ExcelNotifyChangedCollection<T>.NumberSuffix.{this.ToString()}:{this.Number}.Ошибка:{exp.Message}");
                 }
             }
         }

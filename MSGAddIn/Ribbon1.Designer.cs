@@ -46,7 +46,6 @@
             this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
             this.bntChangeEmployerMSG = this.Factory.CreateRibbonButton();
             this.groupMSGCommon = this.Factory.CreateRibbonGroup();
-            this.btnCalcAll = this.Factory.CreateRibbonButton();
             this.buttonCalc = this.Factory.CreateRibbonButton();
             this.separator2 = this.Factory.CreateRibbonSeparator();
             this.btnCalcLabournes = this.Factory.CreateRibbonButton();
@@ -176,19 +175,11 @@
             // 
             // groupMSGCommon
             // 
-            this.groupMSGCommon.Items.Add(this.btnCalcAll);
             this.groupMSGCommon.Items.Add(this.buttonCalc);
             this.groupMSGCommon.Items.Add(this.separator2);
             this.groupMSGCommon.Items.Add(this.btnCalcLabournes);
             this.groupMSGCommon.Label = "Расчеты";
             this.groupMSGCommon.Name = "groupMSGCommon";
-            // 
-            // btnCalcAll
-            // 
-            this.btnCalcAll.Enabled = false;
-            this.btnCalcAll.Label = "ПЕРЕСЧИТАТЬ ВСЕ";
-            this.btnCalcAll.Name = "btnCalcAll";
-            this.btnCalcAll.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCalcAll_Click);
             // 
             // buttonCalc
             // 
@@ -448,7 +439,6 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupMSGCommon;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCalcLabournes;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCalcAll;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup grpInChargePersons;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnSelectPerson;
         internal Microsoft.Office.Tools.Ribbon.RibbonComboBox comboBoxEmployerName;

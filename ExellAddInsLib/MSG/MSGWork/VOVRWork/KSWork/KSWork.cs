@@ -118,7 +118,7 @@ namespace ExellAddInsLib.MSG
             }
 
 
-            ks_work_range.SetBordersLine(XlLineStyle.xlLineStyleNone);
+            ks_work_range.SetBordersLine(XlLineStyle.xlDashDot);
         }
         public override Range GetRange()
         {

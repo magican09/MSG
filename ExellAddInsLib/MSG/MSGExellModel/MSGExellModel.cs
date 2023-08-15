@@ -1456,9 +1456,9 @@ namespace ExellAddInsLib.MSG
                 ks_colomns.Group();
                 vovr_colomns.Group();
             }
-            catch
+            catch(Exception exp)
             {
-
+                throw new Exception($"Ошибка при группировке стобцов документа. Метод MSGExcelModel.SetStyleFormats(..). {this.ToString()}: {this.Number}.Ошибка:{exp.Message}");
             }
 
         }
@@ -2020,9 +2020,9 @@ namespace ExellAddInsLib.MSG
                 common_area_range.ClearContents();
                 record_cards_area_range.ClearContents();
             }
-            catch
+            catch(Exception exp)
             {
-
+                throw new Exception($"Ошибка при очистке листа.Ошибка:{exp.Message}") ;
             }
 
             this.RemoveGroups(this.RegisterSheet);
@@ -2035,19 +2035,22 @@ namespace ExellAddInsLib.MSG
         public void RemoveGroups(Excel.Worksheet worksheet)
         {
             Excel.Range all_rows = worksheet.Cells.Rows;
-            Excel.Range all_colomns = worksheet.Cells.Columns;
+            Excel.Range all_colomns = worksheet.Cells;
+         
 
 
             for (int ii = 0; ii < 5; ii++)
                 try
                 {
-                    all_rows.Select();
+                //    all_rows.Select();
                     all_rows.Ungroup();
-                    all_colomns.Select();
+                //    all_colomns.Select();
                     all_colomns.Ungroup();
+              
                 }
-                catch
+                catch(Exception exp)
                 {
+              //      throw new Exception($"Ошибка при удалении всех группировок. Ошибка:{exp.Message}");
                 }
         }
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -99,13 +100,12 @@ namespace ExellAddInsLib.MSG.Section
             {
                 var section_full_range = section.GetRange();
                 var lowest_edge_range = section_full_range.GetRangeWithLowestEdge();
-                // Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _SECTIONS_GAP]];
                 Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _SECTIONS_GAP]];
                 range.Group();
             }
-            catch
+            catch(Exception exp)
             {
-
+                throw new Exception($"Ошибка при группировки раздела.{section.ToString()}:{section.Number}.Ошибка:{exp.Message}");
             }
 
         }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -195,24 +196,17 @@ namespace ExellAddInsLib.MSG
                     vovr_work.SetStyleFormats(vovr_work_col++);
             }
 
-
-
-
             try
             {
                 var msg_work_full_range = msg_work.GetRange();
                 Excel.Range lowest_edge_range = msg_work_full_range.GetRangeWithLowestEdge();
                 Excel.Range range = Worksheet.Range[Worksheet.Rows[msg_work_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _MSG_WORKS_GAP]];
                 range.Group();
-
             }
-            catch
+            catch(Exception exp)
             {
-
+                throw new Exception($"Ошибка при группировки МСГ работы.{msg_work.ToString()}:{msg_work.Number}.Ошибка:{exp.Message}.Ошибка:{exp.Message}");
             }
-
-
-
         }
 
         public override Range GetRange()
