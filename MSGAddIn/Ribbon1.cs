@@ -140,7 +140,7 @@ namespace MSGAddIn
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
-            try
+           // try
             {
                 CurrentWorkbook = Globals.ThisAddIn.CurrentActivWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -176,18 +176,18 @@ namespace MSGAddIn
                 this.ReloadAllModels();
 
                 CurrentMSGExellModel = CommonMSGExellModel;
-                labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode.Substring(0, 15)}\n" +
-                                        $"Объект:{CurrentMSGExellModel.ContructionObjectCode.Substring(0, 15)}\n " +
-                                        $"Подобъект:{CurrentMSGExellModel.ConstructionSubObjectCode.Substring(0, 15)}";
+                labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
+                                        $"Объект:{CurrentMSGExellModel.ContructionObjectCode}\n " +
+                                        $"Подобъект:{CurrentMSGExellModel.ConstructionSubObjectCode}";
 
                 this.SetBtnsState(true);
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-            catch (Exception exp)
-            {
-                MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
-            }
+            //catch (Exception exp)
+            //{
+            //    MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
+            //}
 
         }
 

@@ -529,10 +529,11 @@ namespace ExellAddInsLib.MSG
                         msg_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
 
                     var labourness = registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL].Value;
-                    if (labourness != null)
-                        msg_work.Laboriousness = Decimal.Parse(labourness.ToString());
-                    else
-                        msg_work.CellAddressesMap["Laboriousness"].IsValid = false;
+                 
+                    //if (labourness != null)
+                    //    msg_work.Laboriousness = Decimal.Parse(labourness.ToString());
+                    //else
+                    //    msg_work.CellAddressesMap["Laboriousness"].IsValid = false;
 
                     DateTime start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
                     DateTime end_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_END_DATE_COL].Value.ToString());
@@ -785,10 +786,10 @@ namespace ExellAddInsLib.MSG
                         vovr_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
 
                     var labouriosness = registerSheet.Cells[rowIndex, VOVR_LABOURNESS_COL].Value;
-                    if (labouriosness != null)
-                        vovr_work.Laboriousness = Decimal.Parse(labouriosness.ToString());
-                    else
-                        vovr_work.CellAddressesMap["Laboriousness"].IsValid = false;
+                    //if (labouriosness != null)
+                    //    vovr_work.Laboriousness = Decimal.Parse(labouriosness.ToString());
+                    //else
+                    //    vovr_work.CellAddressesMap["Laboriousness"].IsValid = false;
 
                     if (!this.VOVRWorks.Contains(vovr_work))
                         this.VOVRWorks.Add(vovr_work);
