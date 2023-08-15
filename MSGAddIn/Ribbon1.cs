@@ -581,6 +581,7 @@ namespace MSGAddIn
             }
         }
         #region Выгрузка данных в файл МСГ шаблона
+      
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
             //  string solutionpath = Directory.GetParent(Globals.ThisAddIn.Application.Path).Parent.Parent.Parent.FullName; 
@@ -588,7 +589,7 @@ namespace MSGAddIn
             {
                 OpenFileDialog openFileDialog1 = new OpenFileDialog
                 {
-                    InitialDirectory = @"D:\",
+                    InitialDirectory = @"С:\",
                     Title = "Browse Text Files",
 
                     CheckFileExists = true,
@@ -943,7 +944,8 @@ namespace MSGAddIn
             // MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
 
             #endregion
-            MSGTemplateWorkbook.SaveAs(@"D:\1234.xlsx");
+            
+            MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{CurrentMSGExellModel.ContractCode}.xlsx");
             MSGTemplateWorkbook.Close();
         }
 
