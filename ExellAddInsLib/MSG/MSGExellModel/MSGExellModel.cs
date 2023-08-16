@@ -1526,7 +1526,7 @@ namespace ExellAddInsLib.MSG
                                     this.Register(rc_work.ReportCard, "Number", rc_work.CellAddressesMap["Number"].Row, WRC_NUMBER_COL, this.RegisterSheet);
                                     this.Register(rc_work.ReportCard, "PreviousComplatedQuantity", rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL, this.RegisterSheet);
                                     rc_work.ReportCard.Number = rc_work.Number;
-                                    tmp_first_rc_card_days_row.Copy();
+                                    if(this.Owner == null) tmp_first_rc_card_days_row.Copy();
                                 
                                 }
 
