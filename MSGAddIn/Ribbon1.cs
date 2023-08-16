@@ -28,7 +28,7 @@ namespace MSGAddIn
         private const int UM_NUMBER_COL = 1;
         private const int UM_NAME_COL = 2;
 
-      
+
         MSGExellModel CurrentMSGExellModel;
         MSGExellModel CommonMSGExellModel;
         ObservableCollection<MSGExellModel> MSGExellModels = new ObservableCollection<MSGExellModel>();
@@ -49,13 +49,15 @@ namespace MSGAddIn
         Excel.Worksheet CommonMSGWorksheet;
         Excel.Worksheet CommonWorkConsumptionsWorksheet;
         Excel.Worksheet CommonMachineConsumptionsWorksheet;
-        Excel.Worksheet TemplateMSGWorksheet;
+        Excel.Worksheet GuidWorksheet;
+
+        public Guid Workbook_Guid { get; set; }
 
         ObservableCollection<Excel.Worksheet> EmployerMSGWorksheets = new ObservableCollection<Worksheet>();
         ObservableCollection<Excel.Worksheet> EmployerWorkConsumptionsWorksheets = new ObservableCollection<Worksheet>();
         ObservableCollection<Excel.Worksheet> MachineMSGWorksheets = new ObservableCollection<Worksheet>();
         ObservableCollection<Excel.Worksheet> MachineConsumptionsWorksheets = new ObservableCollection<Worksheet>();
-
+       
         Employer SelectedEmloeyer;
         private bool InMSGWorkbook = false;
         private void OnActiveWorkbookChanged(Workbook last_wbk, Workbook new_wbk)
@@ -66,38 +68,39 @@ namespace MSGAddIn
             UnitMeasurementsWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Ед_изм");
             PostsWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Должности");
             EmployersWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Ответственные");
+            GuidWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == $"Guid_{Workbook_Guid.ToString().Split('-')[0]}");
+
             MachinesWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Машины_механизмы");
-            if (CommonMSGWorksheet != null && CommonWorksheet != null && UnitMeasurementsWorksheet != null && PostsWorksheet != null && EmployersWorksheet != null)
+            if (CommonMSGWorksheet != null && CommonWorksheet != null
+                && UnitMeasurementsWorksheet != null
+                && PostsWorksheet != null
+                && EmployersWorksheet != null && GuidWorksheet == null && Workbook_Guid == Guid.Empty)
             {
-                InMSGWorkbook = true;
+                this.SetApplicationGroupsVisibility(false);
                 groupFileLaod.Visible = true;
-                groupMSGCommon.Visible = true;
-                grpInChargePersons.Visible = true;
-
-                groupCommands.Visible = true;
-                groupMSG_OUT.Visible = true;
-                groupInfo.Visible = true;
-
-                if (CurrentMSGExellModel != null && CurrentMSGExellModel.ContractCode ==
-                    CommonWorksheet.Cells[MSGExellModel.CONTRACT_CODE_ROW, MSGExellModel.COMMON_PARAMETRS_VALUE_COL].Value.ToString())
-                {
-                    this.ShowWorksheet(CurrentMSGExellModel.RegisterSheet);
-                    this.AjastBtnsState();
-                }
-
+                return;
             }
+
+            if (CommonMSGWorksheet != null && CommonWorksheet != null
+               && UnitMeasurementsWorksheet != null
+               && PostsWorksheet != null
+               && EmployersWorksheet != null && GuidWorksheet != null)
+                this.SetApplicationGroupsVisibility(true);
             else
-            {
-                InMSGWorkbook = false;
-                groupFileLaod.Visible = false;
-                groupMSGCommon.Visible = false;
-                grpInChargePersons.Visible = false;
-                groupCommands.Visible = false;
-                groupMSG_OUT.Visible = false;
-                groupInfo.Visible = false;
-                this.SetBtnsState(false);
-            }
+                this.SetApplicationGroupsVisibility(false);
         }
+
+        private void SetApplicationGroupsVisibility(bool visibility)
+        {
+            groupFileLaod.Visible = visibility;
+            InMSGWorkbook = visibility;
+            groupMSGCommon.Visible = visibility;
+            grpInChargePersons.Visible = visibility;
+            groupCommands.Visible = visibility;
+            groupMSG_OUT.Visible = visibility;
+            groupInfo.Visible = visibility;
+        }
+
         private void OnActiveWorksheetChanged(Excel.Worksheet last_wsh, Excel.Worksheet new_wsh)
         {
             if (InMSGWorkbook)
@@ -112,13 +115,56 @@ namespace MSGAddIn
 
 
         }
+        private void OnBeforeCloseWorkbookChanged(Workbook Wb, ref bool Cancel)
+        {
+            if (CommonMSGWorksheet != null && CommonWorksheet != null
+                && UnitMeasurementsWorksheet != null
+                && PostsWorksheet != null
+                && EmployersWorksheet != null && GuidWorksheet != null)
+            {
+                EmployersWorksheet = null;
+                MachinesWorksheet = null;
+                PostsWorksheet = null;
+                UnitMeasurementsWorksheet = null;
+                CommonWorksheet = null;
+                CommonMSGWorksheet = null;
+                CommonWorkConsumptionsWorksheet = null;
+                CommonMachineConsumptionsWorksheet = null;
+
+                EmployerWorkConsumptionsWorksheets.Clear();
+                EmployerMSGWorksheets.Clear();
+                MachineMSGWorksheets.Clear();
+                MachineConsumptionsWorksheets.Clear();
+
+                this.Employers.Clear();
+                this.Machines.Clear();
+                this.UnitOfMeasurements.Clear();
+                ///Загрузка всех  листов
+
+
+                this.MSGExellModels.Clear();
+                CommonMSGExellModel = null;
+
+                CurrentMSGExellModel = null;
+
+                labelConractCode.Label = $"";
+                this.SetApplicationGroupsVisibility(false);
+                groupFileLaod.Visible = true;
+                Workbook_Guid = Guid.Empty;
+            }
+           
+        }
 
         private void Ribbon1_Load(object sender, RibbonUIEventArgs e)
         {
             Globals.ThisAddIn.OnActiveWorksheetChanged += OnActiveWorksheetChanged;
             Globals.ThisAddIn.OnActiveWorkbookChanged += OnActiveWorkbookChanged;
+            Globals.ThisAddIn.OnBeforeCloseWorkbookChanged += OnBeforeCloseWorkbookChanged;
 
         }
+
+       
+
         private void SetBtnsState(bool state)
         {
             btnUpdateAll.Enabled = state;
@@ -179,8 +225,17 @@ namespace MSGAddIn
                             EmployerWorkConsumptionsWorksheets.Add(worksheet);
                         else if (worksheet.Name.Contains("Техника_"))
                             MachineConsumptionsWorksheets.Add(worksheet);
+                        else if (worksheet.Name.Contains("Guid_"))
+                        {
+                            GuidWorksheet = worksheet;
+                            Workbook_Guid = Guid.NewGuid();
+                            GuidWorksheet.Name = $"Guid_{Workbook_Guid.ToString().Split('-')[0]}";
+                            GuidWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+                            this.SetApplicationGroupsVisibility(true);
+                        }
                     }
                 }
+
 
                 this.ReloadAllModels();
 
@@ -195,9 +250,9 @@ namespace MSGAddIn
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-          //  catch (Exception exp)
+            //  catch (Exception exp)
             {
-             //   MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
+                //   MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
             }
 
         }

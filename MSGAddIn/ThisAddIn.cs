@@ -1,15 +1,19 @@
 ﻿using Microsoft.Office.Interop.Excel;
+using System;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace MSGAddIn
 {
     public delegate void ActiveWorksheetChangedEventHeandler(Excel.Worksheet last_wsh, Excel.Worksheet new_wsh);
     public delegate void ActiveWorkbookChangedEventHeandler(Excel.Workbook last_wbk, Excel.Workbook new_wbk);
+    public delegate void WorkbookBeforeCloseChangedEventHeandler(Workbook Wb, ref bool Cancel);
 
     public partial class ThisAddIn
     {
         public event ActiveWorksheetChangedEventHeandler OnActiveWorksheetChanged;
         public event ActiveWorkbookChangedEventHeandler OnActiveWorkbookChanged;
+        public event WorkbookBeforeCloseChangedEventHeandler OnBeforeCloseWorkbookChanged;
+
         private Excel.Worksheet _currentActiveWorkSheet;
 
         public Excel.Worksheet CurrentActiveWorksheet
@@ -40,6 +44,12 @@ namespace MSGAddIn
         {
             this.Application.SheetActivate += Application_SheetActivate;
             this.Application.WorkbookActivate += Application_WorkbookActivate;
+            this.Application.WorkbookBeforeClose += Application_WorkbookBeforeClose;
+        }
+
+        private void Application_WorkbookBeforeClose(Workbook Wb, ref bool Cancel)
+        {
+            OnBeforeCloseWorkbookChanged?.Invoke(Wb, ref Cancel);
         }
 
         private void Application_WorkbookActivate(Excel.Workbook Wb)
