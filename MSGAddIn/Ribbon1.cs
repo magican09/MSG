@@ -1,5 +1,4 @@
 ﻿using ExellAddInsLib.MSG;
-using ExellAddInsLib.MSG.Section;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Ribbon;
 using System;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
-namespace ExellAddInsLib.MSG.Section
+namespace ExellAddInsLib.MSG
 {
     public class WorksSection : ExcelBindableBase
     {
