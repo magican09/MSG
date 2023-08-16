@@ -1279,7 +1279,7 @@ namespace ExellAddInsLib.MSG
                         this.WorkReportCards.Remove(rc);
                     }
                 }
-                
+
             }
 
             foreach (MSGWork msg_work in this.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
@@ -1459,7 +1459,7 @@ namespace ExellAddInsLib.MSG
                 ks_colomns.Group();
                 vovr_colomns.Group();
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
                 throw new Exception($"Ошибка при группировке стобцов документа. Метод MSGExcelModel.SetStyleFormats(..). {this.ToString()}: {this.Number}.Ошибка:{exp.Message}");
             }
@@ -1516,8 +1516,7 @@ namespace ExellAddInsLib.MSG
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
                             string rc_works_labourness_sum_formula = "";
-                            if (this.Owner == null) tmp_first_rc_card_days_row.Copy();
-
+                               if (this.Owner == null) tmp_first_rc_card_days_row.Copy();
                             foreach (RCWork rc_work in ks_work.RCWorks)
                             {
                                 if (rc_work.ReportCard == null)
@@ -1527,6 +1526,8 @@ namespace ExellAddInsLib.MSG
                                     this.Register(rc_work.ReportCard, "Number", rc_work.CellAddressesMap["Number"].Row, WRC_NUMBER_COL, this.RegisterSheet);
                                     this.Register(rc_work.ReportCard, "PreviousComplatedQuantity", rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL, this.RegisterSheet);
                                     rc_work.ReportCard.Number = rc_work.Number;
+                                    tmp_first_rc_card_days_row.Copy();
+                                
                                 }
 
                                 var first_cell = this.RegisterSheet.Cells[rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
@@ -1536,10 +1537,12 @@ namespace ExellAddInsLib.MSG
 
                                 if (this.Owner == null)
                                 {
-                                     Excel.Range w_days_row_range = this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
-                                 //   Excel.Range w_days_row_range = this.RegisterSheet.Range[first_cell, lastt_cell];
-                                    if (tmp_first_rc_card_days_row != null)
-                                        w_days_row_range.PasteSpecial();
+                                    Excel.Range w_days_row_range = this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
+                                    if (tmp_first_rc_card_days_row != null && this.Owner == null)
+                                    {
+                                //        tmp_first_rc_card_days_row.Copy();
+                                        w_days_row_range.PasteSpecial(XlPasteType.xlPasteAll);
+                                    }
                                 }
                                 rc_works_labourness_sum_formula +=
                                        $"{Func.RangeAddress(rc_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(rc_work.CellAddressesMap["Laboriousness"].Cell)}+";
@@ -2024,10 +2027,11 @@ namespace ExellAddInsLib.MSG
 
                 common_area_range.ClearContents();
                 record_cards_area_range.ClearContents();
+
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
-                throw new Exception($"Ошибка при очистке листа.Ошибка:{exp.Message}") ;
+                throw new Exception($"Ошибка при очистке листа.Ошибка:{exp.Message}");
             }
 
             this.RemoveGroups(this.RegisterSheet);
@@ -2041,21 +2045,21 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Range all_rows = worksheet.Cells.Rows;
             Excel.Range all_colomns = worksheet.Cells;
-         
+
 
 
             for (int ii = 0; ii < 5; ii++)
                 try
                 {
-                //    all_rows.Select();
+                    //    all_rows.Select();
                     all_rows.Ungroup();
-                //    all_colomns.Select();
+                    //    all_colomns.Select();
                     all_colomns.Ungroup();
-              
+
                 }
-                catch(Exception exp)
+                catch (Exception exp)
                 {
-              //      throw new Exception($"Ошибка при удалении всех группировок. Ошибка:{exp.Message}");
+                    //      throw new Exception($"Ошибка при удалении всех группировок. Ошибка:{exp.Message}");
                 }
         }
         /// <summary>

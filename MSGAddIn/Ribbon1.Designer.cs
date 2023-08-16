@@ -75,7 +75,7 @@
             this.btnCreateTemplateFile = this.Factory.CreateRibbonButton();
             this.checkBoxRerightDatePart = this.Factory.CreateRibbonCheckBox();
             this.separator3 = this.Factory.CreateRibbonSeparator();
-            this.group2 = this.Factory.CreateRibbonGroup();
+            this.groupInfo = this.Factory.CreateRibbonGroup();
             this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
@@ -86,7 +86,7 @@
             this.groupCommands.SuspendLayout();
             this.grpInChargePersons.SuspendLayout();
             this.groupMSG_OUT.SuspendLayout();
-            this.group2.SuspendLayout();
+            this.groupInfo.SuspendLayout();
             this.SuspendLayout();
             // 
             // tab1
@@ -96,7 +96,7 @@
             this.tab1.Groups.Add(this.groupCommands);
             this.tab1.Groups.Add(this.grpInChargePersons);
             this.tab1.Groups.Add(this.groupMSG_OUT);
-            this.tab1.Groups.Add(this.group2);
+            this.tab1.Groups.Add(this.groupInfo);
             this.tab1.Label = "МСГ";
             this.tab1.Name = "tab1";
             // 
@@ -329,18 +329,21 @@
             // 
             // btnChangeEmployers
             // 
+            this.btnChangeEmployers.Enabled = false;
             this.btnChangeEmployers.Label = "Отвественные";
             this.btnChangeEmployers.Name = "btnChangeEmployers";
             this.btnChangeEmployers.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeEmployers_Click);
             // 
             // btnChangePosts
             // 
+            this.btnChangePosts.Enabled = false;
             this.btnChangePosts.Label = "Должности";
             this.btnChangePosts.Name = "btnChangePosts";
             this.btnChangePosts.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangePosts_Click);
             // 
             // btnChangeUOM
             // 
+            this.btnChangeUOM.Enabled = false;
             this.btnChangeUOM.Label = "Ед.изм.";
             this.btnChangeUOM.Name = "btnChangeUOM";
             this.btnChangeUOM.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeUOM_Click);
@@ -352,6 +355,7 @@
             // 
             // btnMachines
             // 
+            this.btnMachines.Enabled = false;
             this.btnMachines.Label = "Техника";
             this.btnMachines.Name = "btnMachines";
             this.btnMachines.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnMachines_Click);
@@ -382,13 +386,13 @@
             // 
             this.separator3.Name = "separator3";
             // 
-            // group2
+            // groupInfo
             // 
-            this.group2.Items.Add(this.btnShowAlllHidenWorksheets);
-            this.group2.Items.Add(this.labelConractCode);
-            this.group2.Items.Add(this.labelCurrentEmployerName);
-            this.group2.Label = "Вспомогательные";
-            this.group2.Name = "group2";
+            this.groupInfo.Items.Add(this.btnShowAlllHidenWorksheets);
+            this.groupInfo.Items.Add(this.labelConractCode);
+            this.groupInfo.Items.Add(this.labelCurrentEmployerName);
+            this.groupInfo.Label = "Вспомогательные";
+            this.groupInfo.Name = "groupInfo";
             // 
             // btnShowAlllHidenWorksheets
             // 
@@ -428,8 +432,8 @@
             this.grpInChargePersons.PerformLayout();
             this.groupMSG_OUT.ResumeLayout(false);
             this.groupMSG_OUT.PerformLayout();
-            this.group2.ResumeLayout(false);
-            this.group2.PerformLayout();
+            this.groupInfo.ResumeLayout(false);
+            this.groupInfo.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -444,7 +448,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonComboBox comboBoxEmployerName;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeEmployers;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangePosts;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group2;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupInfo;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnShowAlllHidenWorksheets;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeUOM;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton bntChangeEmployerMSG;

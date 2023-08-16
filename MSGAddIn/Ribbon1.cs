@@ -29,8 +29,7 @@ namespace MSGAddIn
         private const int UM_NUMBER_COL = 1;
         private const int UM_NAME_COL = 2;
 
-        bool first_start_flag = true;
-
+      
         MSGExellModel CurrentMSGExellModel;
         MSGExellModel CommonMSGExellModel;
         ObservableCollection<MSGExellModel> MSGExellModels = new ObservableCollection<MSGExellModel>();
@@ -76,6 +75,10 @@ namespace MSGAddIn
                 groupMSGCommon.Visible = true;
                 grpInChargePersons.Visible = true;
 
+                groupCommands.Visible = true;
+                groupMSG_OUT.Visible = true;
+                groupInfo.Visible = true;
+
                 if (CurrentMSGExellModel != null && CurrentMSGExellModel.ContractCode ==
                     CommonWorksheet.Cells[MSGExellModel.CONTRACT_CODE_ROW, MSGExellModel.COMMON_PARAMETRS_VALUE_COL].Value.ToString())
                 {
@@ -90,6 +93,9 @@ namespace MSGAddIn
                 groupFileLaod.Visible = false;
                 groupMSGCommon.Visible = false;
                 grpInChargePersons.Visible = false;
+                groupCommands.Visible = false;
+                groupMSG_OUT.Visible = false;
+                groupInfo.Visible = false;
                 this.SetBtnsState(false);
             }
         }
@@ -131,6 +137,10 @@ namespace MSGAddIn
             menuKS.Enabled = state;
             menuRC.Enabled = state;
             buttonPaste.Enabled = state;
+            btnChangeEmployers.Enabled = state;
+            btnChangePosts.Enabled = state;
+            btnChangeUOM.Enabled = state;
+            btnMachines.Enabled = state;
 
         }
         private void AjastBtnsState()
@@ -140,7 +150,7 @@ namespace MSGAddIn
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
-           // try
+            try
             {
                 CurrentWorkbook = Globals.ThisAddIn.CurrentActivWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -176,18 +186,20 @@ namespace MSGAddIn
                 this.ReloadAllModels();
 
                 CurrentMSGExellModel = CommonMSGExellModel;
+                //labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
+                //                        $"Объект:{CurrentMSGExellModel.ContructionObjectCode}\n " +
+                //                        $"Подобъект:{CurrentMSGExellModel.ConstructionSubObjectCode}";
                 labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
-                                        $"Объект:{CurrentMSGExellModel.ContructionObjectCode}\n " +
-                                        $"Подобъект:{CurrentMSGExellModel.ConstructionSubObjectCode}";
+                                        $"Объект:{CurrentMSGExellModel.ContructionObjectCode}";
 
                 this.SetBtnsState(true);
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-            //catch (Exception exp)
-            //{
-            //    MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
-            //}
+            catch (Exception exp)
+            {
+                MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
+            }
 
         }
 
@@ -205,7 +217,7 @@ namespace MSGAddIn
                 CommonMSGWorksheet.Activate();
 
                 btnCalcLabournes.Enabled = true;
-               
+
                 btnLoadFromModel.Enabled = true;
                 menuSection.Enabled = true;
                 btnCreateTemplateFile.Enabled = true;
@@ -551,15 +563,15 @@ namespace MSGAddIn
 
         private void btnLoadFromModel_Click(object sender, RibbonControlEventArgs e)
         {
-//try
+            try
             {
                 CurrentMSGExellModel.UpdateExcelRepresetation();
                 CurrentMSGExellModel.SetFormulas();
                 CurrentMSGExellModel.SetStyleFormats();
             }
-        //    catch (Exception exp)
+            catch (Exception exp)
             {
-        //        MessageBox.Show($"Ошибка при выгрузке данных из модели в документ. Ошибка:{exp.Message}");
+                MessageBox.Show($"Ошибка при выгрузке данных из модели в документ. Ошибка:{exp.Message}");
             }
         }
         private void btnUpdateAll_Click(object sender, RibbonControlEventArgs e)
@@ -581,7 +593,7 @@ namespace MSGAddIn
             }
         }
         #region Выгрузка данных в файл МСГ шаблона
-      
+
         private void btnLoadTeplateFile_Click(object sender, RibbonControlEventArgs e)
         {
             //  string solutionpath = Directory.GetParent(Globals.ThisAddIn.Application.Path).Parent.Parent.Parent.FullName; 
@@ -944,7 +956,7 @@ namespace MSGAddIn
             // MSGNeedsTemplateWorksheet.Visible = XlSheetVisibility.xlSheetVisible;
 
             #endregion
-            
+
             MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{CurrentMSGExellModel.ContractCode}.xlsx");
             MSGTemplateWorkbook.Close();
         }
@@ -1218,7 +1230,7 @@ namespace MSGAddIn
 
                     msg_work.AdjustExcelRepresentionTree(rowIndex);
                     msg_work.UpdateExcelRepresetation();
-                    msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR+1);
+                    msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
                 }
             }
         }
