@@ -62,29 +62,13 @@ namespace ExellAddInsLib.MSG
             int rc_row = row;
             rc_work.ChangeTopRow(rc_row);
             ///Находимо работы с таким же номером и помещаем их ниже 
-           // var duple_rc_works = this.RCWorks.Where(rcw => rcw.Number == rc_work.Number && rcw.Id != rc_work.Id).ToList();
             int rc_work_cuont = 0;
-            //foreach (var rcw in duple_rc_works)
-            //{
-            //    rc_work_cuont++;
-            //    rcw.ChangeTopRow(rc_row + rc_work_cuont);
-            //}
-
+    
             if (rc_work.ReportCard != null)
             {
-                //   var duple_rc_work_rc = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number && rc.Id != rc_work.ReportCard.Id).ToList();
                 int rc_card_count = 0;
                 rc_work.ReportCard.AdjustExcelRepresentionTree(rc_row);
-                //foreach (WorkReportCard rc in duple_rc_work_rc)
-                //{
-                //    rc_card_count++;
-                //    rc.ChangeTopRow(rc_row + rc_card_count);
-                //    foreach (WorkDay w_day in rc)
-                //    {
-                //        w_day.ChangeTopRow(rc_work.CellAddressesMap["Number"].Row);
-                //    }
-                //}
-
+               
                 if (rc_work_cuont > rc_card_count)
                     rc_row += rc_work_cuont;
                 else

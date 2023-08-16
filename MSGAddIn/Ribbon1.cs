@@ -551,15 +551,15 @@ namespace MSGAddIn
 
         private void btnLoadFromModel_Click(object sender, RibbonControlEventArgs e)
         {
-            try
+//try
             {
                 CurrentMSGExellModel.UpdateExcelRepresetation();
                 CurrentMSGExellModel.SetFormulas();
                 CurrentMSGExellModel.SetStyleFormats();
             }
-            catch (Exception exp)
+        //    catch (Exception exp)
             {
-                MessageBox.Show($"Ошибка при выгрузке данных из модели в документ. Ошибка:{exp.Message}");
+        //        MessageBox.Show($"Ошибка при выгрузке данных из модели в документ. Ошибка:{exp.Message}");
             }
         }
         private void btnUpdateAll_Click(object sender, RibbonControlEventArgs e)
@@ -1218,7 +1218,7 @@ namespace MSGAddIn
 
                     msg_work.AdjustExcelRepresentionTree(rowIndex);
                     msg_work.UpdateExcelRepresetation();
-                    msg_work.SetStyleFormats(+1);
+                    msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR+1);
                 }
             }
         }

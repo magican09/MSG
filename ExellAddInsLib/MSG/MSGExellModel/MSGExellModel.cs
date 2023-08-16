@@ -1279,6 +1279,7 @@ namespace ExellAddInsLib.MSG
                         this.WorkReportCards.Remove(rc);
                     }
                 }
+                
             }
 
             foreach (MSGWork msg_work in this.MSGWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
@@ -1324,6 +1325,7 @@ namespace ExellAddInsLib.MSG
                             if (report_card != null)
                             {
                                 report_card.Owner = rc_work;
+                                report_card.Worksheet = rc_work.Worksheet;
                                 rc_work.ReportCard = report_card;
                             }
 
@@ -1342,6 +1344,7 @@ namespace ExellAddInsLib.MSG
                 if (finded_rc != null)
                 {
                     finded_rc.Owner = rc_work;
+                    finded_rc.Worksheet = rc_work.Worksheet;
                     rc_work.ReportCard = finded_rc;
 
                 }
@@ -1520,6 +1523,7 @@ namespace ExellAddInsLib.MSG
                                 if (rc_work.ReportCard == null)
                                 {
                                     rc_work.ReportCard = new WorkReportCard();
+                                    rc_work.ReportCard.Worksheet = rc_work.Worksheet;
                                     this.Register(rc_work.ReportCard, "Number", rc_work.CellAddressesMap["Number"].Row, WRC_NUMBER_COL, this.RegisterSheet);
                                     this.Register(rc_work.ReportCard, "PreviousComplatedQuantity", rc_work.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL, this.RegisterSheet);
                                     rc_work.ReportCard.Number = rc_work.Number;
@@ -1532,9 +1536,10 @@ namespace ExellAddInsLib.MSG
 
                                 if (this.Owner == null)
                                 {
-                                    Excel.Range w_days_row_range = this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
+                                     Excel.Range w_days_row_range = this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Row, WRC_PC_QUANTITY_COL];
+                                 //   Excel.Range w_days_row_range = this.RegisterSheet.Range[first_cell, lastt_cell];
                                     if (tmp_first_rc_card_days_row != null)
-                                        w_days_row_range.PasteSpecial(XlPasteType.xlPasteAll);
+                                        w_days_row_range.PasteSpecial();
                                 }
                                 rc_works_labourness_sum_formula +=
                                        $"{Func.RangeAddress(rc_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(rc_work.CellAddressesMap["Laboriousness"].Cell)}+";

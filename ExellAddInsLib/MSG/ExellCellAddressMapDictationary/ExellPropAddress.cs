@@ -65,7 +65,7 @@ namespace ExellAddInsLib.MSG
             if (val_type == typeof(DateTime))
             {
                 Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
-                this.Cell.NumberFormat = $"mm.dd.yyyy";
+                this.Cell.NumberFormat = $"dd.mm.yyyy";
             }
             if (val_type == typeof(string))
             {

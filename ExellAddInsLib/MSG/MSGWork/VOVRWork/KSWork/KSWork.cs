@@ -110,8 +110,6 @@ namespace ExellAddInsLib.MSG
             rc_works_range.Interior.ColorIndex = ks_work_col;
             if (ks_work.RCWorks.Count > 0)
             {
-
-
                 foreach (RCWork rc_work in ks_work.RCWorks)
                     if (rc_work.ReportCard != null)
                         rc_work.ReportCard.SetStyleFormats(ks_work_col);
