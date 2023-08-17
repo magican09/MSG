@@ -55,8 +55,11 @@ namespace ExellAddInsLib.MSG
                     if (notified_object.CellAddressesMap.ContainsKey(prop_name))
                     {
                         local_register.ExellPropAddress = notified_object.CellAddressesMap[prop_name];
-                        local_register.ExellPropAddress.ValueType = prop_type;
-                        local_register.ExellPropAddress.SetCellNumberFormat();
+                        if (local_register.ExellPropAddress.CellNumberFormat == null)
+                        {
+                            local_register.ExellPropAddress.ValueType = prop_type;
+                            local_register.ExellPropAddress.SetCellNumberFormat();
+                        }
                     }
                     else
                     {

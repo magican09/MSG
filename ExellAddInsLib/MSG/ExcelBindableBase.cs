@@ -403,7 +403,9 @@ namespace ExellAddInsLib.MSG
             new_obj.CellAddressesMap.Owner = new_obj;
             foreach (var kvp in this.CellAddressesMap.Where(k => !k.Key.Contains('_')))
             {
-                new_obj.CellAddressesMap.Add(kvp.Key, new ExellPropAddress(kvp.Value));
+                var excell_address = new ExellPropAddress(kvp.Value);
+                excell_address.CellNumberFormat = kvp.Value.CellNumberFormat;
+                new_obj.CellAddressesMap.Add(kvp.Key, excell_address);
             }
 
             var prop_infoes = new_obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
