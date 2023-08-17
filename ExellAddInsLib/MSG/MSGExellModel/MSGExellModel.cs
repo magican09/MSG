@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -121,6 +122,18 @@ namespace ExellAddInsLib.MSG
         /// Дата начала ведомости 
         /// </summary>
         public DateTime WorksStartDate { get; set; }
+        //public DateTime WorksStartDate
+        //{
+        //    get
+        //    {
+        //        DateTime end_date = DateTime.MinValue;
+        //        var last_ended_work = this.MSGWorks.OrderBy(w => w.WorkSchedules.StartDate).FirstOrDefault();
+        //        if (last_ended_work != null)
+        //            end_date = last_ended_work.WorkSchedules.StartDate;
+        //        return end_date;
+        //    }
+
+        //}
         /// <summary>
         /// Дата окончания работ в данной ведомости в соотвествии с планируемыми в  сроками отраженнным в части МСГ ведомости.
         /// (в части WorkSchedules работ MSGWork)
@@ -499,15 +512,15 @@ namespace ExellAddInsLib.MSG
                     null_str_count = 0;
                     MSGWork msg_work = new MSGWork();
                     msg_work.Worksheet = registerSheet;
-                    this.Register(msg_work, "Number", rowIndex, MSG_NUMBER_COL, this.RegisterSheet);
+                    this.Register(msg_work, "Number", rowIndex, MSG_NUMBER_COL, this.RegisterSheet,(v)=> Regex.IsMatch(v.ToString(),@"^\d+.\d+$"));
                     this.Register(msg_work, "Name", rowIndex, MSG_NAME_COL, this.RegisterSheet);
-                    this.Register(msg_work, "ProjectQuantity", rowIndex, MSG_QUANTITY_COL, this.RegisterSheet);
+                    this.Register(msg_work, "ProjectQuantity", rowIndex, MSG_QUANTITY_COL, this.RegisterSheet, (v)=>((decimal)v) !=0);
                     this.Register(msg_work, "Quantity", rowIndex, MSG_QUANTITY_FACT_COL, this.RegisterSheet);
                     this.Register(msg_work, "Laboriousness", rowIndex, MSG_LABOURNESS_COL, this.RegisterSheet);
                     this.Register(msg_work, "UnitOfMeasurement.Name", rowIndex, MSG_MEASURE_COL, registerSheet);
                     var pr_quantity = registerSheet.Cells[rowIndex, MSG_QUANTITY_COL].Value;
-
-                    msg_work.Number = number.ToString();
+                   
+                     msg_work.Number = number.ToString();
                     if (this.MSGWorks.FirstOrDefault(w => w.Number == msg_work.Number) != null)
                         msg_work.CellAddressesMap["Number"].IsValid = false;
 
@@ -522,8 +535,8 @@ namespace ExellAddInsLib.MSG
                         msg_work.UnitOfMeasurement = UnitOfMeasurements.FirstOrDefault(um => um.Name == unit_of_measurement_name.ToString());
                     else
                         msg_work.CellAddressesMap["UnitOfMeasurement.Name"].IsValid = false;
-
-                    if (pr_quantity != null && pr_quantity != 0)
+                 
+                    if (pr_quantity != null )
                         msg_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
                     else
                         msg_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
@@ -756,14 +769,15 @@ namespace ExellAddInsLib.MSG
                     null_str_count = 0;
                     VOVRWork vovr_work = new VOVRWork();
                     vovr_work.Worksheet = registerSheet;
-                    this.Register(vovr_work, "Number", rowIndex, VOVR_NUMBER_COL, this.RegisterSheet);
+                    this.Register(vovr_work, "Number", rowIndex, VOVR_NUMBER_COL, this.RegisterSheet, v=> Regex.IsMatch(v.ToString(), @"^\d+.\d+.\d+$"));
                     this.Register(vovr_work, "Name", rowIndex, VOVR_NAME_COL, this.RegisterSheet);
-                    this.Register(vovr_work, "ProjectQuantity", rowIndex, VOVR_QUANTITY_COL, this.RegisterSheet);
+                    this.Register(vovr_work, "ProjectQuantity", rowIndex, VOVR_QUANTITY_COL, this.RegisterSheet,(v)=>((decimal)v)!=0);
                     this.Register(vovr_work, "Quantity", rowIndex, VOVR_QUANTITY_FACT_COL, this.RegisterSheet);
                     this.Register(vovr_work, "Laboriousness", rowIndex, VOVR_LABOURNESS_COL, this.RegisterSheet);
                     this.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, VOVR_MEASURE_COL, this.RegisterSheet);
 
                     vovr_work.Number = number.ToString();
+                   
                     if (this.VOVRWorks.FirstOrDefault(w => w.Number == vovr_work.Number) != null)
                         vovr_work.CellAddressesMap["Number"].IsValid = false;
 
@@ -779,7 +793,7 @@ namespace ExellAddInsLib.MSG
                         vovr_work.CellAddressesMap["UnitOfMeasurement.Name"].IsValid = false;
 
                     var pr_quantity = registerSheet.Cells[rowIndex, VOVR_QUANTITY_COL].Value;
-                    if (pr_quantity != null && pr_quantity != 0)
+                    if (pr_quantity != null )
                         vovr_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
                     else
                         vovr_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
@@ -837,7 +851,7 @@ namespace ExellAddInsLib.MSG
                     null_str_count = 0;
                     KSWork ks_work = new KSWork();
                     ks_work.Worksheet = registerSheet;
-                    this.Register(ks_work, "Number", rowIndex, KS_NUMBER_COL, this.RegisterSheet);
+                    this.Register(ks_work, "Number", rowIndex, KS_NUMBER_COL, this.RegisterSheet, v => Regex.IsMatch(v.ToString(), @"^\d+.\d+.\d+.\d+$"));
                     this.Register(ks_work, "Code", rowIndex, KS_CODE_COL, this.RegisterSheet);
                     this.Register(ks_work, "Name", rowIndex, KS_NAME_COL, this.RegisterSheet);
                     this.Register(ks_work, "ProjectQuantity", rowIndex, KS_QUANTITY_COL, this.RegisterSheet);
@@ -845,8 +859,8 @@ namespace ExellAddInsLib.MSG
                     this.Register(ks_work, "Laboriousness", rowIndex, KS_LABOURNESS_COL, this.RegisterSheet);
                     this.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, KS_MEASURE_COL, this.RegisterSheet);
 
-                    ks_work.Number = number;
-
+                    ks_work.Number = number.ToString();
+             
                     var code = registerSheet.Cells[rowIndex, KS_CODE_COL].Value;
                     if (code != null)
                         ks_work.Code = code.ToString();
@@ -925,7 +939,7 @@ namespace ExellAddInsLib.MSG
                     null_str_count = 0;
                     RCWork rc_work = new RCWork();
                     rc_work.Worksheet = registerSheet;
-                    this.Register(rc_work, "Number", rowIndex, RC_NUMBER_COL, this.RegisterSheet);
+                    this.Register(rc_work, "Number", rowIndex, RC_NUMBER_COL, this.RegisterSheet,v => Regex.IsMatch(v.ToString(), @"^\d+.\d+.\d+.\d+.\d+$"));
                     this.Register(rc_work, "Code", rowIndex, RC_CODE_COL, this.RegisterSheet);
                     this.Register(rc_work, "Name", rowIndex, RC_NAME_COL, this.RegisterSheet);
                     this.Register(rc_work, "ProjectQuantity", rowIndex, RC_QUANTITY_COL, this.RegisterSheet);
@@ -936,8 +950,6 @@ namespace ExellAddInsLib.MSG
 
 
                     rc_work.Number = number;
-
-
                     var code = registerSheet.Cells[rowIndex, RC_CODE_COL].Value;
                     if (code != null)
                         rc_work.Code = code;
@@ -1371,6 +1383,7 @@ namespace ExellAddInsLib.MSG
 
                 this.LoadWorksSections();
                 this.LoadMSGWorks();
+          //      this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL] = this.WorksEndDate.ToString("d");
                 this.LoadVOVRWorks();
                 this.LoadKSWorks();
                 this.LoadRCWorks();

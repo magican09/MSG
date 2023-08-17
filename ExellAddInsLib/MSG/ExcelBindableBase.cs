@@ -10,10 +10,12 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
+    public delegate (bool, object) BeforePropertyChangeEventHandler(object sender, PropertyChangedEventArgs e, object new_val);
+
     public abstract class ExcelBindableBase : INotifyPropertyChanged, IExcelBindableBase
     {
         public event PropertyChangedEventHandler PropertyChanged;
-
+        public event BeforePropertyChangeEventHandler BeforePropertyChange;
         private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
@@ -106,6 +108,8 @@ namespace ExellAddInsLib.MSG
         }
         public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "")
         {
+            var validate_out = BeforePropertyChange?.Invoke(this, new PropertyChangedEventArgs(property_name), new_val);
+
 
             if (new_val is IExcelBindableBase excell_bindable_new_val/* && !excell_bindable_new_val.Owners.Contains(this)*/)
             {
@@ -115,7 +119,11 @@ namespace ExellAddInsLib.MSG
             {
                 this.UnregisterMemberValInCellAddresMap(excell_bindable_member, property_name);
             }
-            member = new_val;
+            if (validate_out != null && validate_out.Value.Item1)
+                member = (T)validate_out.Value.Item2;
+            else
+                member = new_val;
+
             PropertyChange(this, property_name);
 
         }
@@ -337,14 +345,15 @@ namespace ExellAddInsLib.MSG
         {
             var obj = this;
             var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
-
+            CellAddressesMap.SetCellNumberFormat();
             foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
             {
                 var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
                 if (val != null)
                 {
+                 
                     kvp.Value.Cell.Value = val;
-                    
+
                 }
             }
         }

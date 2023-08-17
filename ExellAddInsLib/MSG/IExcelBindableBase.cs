@@ -9,6 +9,7 @@ namespace ExellAddInsLib.MSG
     {
         Excel.Worksheet Worksheet { get; set; }
         event PropertyChangedEventHandler PropertyChanged;
+          event BeforePropertyChangeEventHandler BeforePropertyChange;
         void PropertyChange(object sender, string property_name);
         void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
         ExellCellAddressMapDictationary CellAddressesMap { get; set; }

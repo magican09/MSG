@@ -195,7 +195,7 @@ namespace MSGAddIn
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
-            //try
+           //try
             {
                 CurrentWorkbook = Globals.ThisAddIn.CurrentActivWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -250,9 +250,9 @@ namespace MSGAddIn
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-            //  catch (Exception exp)
+        //      catch (Exception exp)
             {
-                //   MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
+           //       MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
             }
 
         }
@@ -761,11 +761,11 @@ namespace MSGAddIn
 
             MSGOutWorksheet.Cells[TMP_NOW_DATE_ROW, TMP_NOW_DATE_COL] = current_day_date.ToString("d");
             MSGOutWorksheet.Cells[TMP_CONTRACT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ContractCode;
-            MSGOutWorksheet.Cells[TMP_CONSTRUCTION_OBJECT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ContructionObjectCode;
+            MSGOutWorksheet.Cells[TMP_CONSTRUCTION_OBJECT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ConstructionSubObjectCode;
 
-            MSGNeedsTemplateWorksheet.Cells[NEEDS_NOW_DATE_ROW, NEEDS_NOW_DATE_COL] = current_day_date.ToString("d");
+            MSGNeedsTemplateWorksheet.Cells[NEEDS_NOW_DATE_ROW, NEEDS_NOW_DATE_COL].Value = current_day_date.ToString("d");
             MSGNeedsTemplateWorksheet.Cells[NEEDS_CONTRACT_CODE_ROW, NEEDS_NOW_DATE_COL] = CommonMSGExellModel.ContructionObjectCode;
-            MSGNeedsTemplateWorksheet.Cells[NEEDS_CONSTRUCTION_OBJECT_CODE_ROW, NEEDS_NOW_DATE_COL] = CommonMSGExellModel.ContractCode;
+            MSGNeedsTemplateWorksheet.Cells[NEEDS_CONSTRUCTION_OBJECT_CODE_ROW, NEEDS_NOW_DATE_COL] = CommonMSGExellModel.ConstructionSubObjectCode;
 
             if (checkBoxRerightDatePart.Checked)
                 this.FillMSG_OUT_File_Headers();
@@ -1318,15 +1318,15 @@ namespace MSGAddIn
                                     foreach (WorksSection section in CopyedObjectsList)
                                     {
                                         CurrentMSGExellModel.WorksSections.Add(section);
-                                        CurrentMSGExellModel.SetCommonModelCollections();
-
                                         section.SetNumberItem(0, cell_val.ToString());
-                                        _serction_row = section.AdjustExcelRepresentionTree(_serction_row);
-                                        section.UpdateExcelRepresetation();
                                         CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
+                            //            section.UpdateExcelRepresetation();
+                                        //   CurrentMSGExellModel.SetCommonModelCollections();
+                                        //   _serction_row = section.AdjustExcelRepresentionTree(_serction_row);
                                         cell_val++;
                                     }
 
+                                    CurrentMSGExellModel.UpdateExcelRepresetation();
                                     CurrentMSGExellModel.SetStyleFormats();
                                     commands_group_label = "";
                                 }

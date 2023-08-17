@@ -22,8 +22,12 @@ namespace ExellAddInsLib.MSG
         {
 
         }
+        public void SetCellNumberFormat()
+        {
 
-
+            foreach (var kvp in this)
+                kvp.Value.SetCellNumberFormat();
+        }
 
     }
 }

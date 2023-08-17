@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -35,7 +36,9 @@ namespace ExellAddInsLib.MSG
         /// с этим полем ячейки в документе Worksheet
         /// </summary>
         /// <param name="work"></param>
-        public void Register(IExcelBindableBase notified_object, string prop_name, int row, int column, Excel.Worksheet worksheet, RelateRecord register = null)
+        public void Register(IExcelBindableBase notified_object, string prop_name, int row, int column,
+            Excel.Worksheet worksheet, Func<object, bool> validate_value_call_back = null,
+               Func<object, object> coerce_value_call_back = null, RelateRecord register = null)
         {
 
             try
@@ -47,13 +50,18 @@ namespace ExellAddInsLib.MSG
                 if (register == null)
                 {
                     register = local_register;
+                    Type prop_type = notified_object.GetType().GetProperty(prop_names[0]).PropertyType;
 
                     if (notified_object.CellAddressesMap.ContainsKey(prop_name))
+                    {
                         local_register.ExellPropAddress = notified_object.CellAddressesMap[prop_name];
+                        local_register.ExellPropAddress.ValueType = prop_type;
+                        local_register.ExellPropAddress.SetCellNumberFormat();
+                    }
                     else
                     {
-                        Type prop_type = notified_object.GetType().GetProperty(prop_names[0]).PropertyType;
-                        local_register.ExellPropAddress = new ExellPropAddress(row, column, worksheet, prop_type, prop_name);
+
+                        local_register.ExellPropAddress = new ExellPropAddress(row, column, worksheet, prop_type, prop_name, validate_value_call_back, coerce_value_call_back);
                         local_register.ExellPropAddress.Owner = notified_object;
                         notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
                     }
@@ -84,13 +92,16 @@ namespace ExellAddInsLib.MSG
                     var prop_value = notified_object.GetType().GetProperty(name).GetValue(notified_object);
                     if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
                     {
-                        this.Register(excel_bimdable_prop_value, rest_prop_name_part, row, column, worksheet, local_register);
+                        this.Register(excel_bimdable_prop_value, rest_prop_name_part, row, column, worksheet, null,null, local_register);
                     }
 
                 }
 
                 if (!notified_object.IsPropertyChangedHaveSubsctribers())
-                    notified_object.PropertyChanged += OnPropertyChange;
+                {
+                    notified_object.PropertyChanged += OnPropertyChanged;
+                    notified_object.BeforePropertyChange += OnBeforPropertyChanged;
+                }
                 else
                     ;
             }
@@ -99,6 +110,39 @@ namespace ExellAddInsLib.MSG
                 MessageBox.Show($"Ошибка при регистрации объектов в MSGExelModel. MSHExcelModel.Register(..): {ex.Message}");
             }
 
+        }
+
+        private (bool,object)  OnBeforPropertyChanged(object sender, PropertyChangedEventArgs e, object new_val)
+        {
+            IExcelBindableBase notified_object = sender as IExcelBindableBase;
+            if (!notified_object.CellAddressesMap.ContainsKey(e.PropertyName) || notified_object == null) return (true, new_val);
+            var excel_prop_address = notified_object.CellAddressesMap[e.PropertyName];
+
+
+            if (excel_prop_address.ValidateValueCallBack == null) return (false, new_val);
+
+            if (excel_prop_address.ValidateValueCallBack != null
+                              && excel_prop_address.ValidateValueCallBack(new_val))
+            {
+                if (excel_prop_address.CoerceValueCallback != null)
+                {
+                    var member = excel_prop_address.CoerceValueCallback?.Invoke(new_val);
+                    return (true, member);
+                }
+                else
+                    return (true, new_val);
+            }
+            else 
+            {
+                notified_object.IsValid = false;
+                excel_prop_address.Cell.Interior.Color = XlRgbColor.rgbRed;
+                int row = excel_prop_address.Row;
+                int col = excel_prop_address.Column;
+                throw new Exception($"Неверный формат! Срока:{row}, стобец:{col}");
+                return (false, new_val); ;
+            }
+
+                 
         }
 
         private bool IsRegistered(IExcelBindableBase obj, string prop_name)
@@ -122,7 +166,8 @@ namespace ExellAddInsLib.MSG
             var all_registed_rrecords = this.RegistedObjects.Where(ro => ro.Entity.Id == notified_object.Id).ToList();
             foreach (var r_obj in all_registed_rrecords)
             {
-                notified_object.PropertyChanged -= OnPropertyChange;
+                notified_object.PropertyChanged -= OnPropertyChanged;
+                notified_object.BeforePropertyChange -= OnBeforPropertyChanged;
                 this.RegistedObjects.Remove(r_obj);
             }
             if (notified_object is IList exbb_list)
@@ -255,7 +300,7 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void OnPropertyChange(object sender, PropertyChangedEventArgs e)
+        public void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (sender is IExcelBindableBase bindable_object)
             {
@@ -284,7 +329,10 @@ namespace ExellAddInsLib.MSG
                         {
                             parent_rrecord.ExellPropAddress.Cell.Value = val;
                             parent_rrecord.ExellPropAddress.Cell.Interior.Color = XlRgbColor.rgbAquamarine;
+
                         }
+
+
                     }
                 }
             }

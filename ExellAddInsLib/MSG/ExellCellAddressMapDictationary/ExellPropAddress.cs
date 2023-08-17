@@ -1,5 +1,6 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -25,20 +26,31 @@ namespace ExellAddInsLib.MSG
             get { return _owner; }
             set { _owner = value; }
         }
+        private string _cellNumberFormat;
+        public string CellNumberFormat
+        {
+            get { return _cellNumberFormat; }
+            set
+            {
+                _cellNumberFormat = value;
+               this.Cell.NumberFormat= _cellNumberFormat;
+            }
+        }
+        private Type _valueType;
+        public Type ValueType
+        {
+            get { return _valueType; }
+            set
+            {
+                _valueType = value;
+                this.SetCellNumberFormat();
+            }
+        }
 
-        //private object _cellColor;
+        public Func<object, bool> ValidateValueCallBack { get; set; }
+        public Func<object, object> CoerceValueCallback { get; set; }
 
-        //public object CellColor
-        //{
-        //    get { return _cellColor; }
-        //    set {
-        //        _cellColor = value;
-        //        if (_cellColor is XlRgbColor rgb_color)
-        //            this.Cell.Interior.Color = rgb_color;
-        //        else if (_cellColor is XlColorIndex ind_color)
-        //            this.Cell.Interior.ColorIndex = ind_color;
-        //    }
-        //}
+
 
         public Excel.Range Cell
         {
@@ -48,31 +60,39 @@ namespace ExellAddInsLib.MSG
         {
 
         }
-        public ExellPropAddress(int row, int column, Excel.Worksheet worksheet, Type val_type, string prop_name = "")
+        public void SetCellNumberFormat()
+        {
+            if (_valueType == null) return;
+            if (_valueType == typeof(int) || _valueType == typeof(double) || _valueType == typeof(decimal))
+            {
+                Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
+                CellNumberFormat = $"0.00";
+            }
+            if (_valueType == typeof(DateTime))
+            {
+                Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
+                CellNumberFormat = $"dd.mm.yyyy";
+            }
+            if (_valueType == typeof(string))
+            {
+                CellNumberFormat = $"@";
+            }
+        }
+
+        public ExellPropAddress(int row, int column, Excel.Worksheet worksheet, Type val_type,
+            string prop_name = "",
+            Func<object, bool> validate_value_call_back = null,
+               Func<object, object> coerce_value_call_back = null)
         {
             Row = row;
             Column = column;
             Worksheet = worksheet;
             ProprertyName = prop_name;
             this.Cell.Interior.Color = XlRgbColor.rgbGreenYellow;
-
-         
-            if (val_type == typeof(int) || val_type == typeof(double) || val_type == typeof(decimal))
-            {
-                Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
-               this.Cell.NumberFormat = $"0.00";
-            }
-            if (val_type == typeof(DateTime))
-            {
-                Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
-                this.Cell.NumberFormat = $"dd.mm.yyyy";
-            }
-            if (val_type == typeof(string))
-            {
-                this.Cell.NumberFormat = $"@";
-            }
-           
-
+            ValidateValueCallBack = validate_value_call_back;
+            CoerceValueCallback = coerce_value_call_back;
+            ValueType = val_type;
+            this.SetCellNumberFormat();
 
         }
         public ExellPropAddress(ExellPropAddress ex_addr)

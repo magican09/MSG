@@ -139,7 +139,13 @@ namespace ExellAddInsLib.MSG
             if (msg_row + nm_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + nm_row_iterator;
             int vovr_row = msg_row;
             foreach (VOVRWork vovr_work in msg_work.VOVRWorks.OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
-                vovr_row = vovr_work.AdjustExcelRepresentionTree(vovr_row); ;
+            {
+                vovr_row = vovr_work.AdjustExcelRepresentionTree(vovr_row);
+                if (vovr_row == 30)
+                    ;
+                if(vovr_row == 29)
+                    ;
+            }
 
             if (vovr_row < msg_lowest_row)
                 msg_row = msg_lowest_row;

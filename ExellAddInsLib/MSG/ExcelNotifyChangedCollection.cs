@@ -15,6 +15,8 @@ namespace ExellAddInsLib.MSG
         where T : IExcelBindableBase, ICloneable
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        public event BeforePropertyChangeEventHandler BeforePropertyChange;
+
         private bool _isValid = true;
         private Excel.Worksheet _worksheet;
 
@@ -77,7 +79,7 @@ namespace ExellAddInsLib.MSG
                     }
                     else return null;
                 }
-                catch(Exception exp)
+                catch (Exception exp)
                 {
                     throw new Exception($"Ошибка при получении свойства  ExcelNotifyChangedCollection<T>..NumberPrefix:{this.ToString()}:{this.Number}.Ошибка:{exp.Message}");
 
@@ -98,7 +100,7 @@ namespace ExellAddInsLib.MSG
                     }
                     else return null;
                 }
-                catch(Exception exp)
+                catch (Exception exp)
                 {
                     throw new Exception($"Ошибка при получении свойства ExcelNotifyChangedCollection<T>.NumberSuffix.{this.ToString()}:{this.Number}.Ошибка:{exp.Message}");
                 }
@@ -121,6 +123,8 @@ namespace ExellAddInsLib.MSG
         }
         public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "")
         {
+            var validate_out = BeforePropertyChange?.Invoke(this, new PropertyChangedEventArgs(property_name),  new_val);
+       
             if (new_val is IExcelBindableBase excell_bindable_new_val/* && !excell_bindable_new_val.Owners.Contains(this)*/)
             {
                 this.RegisterNewValInCellAddresMap(excell_bindable_new_val, property_name);
@@ -129,7 +133,11 @@ namespace ExellAddInsLib.MSG
             {
                 this.UnregisterMemberValInCellAddresMap(excell_bindable_member, property_name);
             }
-            member = new_val;
+
+            if (validate_out != null && validate_out.Value.Item1)
+                member = (T)validate_out.Value.Item2;
+            else
+                member = new_val;
             PropertyChange(this, property_name);
 
         }
