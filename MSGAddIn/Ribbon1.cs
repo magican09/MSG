@@ -1320,9 +1320,6 @@ namespace MSGAddIn
                                         CurrentMSGExellModel.WorksSections.Add(section);
                                         section.SetNumberItem(0, cell_val.ToString());
                                         CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
-                            //            section.UpdateExcelRepresetation();
-                                        //   CurrentMSGExellModel.SetCommonModelCollections();
-                                        //   _serction_row = section.AdjustExcelRepresentionTree(_serction_row);
                                         cell_val++;
                                     }
 
@@ -1373,7 +1370,7 @@ namespace MSGAddIn
                                 int selected_work_index = selected_msg_work.VOVRWorks.IndexOf(selected_work);
                                 foreach (VOVRWork work in CopyedObjectsList)
                                 {
-                                    selected_msg_work.VOVRWorks.Insert(selected_work_index + 1, work);
+                                    selected_msg_work.VOVRWorks.Insert(selected_work_index, work);
                                     CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
                                 }
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
@@ -1395,7 +1392,7 @@ namespace MSGAddIn
                                 int selected_work_index = selected_owner_work.KSWorks.IndexOf(selected_work);
                                 foreach (KSWork work in CopyedObjectsList)
                                 {
-                                    selected_owner_work.KSWorks.Insert(selected_work_index + 1, work);
+                                    selected_owner_work.KSWorks.Insert(selected_work_index , work);
                                     CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
                                 }
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
@@ -1418,7 +1415,7 @@ namespace MSGAddIn
                                 int selected_work_index = selected_owner_work.RCWorks.IndexOf(selected_work);
                                 foreach (RCWork work in CopyedObjectsList)
                                 {
-                                    selected_owner_work.RCWorks.Insert(selected_work_index + 1, work);
+                                    selected_owner_work.RCWorks.Insert(selected_work_index, work);
                                     CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
                                 }
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
