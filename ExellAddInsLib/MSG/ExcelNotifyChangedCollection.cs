@@ -512,7 +512,7 @@ namespace ExellAddInsLib.MSG
             }
 
             foreach (var kvp in this.CellAddressesMap.Where(k => !k.Key.Contains('_')))
-                new_collecion.CellAddressesMap.Add(kvp.Key, new ExellPropAddress(kvp.Value));
+                new_collecion.CellAddressesMap.Add(kvp.Key, new ExcelPropAddress(kvp.Value));
 
             return new_collecion;
         }

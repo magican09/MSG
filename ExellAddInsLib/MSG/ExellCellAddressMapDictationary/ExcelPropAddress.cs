@@ -6,7 +6,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class ExellPropAddress
+    public class ExcelPropAddress
     {
         public int Row { get; set; }
         public int Column { get; set; }
@@ -33,7 +33,7 @@ namespace ExellAddInsLib.MSG
             set
             {
                 _cellNumberFormat = value;
-               this.Cell.NumberFormat= _cellNumberFormat;
+                this.Cell.NumberFormat = _cellNumberFormat;
             }
         }
         private Type _valueType;
@@ -47,6 +47,25 @@ namespace ExellAddInsLib.MSG
             }
         }
 
+        private int _rowHashValue;
+        public int RowHashValue
+        {
+            get { return _rowHashValue; }
+            set
+            {
+                _rowHashValue = value;
+            }
+        }
+
+        private int _columnHashValue;
+        public int ColumnHashValue
+        {
+            get { return _columnHashValue; }
+            set
+            {
+                _columnHashValue = value;
+            }
+        }
         public Func<object, bool> ValidateValueCallBack { get; set; }
         public Func<object, object> CoerceValueCallback { get; set; }
 
@@ -56,7 +75,7 @@ namespace ExellAddInsLib.MSG
         {
             get { return this.Worksheet.Cells[Row, Column]; }
         }
-        public ExellPropAddress()
+        public ExcelPropAddress()
         {
 
         }
@@ -79,7 +98,7 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-        public ExellPropAddress(int row, int column, Excel.Worksheet worksheet, Type val_type,
+        public ExcelPropAddress(int row, int column, Excel.Worksheet worksheet, Type val_type,
             string prop_name = "",
             Func<object, bool> validate_value_call_back = null,
                Func<object, object> coerce_value_call_back = null)
@@ -95,7 +114,7 @@ namespace ExellAddInsLib.MSG
             this.SetCellNumberFormat();
 
         }
-        public ExellPropAddress(ExellPropAddress ex_addr)
+        public ExcelPropAddress(ExcelPropAddress ex_addr)
         {
             Row = ex_addr.Row;
             Column = ex_addr.Column;

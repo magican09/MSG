@@ -14,6 +14,13 @@ namespace ExellAddInsLib.MSG
 {
     public class ExellModelBase : ExcelBindableBase
     {
+        public const int HASH_FUNCTION_COL = 1;
+        public const int HASH_FUNCTION_ROW = 7;
+        public const int MAX_HASH_FUNCTION_ROW = 10000;
+        public Dictionary<Tuple<int, int>, ExcelPropAddress> AllHashDictationary = new Dictionary<Tuple<int, int>, ExcelPropAddress>();
+        public List<int> RowsHashValues = new List<int>();
+        public List<int> ColumnsHashValues = new List<int>();
+
 
         public ObservableCollection<Excel.Worksheet> AllWorksheets = new ObservableCollection<Excel.Worksheet>();
 
@@ -41,7 +48,7 @@ namespace ExellAddInsLib.MSG
                Func<object, object> coerce_value_call_back = null, RelateRecord register = null)
         {
 
-            try
+          //  try
             {
                 var prop_names = prop_name.Split(new char[] { '.' });
                 if (this.IsRegistered(notified_object, prop_names[0]))
@@ -61,9 +68,25 @@ namespace ExellAddInsLib.MSG
                     else
                     {
 
-                        local_register.ExellPropAddress = new ExellPropAddress(row, column, worksheet, prop_type, prop_name, validate_value_call_back, coerce_value_call_back);
+                        local_register.ExellPropAddress = new ExcelPropAddress(row, column, worksheet, prop_type, prop_name, validate_value_call_back, coerce_value_call_back);
                         local_register.ExellPropAddress.Owner = notified_object;
                         notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
+                    }
+
+                    if (local_register.ExellPropAddress.Worksheet.Name.Contains("Ведомость_общая"))
+                    {
+                        var row_hash = local_register.ExellPropAddress.Worksheet.Cells[row, HASH_FUNCTION_COL].Value;
+                        var col_hash = local_register.ExellPropAddress.Worksheet.Cells[HASH_FUNCTION_ROW, column].Value;
+
+                        if (row_hash != null)
+                            local_register.ExellPropAddress.RowHashValue = Int32.Parse(row_hash.ToString());
+                        if (col_hash != null)
+                            local_register.ExellPropAddress.ColumnHashValue = Int32.Parse(col_hash.ToString());
+                        if(!AllHashDictationary.ContainsKey(Tuple.Create(row, column)))
+                        {
+                            AllHashDictationary.Add(new Tuple<int, int>(row, column), local_register.ExellPropAddress);
+                        }
+
                     }
 
                     local_register.PropertyName = prop_names[0];
@@ -105,9 +128,9 @@ namespace ExellAddInsLib.MSG
                 else
                     ;
             }
-            catch (Exception ex)
+          //  catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при регистрации объектов в MSGExelModel. MSHExcelModel.Register(..): {ex.Message}");
+           //     throw  new Exception($"Ошибка при регистрации объектов в MSGExelModel. MSHExcelModel.Register(..): {ex.Message}");
             }
 
         }

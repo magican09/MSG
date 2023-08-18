@@ -85,7 +85,7 @@
     <Compile Include="MSG\ExcelBindableBase.cs" />
     <Compile Include="MSG\ExcelNotifyChangedCollection.cs" />
     <Compile Include="MSG\ExellCellAddressMapDictationary\ExellCellAddressMapDictationary.cs" />
-    <Compile Include="MSG\ExellCellAddressMapDictationary\ExellPropAddress.cs" />
+    <Compile Include="MSG\ExellCellAddressMapDictationary\ExcelPropAddress.cs" />
     <Compile Include="MSG\ExellCellAddressMapDictationary\RelateRecord.cs" />
     <Compile Include="MSG\ExellCellAddressMapDictationary\RelateRecordItemCollection.cs" />
     <Compile Include="MSG\Func.cs" />

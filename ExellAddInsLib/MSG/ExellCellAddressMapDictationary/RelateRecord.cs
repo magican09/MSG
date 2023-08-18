@@ -10,9 +10,9 @@
             set { _entity = value; }
         }
 
-        private ExellPropAddress _exellPropAddress;
+        private ExcelPropAddress _exellPropAddress;
 
-        public ExellPropAddress ExellPropAddress
+        public ExcelPropAddress ExellPropAddress
         {
             get { return _exellPropAddress; }
             set { _exellPropAddress = value; }

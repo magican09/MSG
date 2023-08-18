@@ -80,6 +80,7 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.btnLoadInModelLocal = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -106,6 +107,7 @@
             this.groupFileLaod.Items.Add(this.btnLoadInModel);
             this.groupFileLaod.Items.Add(this.btnLoadFromModel);
             this.groupFileLaod.Items.Add(this.menuCommon);
+            this.groupFileLaod.Items.Add(this.btnLoadInModelLocal);
             this.groupFileLaod.Items.Add(this.separator4);
             this.groupFileLaod.Items.Add(this.btnChangeCommonMSG);
             this.groupFileLaod.Items.Add(this.comboBoxEmployerName);
@@ -414,6 +416,12 @@
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
             // 
+            // btnLoadInModelLocal
+            // 
+            this.btnLoadInModelLocal.Label = "В МОДЕЛЬ (част.)";
+            this.btnLoadInModelLocal.Name = "btnLoadInModelLocal";
+            this.btnLoadInModelLocal.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadInModelLocal_Click);
+            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -486,6 +494,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyRCWork;
         internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuKS;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyKSWork;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadInModelLocal;
     }
 
     partial class ThisRibbonCollection

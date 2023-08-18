@@ -37,7 +37,7 @@ namespace ExellAddInsLib.MSG
             return out_list;
 
         }
-        public static string RangeAddress(Excel.Range rng)
+        public static string RangeAddress(this Excel.Range rng)
         {
             return rng.get_AddressLocal(false, false, Excel.XlReferenceStyle.xlA1,
                    Type.Missing, Type.Missing);

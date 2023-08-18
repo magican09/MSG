@@ -195,7 +195,7 @@ namespace MSGAddIn
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
-           try
+          // try
             {
                 CurrentWorkbook = Globals.ThisAddIn.CurrentActivWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -239,6 +239,7 @@ namespace MSGAddIn
 
                 this.ReloadAllModels();
 
+
                 CurrentMSGExellModel = CommonMSGExellModel;
                 //labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
                 //                        $"Объект:{CurrentMSGExellModel.ContructionObjectCode}\n " +
@@ -250,9 +251,9 @@ namespace MSGAddIn
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-              catch (Exception exp)
+          //    catch (Exception exp)
             {
-                  MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
+          //        MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
             }
 
         }
@@ -1738,7 +1739,10 @@ namespace MSGAddIn
             }
         }
 
-
+        private void btnLoadInModelLocal_Click(object sender, RibbonControlEventArgs e)
+        {
+            CurrentMSGExellModel.ReloadSheetModelLocal();
+        }
     }
 
 }

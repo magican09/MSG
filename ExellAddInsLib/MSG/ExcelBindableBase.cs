@@ -314,8 +314,6 @@ namespace ExellAddInsLib.MSG
                         exbb_prop_value.SetNumberItem(possition, number);
 
                     }
-
-
                 }
             }
         }
@@ -403,7 +401,7 @@ namespace ExellAddInsLib.MSG
             new_obj.CellAddressesMap.Owner = new_obj;
             foreach (var kvp in this.CellAddressesMap.Where(k => !k.Key.Contains('_')))
             {
-                var excell_address = new ExellPropAddress(kvp.Value);
+                var excell_address = new ExcelPropAddress(kvp.Value);
                 excell_address.CellNumberFormat = kvp.Value.CellNumberFormat;
                 new_obj.CellAddressesMap.Add(kvp.Key, excell_address);
             }
