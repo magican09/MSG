@@ -186,7 +186,7 @@ namespace MSGAddIn
             btnChangePosts.Enabled = state;
             btnChangeUOM.Enabled = state;
             btnMachines.Enabled = state;
-
+            chckBoxHashEnable.Enabled = state;
         }
         private void AjastBtnsState()
         {
@@ -236,12 +236,13 @@ namespace MSGAddIn
                     }
                 }
 
+             
 
                 this.ReloadAllModels();
 
 
                 CurrentMSGExellModel = CommonMSGExellModel;
-                //labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
+                 //labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
                 //                        $"Объект:{CurrentMSGExellModel.ContructionObjectCode}\n " +
                 //                        $"Подобъект:{CurrentMSGExellModel.ConstructionSubObjectCode}";
                 labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
@@ -562,6 +563,7 @@ namespace MSGAddIn
             CommonMSGExellModel.MachineConsumptionsSheet = CommonMachineConsumptionsWorksheet;
             CommonMSGExellModel.CommonSheet = CommonWorksheet;
             CommonMSGExellModel.UnitOfMeasurements = UnitOfMeasurements;
+            CommonMSGExellModel.IsHasEnabled = chckBoxHashEnable.Checked;
 
             foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
             {
@@ -1562,6 +1564,7 @@ namespace MSGAddIn
                             }
                     }
 
+                CommonMSGExellModel.SetHashFormulas();
                 groupCommands.Label = commands_group_label;
 
             }
@@ -1742,6 +1745,11 @@ namespace MSGAddIn
         private void btnLoadInModelLocal_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.ReloadSheetModelLocal();
+        }
+
+        private void chckBoxHashEnable_Click(object sender, RibbonControlEventArgs e)
+        {
+            CurrentMSGExellModel.IsHasEnabled = chckBoxHashEnable.Checked;
         }
     }
 

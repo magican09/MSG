@@ -119,7 +119,7 @@ namespace ExellAddInsLib.MSG
 
         public const int W_SECTION_COLOR = 33;
 
-
+        public bool IsHasEnabled = false; 
 
         private int null_str_count = 0;
         /// <summary>
@@ -490,7 +490,12 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            MSGWork msg_work = new MSGWork();
+            string number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value.ToString();
+            
+            MSGWork msg_work  = this.MSGWorks.FirstOrDefault(w=>w.Number==number);
+            if (msg_work == null)
+                msg_work = new MSGWork();
+       
             msg_work.Worksheet = registerSheet;
             this.Register(msg_work, "Number", rowIndex, MSG_NUMBER_COL, this.RegisterSheet, (v) => Regex.IsMatch(v.ToString(), @"^\d+.\d+$"));
             this.Register(msg_work, "Name", rowIndex, MSG_NAME_COL, this.RegisterSheet);
@@ -500,7 +505,7 @@ namespace ExellAddInsLib.MSG
             this.Register(msg_work, "UnitOfMeasurement.Name", rowIndex, MSG_MEASURE_COL, registerSheet);
             var pr_quantity = registerSheet.Cells[rowIndex, MSG_QUANTITY_COL].Value;
 
-            msg_work.Number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value.ToString();
+            msg_work.Number = number;
             if (this.MSGWorks.FirstOrDefault(w => w.Number == msg_work.Number) != null)
                 msg_work.CellAddressesMap["Number"].IsValid = false;
 
@@ -766,7 +771,11 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            VOVRWork vovr_work = new VOVRWork();
+            string number = registerSheet.Cells[rowIndex, VOVR_NUMBER_COL].Value.ToString();
+            VOVRWork vovr_work = this.VOVRWorks.FirstOrDefault(w => w.Number == number);
+            if (vovr_work == null)
+                vovr_work = new VOVRWork();
+
             vovr_work.Worksheet = registerSheet;
             this.Register(vovr_work, "Number", rowIndex, VOVR_NUMBER_COL, this.RegisterSheet, v => Regex.IsMatch(v.ToString(), @"^\d+.\d+.\d+$"));
             this.Register(vovr_work, "Name", rowIndex, VOVR_NAME_COL, this.RegisterSheet);
@@ -775,7 +784,7 @@ namespace ExellAddInsLib.MSG
             this.Register(vovr_work, "Laboriousness", rowIndex, VOVR_LABOURNESS_COL, this.RegisterSheet);
             this.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, VOVR_MEASURE_COL, this.RegisterSheet);
 
-            vovr_work.Number = registerSheet.Cells[rowIndex, VOVR_NUMBER_COL].Value.ToString();
+            vovr_work.Number = number;
 
             if (this.VOVRWorks.FirstOrDefault(w => w.Number == vovr_work.Number) != null)
                 vovr_work.CellAddressesMap["Number"].IsValid = false;
@@ -838,7 +847,11 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            KSWork ks_work = new KSWork();
+            string number = registerSheet.Cells[rowIndex, KS_NUMBER_COL].Value.ToString();
+            KSWork ks_work = this.KSWorks.FirstOrDefault(w => w.Number == number);
+            if (ks_work == null)
+                ks_work = new KSWork();
+           
             ks_work.Worksheet = registerSheet;
             this.Register(ks_work, "Number", rowIndex, KS_NUMBER_COL, this.RegisterSheet, v => Regex.IsMatch(v.ToString(), @"^\d+.\d+.\d+.\d+$"));
             this.Register(ks_work, "Code", rowIndex, KS_CODE_COL, this.RegisterSheet);
@@ -848,7 +861,7 @@ namespace ExellAddInsLib.MSG
             this.Register(ks_work, "Laboriousness", rowIndex, KS_LABOURNESS_COL, this.RegisterSheet);
             this.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, KS_MEASURE_COL, this.RegisterSheet);
 
-            ks_work.Number = registerSheet.Cells[rowIndex, KS_NUMBER_COL].Value.ToString();
+            ks_work.Number = number;
 
             var code = registerSheet.Cells[rowIndex, KS_CODE_COL].Value;
             if (code != null)
@@ -875,7 +888,7 @@ namespace ExellAddInsLib.MSG
                 ks_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
 
             var laboriousness = registerSheet.Cells[rowIndex, KS_LABOURNESS_COL].Value;
-            if (laboriousness != null)
+            if (laboriousness != null && laboriousness!=0)
                 ks_work.Laboriousness = Decimal.Parse(laboriousness.ToString());
             else
                 ks_work.CellAddressesMap["Laboriousness"].IsValid = false;
@@ -915,7 +928,11 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
             int rowIndex = row;
-            RCWork rc_work = new RCWork();
+            string number = registerSheet.Cells[rowIndex, RC_NUMBER_COL].Value.ToString();
+            RCWork rc_work = this.RCWorks.FirstOrDefault(w => w.Number == number);
+            if (rc_work == null)
+                rc_work = new RCWork();
+
             rc_work.Worksheet = registerSheet;
             this.Register(rc_work, "Number", rowIndex, RC_NUMBER_COL, this.RegisterSheet, v => Regex.IsMatch(v.ToString(), @"^\d+.\d+.\d+.\d+.\d+$"));
             this.Register(rc_work, "Code", rowIndex, RC_CODE_COL, this.RegisterSheet);
@@ -927,7 +944,7 @@ namespace ExellAddInsLib.MSG
             this.Register(rc_work, "UnitOfMeasurement.Name", rowIndex, RC_MEASURE_COL, this.RegisterSheet);
 
 
-            rc_work.Number = registerSheet.Cells[rowIndex, RC_NUMBER_COL].Value.ToString();
+            rc_work.Number = number;
             var code = registerSheet.Cells[rowIndex, RC_CODE_COL].Value;
             if (code != null)
                 rc_work.Code = code;
@@ -959,7 +976,7 @@ namespace ExellAddInsLib.MSG
                 rc_work.CellAddressesMap["LabournessCoefficient"].IsValid = false;
 
             var laboriousness = registerSheet.Cells[rowIndex, RC_LABOURNESS_COL].Value;
-            if (laboriousness != null)
+            if (laboriousness != null && laboriousness!=0)
                 rc_work.Laboriousness = Decimal.Parse(laboriousness.ToString());
             else
                 rc_work.CellAddressesMap["Laboriousness"].IsValid = false;
@@ -1359,13 +1376,15 @@ namespace ExellAddInsLib.MSG
             //this.CellAddressesMap.Add("ContructionObjectCode", new ExellPropAddress<int, int, Worksheet>(CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL, this.CommonSheet));
             //this.CellAddressesMap.Add("ConstructionSubObjectCode", new ExellPropAddress<int, int, Worksheet>(CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL, this.CommonSheet));
             this.AllHashDictationary.Clear();
-            this.SetHashFormulas();
+         
 
             this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
             this.InvalidObjects.Clear();
             if (this.Owner == null)
             {
-
+                if (IsHasEnabled)
+                    this.SetHashFormulas();
+          
                 this.LoadWorksSections();
                 this.LoadMSGWorks();
                 //      this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL] = this.WorksEndDate.ToString("d");

@@ -41,6 +41,8 @@
             this.btnLoadFromModel = this.Factory.CreateRibbonButton();
             this.menuCommon = this.Factory.CreateRibbonMenu();
             this.btnUpdateAll = this.Factory.CreateRibbonButton();
+            this.btnLoadInModelLocal = this.Factory.CreateRibbonButton();
+            this.chckBoxHashEnable = this.Factory.CreateRibbonCheckBox();
             this.separator4 = this.Factory.CreateRibbonSeparator();
             this.btnChangeCommonMSG = this.Factory.CreateRibbonButton();
             this.comboBoxEmployerName = this.Factory.CreateRibbonComboBox();
@@ -80,7 +82,6 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.btnLoadInModelLocal = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -108,6 +109,7 @@
             this.groupFileLaod.Items.Add(this.btnLoadFromModel);
             this.groupFileLaod.Items.Add(this.menuCommon);
             this.groupFileLaod.Items.Add(this.btnLoadInModelLocal);
+            this.groupFileLaod.Items.Add(this.chckBoxHashEnable);
             this.groupFileLaod.Items.Add(this.separator4);
             this.groupFileLaod.Items.Add(this.btnChangeCommonMSG);
             this.groupFileLaod.Items.Add(this.comboBoxEmployerName);
@@ -148,6 +150,20 @@
             this.btnUpdateAll.Name = "btnUpdateAll";
             this.btnUpdateAll.ShowImage = true;
             this.btnUpdateAll.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnUpdateAll_Click);
+            // 
+            // btnLoadInModelLocal
+            // 
+            this.btnLoadInModelLocal.Label = "В МОДЕЛЬ (част.)";
+            this.btnLoadInModelLocal.Name = "btnLoadInModelLocal";
+            this.btnLoadInModelLocal.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadInModelLocal_Click);
+            // 
+            // chckBoxHashEnable
+            // 
+            this.chckBoxHashEnable.Checked = true;
+            this.chckBoxHashEnable.Enabled = false;
+            this.chckBoxHashEnable.Label = "Включить хэширование";
+            this.chckBoxHashEnable.Name = "chckBoxHashEnable";
+            this.chckBoxHashEnable.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.chckBoxHashEnable_Click);
             // 
             // separator4
             // 
@@ -416,12 +432,6 @@
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
             // 
-            // btnLoadInModelLocal
-            // 
-            this.btnLoadInModelLocal.Label = "В МОДЕЛЬ (част.)";
-            this.btnLoadInModelLocal.Name = "btnLoadInModelLocal";
-            this.btnLoadInModelLocal.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadInModelLocal_Click);
-            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -495,6 +505,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonMenu menuKS;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyKSWork;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadInModelLocal;
+        internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox chckBoxHashEnable;
     }
 
     partial class ThisRibbonCollection
