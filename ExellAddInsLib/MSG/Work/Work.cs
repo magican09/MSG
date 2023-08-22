@@ -152,7 +152,9 @@ namespace ExellAddInsLib.MSG
         public Work()
         {
             WorkersComposition = new WorkersComposition();
+            WorkersComposition.Owner = this;
             MachinesComposition = new MachinesComposition();
+            MachinesComposition.Owner = this;
             //  ReportCard = new WorkReportCard();
             Children.CollectionChanged += OnChildrenAdd;
 

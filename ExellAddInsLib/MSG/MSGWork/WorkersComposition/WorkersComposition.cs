@@ -1,6 +1,6 @@
 ﻿namespace ExellAddInsLib.MSG
 {
-    public class WorkersComposition : ExcelNotifyChangedCollection<NeedsOfWorker>
+    public class WorkersComposition : AdjustableCollection<NeedsOfWorker>
     {
     }
 }

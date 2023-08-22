@@ -176,7 +176,7 @@ namespace ExellAddInsLib.MSG
             {
                 if (element is IExcelBindableBase excel_bindable_element/* && excel_bindable_element.Owners.Contains(this)*/)
                 {
-                    excel_bindable_element.Owner = null;
+                //    excel_bindable_element.Owner = null;
                     foreach (var kvp in excel_bindable_element.CellAddressesMap)
                     {
                         string key_str = $"{excel_bindable_element.Id.ToString()}_{kvp.Value.ProprertyName}";
@@ -192,7 +192,7 @@ namespace ExellAddInsLib.MSG
         {
             if (item is IExcelBindableBase excel_bindable_element/* && !excel_bindable_element.Owners.Contains(this)*/)
             {
-                excel_bindable_element.Owner = this.Owner;
+      //          excel_bindable_element.Owner = this.Owner;
 
                 foreach (var kvp in excel_bindable_element.CellAddressesMap)
                 {
@@ -210,7 +210,7 @@ namespace ExellAddInsLib.MSG
         {
             if (this[index] is IExcelBindableBase excel_bindable_element/* && excel_bindable_element.Owners.Contains(this)*/)
             {
-                excel_bindable_element.Owner = null;
+            //    excel_bindable_element.Owner = null;
                 foreach (var kvp in excel_bindable_element.CellAddressesMap)
                 {
                     string key_str = $"{excel_bindable_element.Id.ToString()}_{kvp.Value.ProprertyName}";

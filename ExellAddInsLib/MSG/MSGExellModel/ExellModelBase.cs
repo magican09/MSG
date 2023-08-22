@@ -77,7 +77,8 @@ namespace ExellAddInsLib.MSG
                     {
                         var row_hash = local_register.ExellPropAddress.Worksheet.Cells[row, HASH_FUNCTION_COL].Value;
                         var col_hash = local_register.ExellPropAddress.Worksheet.Cells[HASH_FUNCTION_ROW, column].Value;
-
+                        local_register.ExellPropAddress.Owner = notified_object;
+                     
                         if (row_hash != null)
                             local_register.ExellPropAddress.RowHashValue = Int32.Parse(row_hash.ToString());
                         if (col_hash != null)

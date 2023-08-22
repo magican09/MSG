@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -57,7 +58,7 @@ namespace MSGAddIn
         ObservableCollection<Excel.Worksheet> EmployerWorkConsumptionsWorksheets = new ObservableCollection<Worksheet>();
         ObservableCollection<Excel.Worksheet> MachineMSGWorksheets = new ObservableCollection<Worksheet>();
         ObservableCollection<Excel.Worksheet> MachineConsumptionsWorksheets = new ObservableCollection<Worksheet>();
-       
+
         Employer SelectedEmloeyer;
         private bool InMSGWorkbook = false;
         private void OnActiveWorkbookChanged(Workbook last_wbk, Workbook new_wbk)
@@ -152,7 +153,7 @@ namespace MSGAddIn
                 groupFileLaod.Visible = true;
                 Workbook_Guid = Guid.Empty;
             }
-           
+
         }
 
         private void Ribbon1_Load(object sender, RibbonUIEventArgs e)
@@ -163,7 +164,7 @@ namespace MSGAddIn
 
         }
 
-       
+
 
         private void SetBtnsState(bool state)
         {
@@ -195,7 +196,7 @@ namespace MSGAddIn
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
-          // try
+            // try
             {
                 CurrentWorkbook = Globals.ThisAddIn.CurrentActivWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -236,13 +237,13 @@ namespace MSGAddIn
                     }
                 }
 
-             
+
 
                 this.ReloadAllModels();
 
 
                 CurrentMSGExellModel = CommonMSGExellModel;
-                 //labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
+                //labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
                 //                        $"Объект:{CurrentMSGExellModel.ContructionObjectCode}\n " +
                 //                        $"Подобъект:{CurrentMSGExellModel.ConstructionSubObjectCode}";
                 labelConractCode.Label = $"Шифр:{CurrentMSGExellModel.ContractCode}\n" +
@@ -252,9 +253,9 @@ namespace MSGAddIn
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-          //    catch (Exception exp)
+            //    catch (Exception exp)
             {
-          //        MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
+                //        MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
             }
 
         }
@@ -681,8 +682,10 @@ namespace MSGAddIn
                     MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                     MSGTemplateWorkbook.Activate();
                     if (CommonMSGExellModel != null)
-                        this.FillMSG_OUT_File();
-
+                        this.FillMSG_OUT_File(CurrentMSGExellModel,(w)=> { return true; });
+                  
+                    MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{CurrentMSGExellModel.ContractCode}.xlsx");
+                    MSGTemplateWorkbook.Close();
                 }
             }
             catch (Exception exp)
@@ -696,7 +699,7 @@ namespace MSGAddIn
         {
 
             if (CommonMSGExellModel != null)
-                this.FillMSG_OUT_File();
+                this.FillMSG_OUT_File(CommonMSGExellModel);
         }
         #region Генерация МСГ в формате ЗМУО
         const int TMP_NOW_DATE_ROW = 1;
@@ -742,7 +745,7 @@ namespace MSGAddIn
         const int NEEDS_MACHINE_FIRST_ROW = 36;
 
 
-        private void FillMSG_OUT_File()
+        private void FillMSG_OUT_File(MSGExellModel curren_model, Func<MSGWork, bool> selection_predicate)
         {
 
 
@@ -763,19 +766,19 @@ namespace MSGAddIn
             DateTime current_day_date = DateTime.Now;
 
             MSGOutWorksheet.Cells[TMP_NOW_DATE_ROW, TMP_NOW_DATE_COL] = current_day_date.ToString("d");
-            MSGOutWorksheet.Cells[TMP_CONTRACT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ContractCode;
-            MSGOutWorksheet.Cells[TMP_CONSTRUCTION_OBJECT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = CommonMSGExellModel.ConstructionSubObjectCode;
+            MSGOutWorksheet.Cells[TMP_CONTRACT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = curren_model.ContractCode;
+            MSGOutWorksheet.Cells[TMP_CONSTRUCTION_OBJECT_CODE_ROW, TMP_COMMON_PARAMETRS_VALUE_COL] = curren_model.ConstructionSubObjectCode;
 
             MSGNeedsTemplateWorksheet.Cells[NEEDS_NOW_DATE_ROW, NEEDS_NOW_DATE_COL].Value = current_day_date.ToString("d");
-            MSGNeedsTemplateWorksheet.Cells[NEEDS_CONTRACT_CODE_ROW, NEEDS_NOW_DATE_COL] = CommonMSGExellModel.ContructionObjectCode;
-            MSGNeedsTemplateWorksheet.Cells[NEEDS_CONSTRUCTION_OBJECT_CODE_ROW, NEEDS_NOW_DATE_COL] = CommonMSGExellModel.ConstructionSubObjectCode;
+            MSGNeedsTemplateWorksheet.Cells[NEEDS_CONTRACT_CODE_ROW, NEEDS_NOW_DATE_COL] = curren_model.ContructionObjectCode;
+            MSGNeedsTemplateWorksheet.Cells[NEEDS_CONSTRUCTION_OBJECT_CODE_ROW, NEEDS_NOW_DATE_COL] = curren_model.ConstructionSubObjectCode;
 
             if (checkBoxRerightDatePart.Checked)
-                this.FillMSG_OUT_File_Headers();
+                this.FillMSG_OUT_File_Headers(curren_model);
 
             int date_col_index = 0;
             int in_worksheet_number = 18;
-            int worked_days_number = (CommonMSGExellModel.WorksEndDate - CommonMSGExellModel.WorksStartDate).Days;
+            int worked_days_number = (curren_model.WorksEndDate - curren_model.WorksStartDate).Days;
             int last_day_col_index = Convert.ToInt32(Math.Round(WORKDAY_DATE_FIRST_COL + worked_days_number * (1 + 1 / 7.0) + 5));
 
 
@@ -792,7 +795,7 @@ namespace MSGAddIn
             int last_not_null_row_index = TMP_WORK_SELECTION_FIRST_ROW;
             int work_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
             int saved_iterator = TMP_WORK_SELECTION_FIRST_ROW;
-            foreach (WorksSection w_section in CommonMSGExellModel.WorksSections)
+            foreach (WorksSection w_section in curren_model.WorksSections)
             {
                 int section_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
                 int section_null_cell_counter = 0;
@@ -823,7 +826,7 @@ namespace MSGAddIn
                 MSGOutWorksheet.Cells[section_local_index_iterator, 1] = $"{w_section.Number} {w_section.Name}";
 
                 saved_iterator = section_local_index_iterator + 1;
-                foreach (MSGWork msg_work in w_section.MSGWorks)
+                foreach (MSGWork msg_work in w_section.MSGWorks.Where(w=> selection_predicate(w)))
                 {
                     ///Копируем и вставляем строку для работы в МСГ
                     work_local_index_iterator = section_local_index_iterator + 1;
@@ -843,7 +846,7 @@ namespace MSGAddIn
 
 
 
-                            if (CommonMSGExellModel.WorksSections.FirstOrDefault(wc => wc.Name == msg_work_number) != null
+                            if (curren_model.WorksSections.FirstOrDefault(wc => wc.Name == msg_work_number) != null
                                                  && msg_work_number != w_section.Name)
                             {
                                 saved_iterator = work_local_index_iterator;
@@ -945,8 +948,8 @@ namespace MSGAddIn
                 var ss = MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value;
                 DateTime.TryParse(MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value.ToString("d"), out current_date);
                 string worker_post_name = MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator, NEEDS_WORKERS_NAME_COL].Value;
-                var current_needs_of_worker = CommonMSGExellModel.WorkersComposition.FirstOrDefault(nw => nw.Name == worker_post_name);
-                var current_worker_consumption = CommonMSGExellModel.WorkerConsumptions.FirstOrDefault(wc => wc.Name == worker_post_name);
+                var current_needs_of_worker = curren_model.WorkersComposition.FirstOrDefault(nw => nw.Name == worker_post_name);
+                var current_worker_consumption = curren_model.WorkerConsumptions.FirstOrDefault(wc => wc.Name == worker_post_name);
 
                 while (work_needs_date_col_index < last_day_col_index)
                 {
@@ -980,8 +983,8 @@ namespace MSGAddIn
                 var ss = MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + machine_needs_date_col_index].Value;
                 DateTime.TryParse(MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + machine_needs_date_col_index].Value.ToString("d"), out current_date);
                 string worker_post_name = MSGNeedsOutWorksheet.Cells[NEEDS_MACHINE_FIRST_ROW + machine_needs_iterator, NEEDS_WORKERS_NAME_COL].Value;
-                var current_needs_of_worker = CommonMSGExellModel.MachinesComposition.FirstOrDefault(nw => nw.Name == worker_post_name);
-                var current_machine_consumption = CommonMSGExellModel.MachineConsumptions.FirstOrDefault(wc => wc.Name == worker_post_name);
+                var current_needs_of_worker = curren_model.MachinesComposition.FirstOrDefault(nw => nw.Name == worker_post_name);
+                var current_machine_consumption = curren_model.MachineConsumptions.FirstOrDefault(wc => wc.Name == worker_post_name);
 
                 while (machine_needs_date_col_index < last_day_col_index)
                 {
@@ -1014,11 +1017,10 @@ namespace MSGAddIn
 
             #endregion
 
-            MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{CurrentMSGExellModel.ContractCode}.xlsx");
-            MSGTemplateWorkbook.Close();
+          
         }
 
-        private void FillMSG_OUT_File_Headers()
+        private void FillMSG_OUT_File_Headers(MSGExellModel curren_model)
         {
             #region Создание календарной части - дней, недель...
             Excel.Worksheet MSGOutWorksheet = MSGTemplateWorkbook.Worksheets["МСГ"];
@@ -1047,12 +1049,12 @@ namespace MSGAddIn
             string last_week_name_signatura = "";
             ///Цикл создающий календарные дни и недели до конца периода..
             if (checkBoxRerightDatePart.Checked == true)
-                for (DateTime date = CommonMSGExellModel.WorksStartDate; date <= CommonMSGExellModel.WorksEndDate; date = date.AddDays(1))
+                for (DateTime date = curren_model.WorksStartDate; date <= curren_model.WorksEndDate; date = date.AddDays(1))
                 {
 
                     ///Если текущий день является восскесеньем или является первым днем все ведомости -
                     /// втавляем и заполняем недельный столбец в календарь
-                    if (date.DayOfWeek == DayOfWeek.Monday || date == CommonMSGExellModel.WorksStartDate)
+                    if (date.DayOfWeek == DayOfWeek.Monday || date == curren_model.WorksStartDate)
                     {
                         #region Календраня часть МСГ недельный столбец
 
@@ -1322,9 +1324,13 @@ namespace MSGAddIn
                                     {
                                         CurrentMSGExellModel.WorksSections.Add(section);
                                         section.SetNumberItem(0, cell_val.ToString());
-                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
+
                                         cell_val++;
                                     }
+                                    CurrentMSGExellModel.UpdateExcelRepresetation();
+
+                                    foreach (WorksSection section in CopyedObjectsList)
+                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
 
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
                                     CurrentMSGExellModel.SetStyleFormats();
@@ -1349,12 +1355,14 @@ namespace MSGAddIn
 
                                 if (selected_section == null) return;
                                 int selected_work_index = selected_section.MSGWorks.IndexOf(selected_work);
+
                                 foreach (MSGWork msg_work in CopyedObjectsList)
-                                {
                                     selected_section.MSGWorks.Insert(selected_work_index + 1, msg_work);
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
-                                }
+
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
+                                foreach (MSGWork msg_work in CopyedObjectsList)
+                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+
                                 CurrentMSGExellModel.SetStyleFormats();
                                 commands_group_label = "";
                                 break;
@@ -1372,11 +1380,14 @@ namespace MSGAddIn
                                 if (selected_msg_work == null) return;
                                 int selected_work_index = selected_msg_work.VOVRWorks.IndexOf(selected_work);
                                 foreach (VOVRWork work in CopyedObjectsList)
-                                {
                                     selected_msg_work.VOVRWorks.Insert(selected_work_index, work);
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
-                                }
+
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
+
+                                foreach (VOVRWork work in CopyedObjectsList)
+                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
+
+
                                 CurrentMSGExellModel.SetStyleFormats();
                                 commands_group_label = "";
                                 break;
@@ -1394,11 +1405,12 @@ namespace MSGAddIn
                                 if (selected_owner_work == null) return;
                                 int selected_work_index = selected_owner_work.KSWorks.IndexOf(selected_work);
                                 foreach (KSWork work in CopyedObjectsList)
-                                {
-                                    selected_owner_work.KSWorks.Insert(selected_work_index , work);
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
-                                }
+                                    selected_owner_work.KSWorks.Insert(selected_work_index, work);
+
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
+                                foreach (KSWork work in CopyedObjectsList)
+                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
+
                                 CurrentMSGExellModel.SetStyleFormats();
                                 commands_group_label = "";
                                 break;
@@ -1417,11 +1429,11 @@ namespace MSGAddIn
                                 if (selected_owner_work == null) return;
                                 int selected_work_index = selected_owner_work.RCWorks.IndexOf(selected_work);
                                 foreach (RCWork work in CopyedObjectsList)
-                                {
                                     selected_owner_work.RCWorks.Insert(selected_work_index, work);
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
-                                }
+
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
+                                foreach (RCWork work in CopyedObjectsList)
+                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
                                 CurrentMSGExellModel.SetStyleFormats();
                                 commands_group_label = "";
                                 break;
@@ -1441,67 +1453,13 @@ namespace MSGAddIn
                                         if (msg_n_w != null)
                                             msg_n_w.Quantity = n_w.Quantity;
                                         else
-                                        {
-                                            NeedsOfWorker new_n_w = new NeedsOfWorker();
-                                            new_n_w.Worksheet = msg_work.Worksheet;
-                                            int rowIndex = 0;
-
-                                            if (msg_work.WorkersComposition.Count == 0)
-                                                rowIndex = msg_work.GetTopRow();
-                                            else
-                                            {
-                                                var section = (msg_work.Owner as WorksSection);
-                                                int msg_work_row = msg_work.GetRange().Row;
-                                                Excel.Range need_of_worker_range = msg_work.WorkersComposition.GetRange();
-                                                int msg_need_of_worker_last_row = need_of_worker_range.Rows[need_of_worker_range.Rows.Count].Row;
-
-                                                int msg_work_index = section.MSGWorks.IndexOf(msg_work);
-                                                int next_work_row = 0;
-                                                if (msg_work_index < section.MSGWorks.Count - 1)
-                                                    next_work_row = section.MSGWorks[msg_work_index + 1].GetRange().Row;
-                                                else
-                                                {
-                                                    var model = section.Owner as MSGExellModel;
-                                                    int section_index = model.WorksSections.IndexOf(section);
-                                                    if (section_index < model.WorksSections.Count - 1)
-                                                        next_work_row = model.WorksSections[section_index + 1].GetRange().Row;
-                                                    else
-                                                    {
-                                                        Excel.Range lowest_range = model.WorksSections[section_index].GetRange().GetRangeWithLowestEdge();
-
-                                                        next_work_row = lowest_range.Rows[lowest_range.Rows.Count].Row;
-                                                    }
-                                                }
-
-                                                if (next_work_row - msg_need_of_worker_last_row <= 2)
-                                                {
-                                                    Excel.Range _range = CurrentMSGExellModel.RegisterSheet.Rows[next_work_row - 1];
-                                                    _range.Insert(XlInsertShiftDirection.xlShiftDown, 0);
-                                                }
-                                                rowIndex = msg_need_of_worker_last_row + 1;
-
-                                                var beneath_works_insection = CurrentMSGExellModel.MSGWorks.Where(w => w.GetTopRow() > rowIndex && w.Owner.Id == msg_work.Owner.Id).ToList();
-                                                var beneath_sections = CurrentMSGExellModel.WorksSections.Where(s => s.GetBottomRow() > msg_work.GetTopRow()).ToList();
-                                                foreach (MSGWork w in beneath_works_insection)
-                                                    w.AdjustExcelRepresentionTree(w.GetBottomRow() + 1);
-                                                foreach (WorksSection s in beneath_sections)
-                                                    s.AdjustExcelRepresentionTree(s.GetBottomRow() + 1);
-
-                                                rowIndex++;
-                                            }
-                                            CurrentMSGExellModel.Register(new_n_w, "Name", rowIndex, MSGExellModel.MSG_NEEDS_OF_WORKERS_NAME_COL, CurrentMSGExellModel.RegisterSheet);
-                                            CurrentMSGExellModel.Register(new_n_w, "Quantity", rowIndex, MSGExellModel.MSG_NEEDS_OF_WORKERS_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
-                                            new_n_w.Name = n_w.Name;
-                                            new_n_w.Quantity = n_w.Quantity;
-                                            new_n_w.Number = $"{msg_work.Number}.{(msg_work.WorkersComposition.Count + 1).ToString()}";
-                                            msg_work.WorkersComposition.Add(new_n_w);
-                                            if (!CurrentMSGExellModel.WorkersComposition.Contains(new_n_w))
-                                                CurrentMSGExellModel.WorkersComposition.Add(new_n_w);
-                                        }
-
+                                            msg_work.WorkersComposition.Add(n_w.Clone() as NeedsOfWorker);
                                     }
                                 }
+                          
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
+                                foreach (MSGWork msg_work in sected_object)
+                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
                                 CurrentMSGExellModel.SetStyleFormats();
                                 break;
                             }
@@ -1519,40 +1477,13 @@ namespace MSGAddIn
                                         if (msg_n_w != null)
                                             msg_n_w.Quantity = n_w.Quantity;
                                         else
-                                        {
-                                            NeedsOfMachine new_n_w = new NeedsOfMachine();
-                                            new_n_w.Worksheet = msg_work.Worksheet;
-                                            int rowIndex = 0;
-                                            if (msg_work.MachinesComposition.Count == 0)
-                                                rowIndex = msg_work.GetTopRow();
-                                            else
-                                            {
-                                                rowIndex = msg_work.MachinesComposition.OrderBy(n => n.GetTopRow()).Last().GetTopRow();
-                                                Excel.Range _range = CurrentMSGExellModel.RegisterSheet.Rows[rowIndex];
-                                                _range.Insert(XlInsertShiftDirection.xlShiftDown, 0);
-
-                                                var beneath_works_insection = CurrentMSGExellModel.MSGWorks.Where(w => w.GetTopRow() > rowIndex && w.Owner.Id == msg_work.Owner.Id).ToList();
-                                                var beneath_sections = CurrentMSGExellModel.WorksSections.Where(s => s.GetBottomRow() > msg_work.GetTopRow()).ToList();
-                                                foreach (MSGWork w in beneath_works_insection)
-                                                    w.AdjustExcelRepresentionTree(w.GetBottomRow() + 1);
-                                                foreach (WorksSection s in beneath_sections)
-                                                    s.AdjustExcelRepresentionTree(s.GetBottomRow() + 1);
-
-                                                rowIndex++;
-                                            }
-                                            CurrentMSGExellModel.Register(new_n_w, "Name", rowIndex, MSGExellModel.MSG_NEEDS_OF_MACHINE_NAME_COL, CurrentMSGExellModel.RegisterSheet);
-                                            CurrentMSGExellModel.Register(new_n_w, "Quantity", rowIndex, MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
-                                            new_n_w.Name = n_w.Name;
-                                            new_n_w.Quantity = n_w.Quantity;
-                                            msg_work.MachinesComposition.Add(new_n_w);
-                                            new_n_w.Number = $"{msg_work.Number}.{(msg_work.WorkersComposition.Count + 1).ToString()}";
-                                            if (!CurrentMSGExellModel.MachinesComposition.Contains(new_n_w))
-                                                CurrentMSGExellModel.MachinesComposition.Add(new_n_w);
-                                        }
-
+                                            msg_work.MachinesComposition.Add(n_w.Clone() as NeedsOfMachine);
                                     }
                                 }
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
+                                foreach (MSGWork msg_work in sected_object)
+                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                             
                                 CurrentMSGExellModel.SetStyleFormats();
                                 break;
                             }
@@ -1750,6 +1681,53 @@ namespace MSGAddIn
         private void chckBoxHashEnable_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.IsHasEnabled = chckBoxHashEnable.Checked;
+        }
+
+        private void btnCreateMSGForEmployers_Click(object sender, RibbonControlEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog1 = new OpenFileDialog
+                {
+                    InitialDirectory = @"С:\",
+                    Title = "Browse Text Files",
+
+                    CheckFileExists = true,
+                    CheckPathExists = true,
+
+                    DefaultExt = "xlsx",
+                    Filter = "xlsx files (*.xlsx)|*.xlsx",
+                    FilterIndex = 2,
+                    RestoreDirectory = true,
+
+                    ReadOnlyChecked = true,
+                    ShowReadOnly = true
+                };
+                string temlate_file_name;
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    temlate_file_name = openFileDialog1.FileName;
+                   // CurrentMSGExellModel.ReloadSheetModel();
+                  //  CurrentMSGExellModel.CalcAll();
+                     foreach (MSGExellModel model in CurrentMSGExellModel.Children)
+                    {
+                        MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
+                        MSGTemplateWorkbook.Activate();
+                      
+                            this.FillMSG_OUT_File(model);
+                        MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{model.Employer.Name}_{model.ContractCode}.xlsx");
+                        MSGTemplateWorkbook.Close();
+                    }
+
+                 
+
+                }
+            }
+            catch (Exception exp)
+            {
+
+                MessageBox.Show($"Ошибка при выводе данных в шаблом графика МСГ. Ошибка:{exp.Message}");
+            }
         }
     }
 

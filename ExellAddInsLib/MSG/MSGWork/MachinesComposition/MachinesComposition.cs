@@ -1,6 +1,6 @@
 ﻿namespace ExellAddInsLib.MSG
 {
-    public class MachinesComposition : ExcelNotifyChangedCollection<NeedsOfMachine>
+    public class MachinesComposition : AdjustableCollection<NeedsOfMachine>
     {
     }
 }

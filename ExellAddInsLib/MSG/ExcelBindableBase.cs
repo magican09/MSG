@@ -242,11 +242,11 @@ namespace ExellAddInsLib.MSG
         }
         public virtual void ChangeTopRow(int row)
         {
-            int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
+            int top_row = this.CellAddressesMap.Where(adr => !adr.Key.Contains("_")).OrderBy(kvp => kvp.Value.Row).First().Value.Row;
             int row_delta = row - top_row;
             if (top_row + row_delta <= 0) row_delta = 0;
             //  foreach(var kvp in this.CellAddressesMap.Where(k=>k.Key.Contains('_')))
-            foreach (var kvp in this.CellAddressesMap)
+            foreach (var kvp in this.CellAddressesMap.Where(adr => !adr.Key.Contains("_")))
             {
                 kvp.Value.Row += row_delta;
             }
@@ -349,7 +349,7 @@ namespace ExellAddInsLib.MSG
                 var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
                 if (val != null)
                 {
-                 
+                    kvp.Value.Cell.NumberFormat = kvp.Value.CellNumberFormat;
                     kvp.Value.Cell.Value = val;
 
                 }

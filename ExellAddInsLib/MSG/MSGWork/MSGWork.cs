@@ -115,7 +115,9 @@ namespace ExellAddInsLib.MSG
             MSGWork msg_work = this;
             int msg_row = row;
             int msg_lowest_row = 0;
+       
             msg_work.ChangeTopRow(msg_row);
+            
             int sh_ch_row_iterator = 0;
             foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
             {
@@ -134,6 +136,8 @@ namespace ExellAddInsLib.MSG
                 n_m.AdjustExcelRepresentionTree(msg_row + nm_row_iterator);
                 nm_row_iterator++;
             }
+            
+         
             if (msg_row + sh_ch_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + sh_ch_row_iterator;
             if (msg_row + nw_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + nw_row_iterator;
             if (msg_row + nm_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + nm_row_iterator;

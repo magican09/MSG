@@ -82,6 +82,7 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.btnCreateMSGForEmployers = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -383,13 +384,14 @@
             this.groupMSG_OUT.Items.Add(this.btnCreateTemplateFile);
             this.groupMSG_OUT.Items.Add(this.checkBoxRerightDatePart);
             this.groupMSG_OUT.Items.Add(this.separator3);
+            this.groupMSG_OUT.Items.Add(this.btnCreateMSGForEmployers);
             this.groupMSG_OUT.Label = "МСГ выход";
             this.groupMSG_OUT.Name = "groupMSG_OUT";
             // 
             // btnCreateTemplateFile
             // 
             this.btnCreateTemplateFile.Enabled = false;
-            this.btnCreateTemplateFile.Label = "Создать МСГ из шаблона";
+            this.btnCreateTemplateFile.Label = "Создать Общий  МСГ из шаблона";
             this.btnCreateTemplateFile.Name = "btnCreateTemplateFile";
             this.btnCreateTemplateFile.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadTeplateFile_Click);
             // 
@@ -431,6 +433,13 @@
             // openMSGTemplateFileDialog
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
+            // 
+            // btnCreateMSGForEmployers
+            // 
+            this.btnCreateMSGForEmployers.Enabled = false;
+            this.btnCreateMSGForEmployers.Label = " МСГ для отвественных";
+            this.btnCreateMSGForEmployers.Name = "btnCreateMSGForEmployers";
+            this.btnCreateMSGForEmployers.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCreateMSGForEmployers_Click);
             // 
             // Ribbon1
             // 
@@ -506,6 +515,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCopyKSWork;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadInModelLocal;
         internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox chckBoxHashEnable;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCreateMSGForEmployers;
     }
 
     partial class ThisRibbonCollection
