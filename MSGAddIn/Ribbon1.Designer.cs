@@ -154,13 +154,14 @@
             // 
             // btnLoadInModelLocal
             // 
+            this.btnLoadInModelLocal.Enabled = false;
             this.btnLoadInModelLocal.Label = "В МОДЕЛЬ (част.)";
             this.btnLoadInModelLocal.Name = "btnLoadInModelLocal";
+            this.btnLoadInModelLocal.ShowImage = true;
             this.btnLoadInModelLocal.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnLoadInModelLocal_Click);
             // 
             // chckBoxHashEnable
             // 
-            this.chckBoxHashEnable.Checked = true;
             this.chckBoxHashEnable.Enabled = false;
             this.chckBoxHashEnable.Label = "Включить хэширование";
             this.chckBoxHashEnable.Name = "chckBoxHashEnable";

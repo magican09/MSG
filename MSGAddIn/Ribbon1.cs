@@ -187,8 +187,8 @@ namespace MSGAddIn
             btnChangePosts.Enabled = state;
             btnChangeUOM.Enabled = state;
             btnMachines.Enabled = state;
-            chckBoxHashEnable.Enabled = state;
-            btnCreateMSGForEmployers.Enabled= state;
+            //    chckBoxHashEnable.Enabled = state;
+            btnCreateMSGForEmployers.Enabled = state;
         }
         private void AjastBtnsState()
         {
@@ -624,9 +624,18 @@ namespace MSGAddIn
         {
             try
             {
-                CurrentMSGExellModel.UpdateExcelRepresetation();
-                CurrentMSGExellModel.SetFormulas();
-                CurrentMSGExellModel.SetStyleFormats();
+                if(CurrentMSGExellModel.Owner!=null)
+                {
+                    CurrentMSGExellModel.ReloadSheetModel();
+                  
+                }
+              //  else
+                {
+                    CurrentMSGExellModel.UpdateExcelRepresetation();
+                    CurrentMSGExellModel.SetFormulas();
+                    CurrentMSGExellModel.SetStyleFormats();
+                }
+              
             }
             catch (Exception exp)
             {
@@ -683,8 +692,8 @@ namespace MSGAddIn
                     MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                     MSGTemplateWorkbook.Activate();
                     if (CommonMSGExellModel != null)
-                        this.FillMSG_OUT_File(CurrentMSGExellModel,(w)=> { return true; });
-                  
+                        this.FillMSG_OUT_File(CurrentMSGExellModel, (w) => { return true; });
+
                     MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{CurrentMSGExellModel.ContractCode}.xlsx");
                     MSGTemplateWorkbook.Close();
                 }
@@ -699,8 +708,8 @@ namespace MSGAddIn
         private void btnFillTemlate_Click(object sender, RibbonControlEventArgs e)
         {
 
-       //     if (CommonMSGExellModel != null)
-          //      this.FillMSG_OUT_File(CommonMSGExellModel);
+            //     if (CommonMSGExellModel != null)
+            //      this.FillMSG_OUT_File(CommonMSGExellModel);
         }
         #region Генерация МСГ в формате ЗМУО
         const int TMP_NOW_DATE_ROW = 1;
@@ -828,7 +837,7 @@ namespace MSGAddIn
 
                 saved_iterator = section_local_index_iterator + 1;
                 var works = w_section.MSGWorks.Where(w => selection_predicate(w));
-                foreach (MSGWork msg_work in w_section.MSGWorks.Where(w=> selection_predicate(w)))
+                foreach (MSGWork msg_work in w_section.MSGWorks.Where(w => selection_predicate(w)))
                 {
                     ///Копируем и вставляем строку для работы в МСГ
                     work_local_index_iterator = section_local_index_iterator + 1;
@@ -887,6 +896,15 @@ namespace MSGAddIn
                     ///Заполняем основыне данные работы                
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_NUMBER_COL] = msg_work.Number;
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_NAME_COL] = msg_work.Name;
+
+                    //decimal project_quantity = 0;
+                    //if (curren_model.Owner == null)
+                    //    project_quantity = msg_work.ProjectQuantity;
+                    //else
+                    //{
+                    //    var owner_model = curren_model.Owner;
+
+                    //}
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_PROJECT_QUANTITY_COL] = msg_work.ProjectQuantity;
                     MSGOutWorksheet.Cells[row_index, TMP_U_MRASURE_COL] = msg_work.UnitOfMeasurement.Name;
 
@@ -896,6 +914,8 @@ namespace MSGAddIn
                     MSGOutWorksheet.Cells[row_index + 1, TMP_PREVIOUS_WORK_QUANTITY_COL] = msg_work.PreviousComplatedQuantity;
                     // MSGOutWorksheet.Cells[row_index, TMP_WORK_DAYS_NUMBER_COL] = (msg_work.WorkSchedules.EndDate - msg_work.WorkSchedules.StartDate)?.Days;
                     ///Заполняем плановые объемы в календарной части
+                    MSGExellModel owner_model = curren_model.Owner;
+
                     foreach (WorkScheduleChunk schedule_chunk in msg_work.WorkSchedules)
                     {
                         int date_index = 0;
@@ -908,8 +928,35 @@ namespace MSGAddIn
                             if (date >= schedule_chunk.StartTime && date <= schedule_chunk.EndTime
                                 && (date.DayOfWeek != DayOfWeek.Sunday || schedule_chunk.IsSundayVacationDay == "Нет"))
                             {
-                                MSGOutWorksheet.Cells[row_index, TMP_WORKDAY_DATE_FIRST_COL + date_index] =
-                                    (msg_work.ProjectQuantity - msg_work.PreviousComplatedQuantity) / workable_days_num;
+                                decimal? project_quantity = 0;
+                                if (curren_model.Owner != null)
+                                {
+                                    decimal common_workers_number = 0;
+                                    decimal current_workers_number = 0;
+                                    foreach (var w_cons in curren_model.Owner.WorkerConsumptions)
+                                    {
+                                        var consumtion_report_card = w_cons.WorkersConsumptionReportCard.Where(rc => rc.Date == date);
+                                        foreach (var c in consumtion_report_card)
+                                            common_workers_number += c.Quantity;
+                                    }
+                                    foreach (var w_cons in curren_model.WorkerConsumptions)
+                                    {
+                                        var consumtion_report_card = w_cons.WorkersConsumptionReportCard.Where(rc => rc.Date == date);
+                                        foreach (var c in consumtion_report_card)
+                                            current_workers_number += c.Quantity;
+                                    }
+
+                                    decimal w_coefficent = 0;
+                                    if (common_workers_number != 0)
+                                        w_coefficent = current_workers_number / common_workers_number;
+                              
+                                    project_quantity = (msg_work.ProjectQuantity - msg_work.PreviousComplatedQuantity) / workable_days_num ;
+                                    project_quantity = project_quantity * w_coefficent;
+                                }
+                                else
+                                    project_quantity = (msg_work.ProjectQuantity - msg_work.PreviousComplatedQuantity) / workable_days_num;
+
+                                MSGOutWorksheet.Cells[row_index, TMP_WORKDAY_DATE_FIRST_COL + date_index] = project_quantity;
                             }
                             date_index++;
                         }
@@ -1019,7 +1066,7 @@ namespace MSGAddIn
 
             #endregion
 
-          
+
         }
 
         private void FillMSG_OUT_File_Headers(MSGExellModel curren_model)
@@ -1458,7 +1505,7 @@ namespace MSGAddIn
                                             msg_work.WorkersComposition.Add(n_w.Clone() as NeedsOfWorker);
                                     }
                                 }
-                          
+
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
                                 foreach (MSGWork msg_work in sected_object)
                                     CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
@@ -1485,7 +1532,7 @@ namespace MSGAddIn
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
                                 foreach (MSGWork msg_work in sected_object)
                                     CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
-                             
+
                                 CurrentMSGExellModel.SetStyleFormats();
                                 break;
                             }
@@ -1687,7 +1734,7 @@ namespace MSGAddIn
 
         private void btnCreateMSGForEmployers_Click(object sender, RibbonControlEventArgs e)
         {
-            try
+            //  try
             {
                 OpenFileDialog openFileDialog1 = new OpenFileDialog
                 {
@@ -1709,26 +1756,27 @@ namespace MSGAddIn
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
                 {
                     temlate_file_name = openFileDialog1.FileName;
-                   // CurrentMSGExellModel.ReloadSheetModel();
-                  //  CurrentMSGExellModel.CalcAll();
-                     foreach (MSGExellModel model in CurrentMSGExellModel.Children)
+                    // CurrentMSGExellModel.ReloadSheetModel();
+                    //  CurrentMSGExellModel.CalcAll();
+                    foreach (MSGExellModel model in CurrentMSGExellModel.Children)
                     {
                         MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                         MSGTemplateWorkbook.Activate();
                         model.ReloadSheetModel();
-                            this.FillMSG_OUT_File(model,(w)=>w.Quantity!=0);
+                        model.CalcAll();
+                        this.FillMSG_OUT_File(model, (w) => w.Quantity != 0);
                         MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{model.Employer.Name}_{model.ContractCode}.xlsx");
                         MSGTemplateWorkbook.Close();
                     }
 
-                 
+
 
                 }
             }
-            catch (Exception exp)
+            //   catch (Exception exp)
             {
 
-                MessageBox.Show($"Ошибка при выводе данных в шаблом графика МСГ. Ошибка:{exp.Message}");
+                //     MessageBox.Show($"Ошибка при выводе данных в шаблом графика МСГ. Ошибка:{exp.Message}");
             }
         }
     }

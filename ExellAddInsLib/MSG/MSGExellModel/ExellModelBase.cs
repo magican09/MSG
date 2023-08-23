@@ -20,7 +20,7 @@ namespace ExellAddInsLib.MSG
         public Dictionary<Tuple<int, int>, ExcelPropAddress> AllHashDictationary = new Dictionary<Tuple<int, int>, ExcelPropAddress>();
         public List<int> RowsHashValues = new List<int>();
         public List<int> ColumnsHashValues = new List<int>();
-
+        public bool IsHasEnabled = false;
 
         public ObservableCollection<Excel.Worksheet> AllWorksheets = new ObservableCollection<Excel.Worksheet>();
 
@@ -73,10 +73,12 @@ namespace ExellAddInsLib.MSG
                         notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
                     }
 
-                    if (local_register.ExellPropAddress.Worksheet.Name.Contains("Ведомость_общая"))
+                    if (local_register.ExellPropAddress.Worksheet.Name.Contains("Ведомость_общая") && this.IsHasEnabled)
                     {
                         var row_hash = local_register.ExellPropAddress.Worksheet.Cells[row, HASH_FUNCTION_COL].Value;
-                        var col_hash = local_register.ExellPropAddress.Worksheet.Cells[HASH_FUNCTION_ROW, column].Value;
+                        var col_hash_str = local_register.ExellPropAddress.Worksheet.Cells[HASH_FUNCTION_ROW, column].Value.ToString();
+                        var col_hash = 0 ;
+                        Int32.TryParse(col_hash_str, out col_hash);
                         local_register.ExellPropAddress.Owner = notified_object;
                      
                         if (row_hash != null)

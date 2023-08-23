@@ -64,8 +64,6 @@ namespace ExellAddInsLib.MSG
         }
         public int? GetShedulesAllDaysNumber()
         {
-
-
             if (WorkSchedules.Count > 0)
             {
                 // var time_span = new TimeSpan(

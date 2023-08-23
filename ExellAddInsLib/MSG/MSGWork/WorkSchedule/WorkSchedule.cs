@@ -2,7 +2,7 @@
 
 namespace ExellAddInsLib.MSG
 {
-    public class WorkSchedule : ExcelNotifyChangedCollection<WorkScheduleChunk>
+    public class WorkSchedule : AdjustableCollection<WorkScheduleChunk>
     {
         private int _workerNumber;
 
