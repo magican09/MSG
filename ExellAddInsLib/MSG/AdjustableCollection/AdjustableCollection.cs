@@ -21,8 +21,8 @@ namespace ExellAddInsLib.MSG
             if (item.Number != null && this.Owner != null)
             {
                 item.Owner = this.Owner;
-                var _subsequent_items = this.Where(itm => this.IndexOf(itm) >= index).ToList();
-                var _previous_items = this.Where(itm => this.IndexOf(itm) < index).ToList();
+                var _subsequent_items = this.Where(itm => this.IndexOf(itm) > index).ToList();
+                var _previous_items = this.Where(itm => this.IndexOf(itm) <= index).ToList();
 
                 int item_suffix_num = _previous_items.Count + 1;
 

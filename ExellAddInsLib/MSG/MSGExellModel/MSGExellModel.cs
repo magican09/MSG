@@ -497,7 +497,7 @@ namespace ExellAddInsLib.MSG
                 msg_work = new MSGWork();
 
             msg_work.Worksheet = registerSheet;
-            this.Register(msg_work, "Number", rowIndex, MSG_NUMBER_COL, this.RegisterSheet, (v) => Regex.IsMatch((string)v, @"^\d+\.\d+$"));
+            this.Register(msg_work, "Number", rowIndex, MSG_NUMBER_COL, this.RegisterSheet,(v) => Regex.IsMatch((string)v, @"^\d+\.\d+$"));
             this.Register(msg_work, "Name", rowIndex, MSG_NAME_COL, this.RegisterSheet);
             this.Register(msg_work, "ProjectQuantity", rowIndex, MSG_QUANTITY_COL, this.RegisterSheet, (v) => ((decimal)v) != 0);
             this.Register(msg_work, "Quantity", rowIndex, MSG_QUANTITY_FACT_COL, this.RegisterSheet);
@@ -1423,12 +1423,37 @@ namespace ExellAddInsLib.MSG
             else
             {
                 this.CopyOwnerObjectModels();
-
                 this.LoadWorksReportCards();
                 this.AdjustRCWorksRecorCard();
 
                 this.LoadWorkerConsumptions();
                 this.LoadMachineConsumptions();
+           //     this.ReadModelFilds();
+
+            }
+        }
+        public void ReadModelFilds()
+        {
+            foreach(WorksSection section in this.WorksSections)
+            {
+                section.LoadExellBindableObjectFromField();
+                foreach(var msg_work in section.MSGWorks)
+                {
+                    msg_work.LoadExellBindableObjectFromField();
+                    foreach(var vovr_work in msg_work.VOVRWorks)
+                    {
+                        vovr_work.LoadExellBindableObjectFromField();
+                        foreach(var ks_work in vovr_work.KSWorks)
+                        {
+                            ks_work.LoadExellBindableObjectFromField();
+                            foreach(var rc_work in ks_work.RCWorks)
+                            {
+                                rc_work.LoadExellBindableObjectFromField();
+                            }
+                        }
+                    }
+                }
+
             }
         }
 

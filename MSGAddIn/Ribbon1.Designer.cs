@@ -77,12 +77,12 @@
             this.btnCreateTemplateFile = this.Factory.CreateRibbonButton();
             this.checkBoxRerightDatePart = this.Factory.CreateRibbonCheckBox();
             this.separator3 = this.Factory.CreateRibbonSeparator();
+            this.btnCreateMSGForEmployers = this.Factory.CreateRibbonButton();
             this.groupInfo = this.Factory.CreateRibbonGroup();
             this.btnShowAlllHidenWorksheets = this.Factory.CreateRibbonButton();
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.btnCreateMSGForEmployers = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -406,6 +406,13 @@
             // 
             this.separator3.Name = "separator3";
             // 
+            // btnCreateMSGForEmployers
+            // 
+            this.btnCreateMSGForEmployers.Enabled = false;
+            this.btnCreateMSGForEmployers.Label = " МСГ для отвественных";
+            this.btnCreateMSGForEmployers.Name = "btnCreateMSGForEmployers";
+            this.btnCreateMSGForEmployers.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCreateMSGForEmployers_Click);
+            // 
             // groupInfo
             // 
             this.groupInfo.Items.Add(this.btnShowAlllHidenWorksheets);
@@ -433,13 +440,6 @@
             // openMSGTemplateFileDialog
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
-            // 
-            // btnCreateMSGForEmployers
-            // 
-            this.btnCreateMSGForEmployers.Enabled = false;
-            this.btnCreateMSGForEmployers.Label = " МСГ для отвественных";
-            this.btnCreateMSGForEmployers.Name = "btnCreateMSGForEmployers";
-            this.btnCreateMSGForEmployers.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCreateMSGForEmployers_Click);
             // 
             // Ribbon1
             // 

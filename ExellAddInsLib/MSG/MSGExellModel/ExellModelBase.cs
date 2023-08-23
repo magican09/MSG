@@ -236,6 +236,7 @@ namespace ExellAddInsLib.MSG
                     string kvp_worksheet_name = kvp.Value.Worksheet.Name;
                     string sheet_root_name = kvp_worksheet_name.Substring(0, kvp_worksheet_name.IndexOf('_'));
                     var work_sheet = this.AllWorksheets.FirstOrDefault(wh => wh.Name.Contains(sheet_root_name));
+                    kvp.Value.Owner = obj;
                     this.Register(obj, prop_name, kvp.Value.Row, kvp.Value.Column, work_sheet);
 
                 }

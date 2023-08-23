@@ -122,12 +122,15 @@ namespace ExellAddInsLib.MSG
             if (validate_out != null && validate_out.Value.Item1)
                 member = (T)validate_out.Value.Item2;
             else
-                member = new_val;
+                member =  new_val;
 
             PropertyChange(this, property_name);
 
         }
+        public void SetProperty(string property_name, object new_val)
+        {
 
+        }
         public bool IsPropertyChangedHaveSubsctribers()
         {
 
@@ -381,6 +384,51 @@ namespace ExellAddInsLib.MSG
                 }
                 else
                     return "";
+            }
+            return null;
+        }
+     
+        internal void LoadExellBindableObjectFromField()
+        {
+            var obj = this;
+            var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
+            CellAddressesMap.SetCellNumberFormat();
+            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
+            {
+                var val = kvp.Value.Cell.Value;
+                var owner = kvp.Value.Owner;
+               var prop_info =  GetPropertyInfoByPath(owner, kvp.Value.ProprertyName);
+
+                if (prop_info.CanWrite) prop_info.SetValue(owner, val,null);
+            }
+        }
+        private PropertyInfo GetPropertyInfoByPath(IExcelBindableBase obj, string full_prop_name)
+        {
+            string[] prop_names = full_prop_name.Split('.');
+            foreach (string name in prop_names)
+            {
+                string rest_prop_name_part = full_prop_name;
+                if (full_prop_name.Contains(".")) rest_prop_name_part = full_prop_name.Replace($"{name}.", "");
+                if (obj.GetType().GetProperty(name).GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) != null)
+                    return null;
+                var prop_info = obj.GetType().GetProperty(name);
+                var prop_value = prop_info.GetValue(obj);
+
+                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
+                {
+                    return this.GetPropertyInfoByPath(excel_bimdable_prop_value, rest_prop_name_part);
+                }
+                else if (prop_value != null && prop_value.GetType().FullName.Contains("System."))
+                {
+
+                    //if (prop_value is DateTime date_val)
+                    //    return date_val.ToString("d");
+                    //else
+                    //    return prop_value.ToString();
+                    return prop_info;
+                }
+                else
+                    return  null;
             }
             return null;
         }

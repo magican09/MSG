@@ -11,7 +11,7 @@ namespace ExellAddInsLib.MSG
         event PropertyChangedEventHandler PropertyChanged;
           event BeforePropertyChangeEventHandler BeforePropertyChange;
         void PropertyChange(object sender, string property_name);
-        void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
+   //     void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
         ExellCellAddressMapDictationary CellAddressesMap { get; set; }
         Guid Id { get; }
         string Number { get; set; }

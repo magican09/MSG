@@ -188,6 +188,7 @@ namespace MSGAddIn
             btnChangeUOM.Enabled = state;
             btnMachines.Enabled = state;
             chckBoxHashEnable.Enabled = state;
+            btnCreateMSGForEmployers.Enabled= state;
         }
         private void AjastBtnsState()
         {
@@ -698,8 +699,8 @@ namespace MSGAddIn
         private void btnFillTemlate_Click(object sender, RibbonControlEventArgs e)
         {
 
-            if (CommonMSGExellModel != null)
-                this.FillMSG_OUT_File(CommonMSGExellModel);
+       //     if (CommonMSGExellModel != null)
+          //      this.FillMSG_OUT_File(CommonMSGExellModel);
         }
         #region Генерация МСГ в формате ЗМУО
         const int TMP_NOW_DATE_ROW = 1;
@@ -826,6 +827,7 @@ namespace MSGAddIn
                 MSGOutWorksheet.Cells[section_local_index_iterator, 1] = $"{w_section.Number} {w_section.Name}";
 
                 saved_iterator = section_local_index_iterator + 1;
+                var works = w_section.MSGWorks.Where(w => selection_predicate(w));
                 foreach (MSGWork msg_work in w_section.MSGWorks.Where(w=> selection_predicate(w)))
                 {
                     ///Копируем и вставляем строку для работы в МСГ
@@ -1713,8 +1715,8 @@ namespace MSGAddIn
                     {
                         MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                         MSGTemplateWorkbook.Activate();
-                      
-                            this.FillMSG_OUT_File(model);
+                        model.ReloadSheetModel();
+                            this.FillMSG_OUT_File(model,(w)=>w.Quantity!=0);
                         MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{model.Employer.Name}_{model.ContractCode}.xlsx");
                         MSGTemplateWorkbook.Close();
                     }
