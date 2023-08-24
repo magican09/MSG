@@ -626,6 +626,8 @@ namespace MSGAddIn
             {
                 if(CurrentMSGExellModel.Owner!=null)
                 {
+                    CurrentMSGExellModel.ClearAllSections();
+                    CurrentMSGExellModel.CopyOwnerObjectModels();
                     CurrentMSGExellModel.ReloadSheetModel();
                   
                 }
@@ -805,7 +807,39 @@ namespace MSGAddIn
             int last_not_null_row_index = TMP_WORK_SELECTION_FIRST_ROW;
             int work_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
             int saved_iterator = TMP_WORK_SELECTION_FIRST_ROW;
-            foreach (WorksSection w_section in curren_model.WorksSections)
+            Dictionary<DateTime, decimal> lobournes_coefficents = new Dictionary<DateTime, decimal>();
+
+            if (curren_model.Owner != null)
+            {
+                for (DateTime date = curren_model.Owner.WorksStartDate; date <= curren_model.WorksEndDate; date = date.AddDays(1))
+                {
+                    decimal common_workers_number = 0;
+                    decimal current_workers_number = 0;
+                    foreach (var w_cons in curren_model.Owner.WorkerConsumptions.Where(wc => wc.Name != "ИТР"))
+                    {
+                        var consumtion_report_card = w_cons.WorkersConsumptionReportCard.Where(rc => rc.Date == date);
+                        foreach (var c in consumtion_report_card)
+                            common_workers_number += c.Quantity;
+                    }
+                    foreach (var w_cons in curren_model.WorkerConsumptions.Where(wc => wc.Name != "ИТР"))
+                    {
+                        var consumtion_report_card = w_cons.WorkersConsumptionReportCard.Where(rc => rc.Date == date);
+                        foreach (var c in consumtion_report_card)
+                            current_workers_number += c.Quantity;
+                    }
+
+                    decimal w_coefficent = 0;
+                    if (common_workers_number != 0)
+                        w_coefficent = current_workers_number / common_workers_number;
+
+                    if (!lobournes_coefficents.ContainsKey(date))
+                        lobournes_coefficents.Add(date, w_coefficent);
+                }
+            }
+
+
+
+                foreach (WorksSection w_section in curren_model.WorksSections)
             {
                 int section_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
                 int section_null_cell_counter = 0;
@@ -837,6 +871,7 @@ namespace MSGAddIn
 
                 saved_iterator = section_local_index_iterator + 1;
                 var works = w_section.MSGWorks.Where(w => selection_predicate(w));
+
                 foreach (MSGWork msg_work in w_section.MSGWorks.Where(w => selection_predicate(w)))
                 {
                     ///Копируем и вставляем строку для работы в МСГ
@@ -915,43 +950,24 @@ namespace MSGAddIn
                     // MSGOutWorksheet.Cells[row_index, TMP_WORK_DAYS_NUMBER_COL] = (msg_work.WorkSchedules.EndDate - msg_work.WorkSchedules.StartDate)?.Days;
                     ///Заполняем плановые объемы в календарной части
                     MSGExellModel owner_model = curren_model.Owner;
-
+             
+                    int? workable_days_num = msg_work.WorkSchedules.GetShedulesAllDaysNumber();
                     foreach (WorkScheduleChunk schedule_chunk in msg_work.WorkSchedules)
                     {
                         int date_index = 0;
-                        while (MSGOutWorksheet.Cells[TMP_WORKDAY_DATE_ROW_COL, TMP_WORKDAY_DATE_FIRST_COL + date_index].Value != null && date_index <= last_day_col_index)
+                        while (MSGOutWorksheet.Cells[TMP_WORKDAY_DATE_ROW_COL, TMP_WORKDAY_DATE_FIRST_COL + date_index].Value != null && date_index < last_day_col_index)
                         {
                             DateTime date;
                             DateTime.TryParse(MSGOutWorksheet.Cells[TMP_WORKDAY_DATE_ROW_COL, TMP_WORKDAY_DATE_FIRST_COL + date_index].Value.ToString(), out date);
 
-                            int? workable_days_num = msg_work.GetShedulesAllDaysNumber();
                             if (date >= schedule_chunk.StartTime && date <= schedule_chunk.EndTime
                                 && (date.DayOfWeek != DayOfWeek.Sunday || schedule_chunk.IsSundayVacationDay == "Нет"))
                             {
                                 decimal? project_quantity = 0;
-                                if (curren_model.Owner != null)
+                                if(curren_model.Owner != null)
                                 {
-                                    decimal common_workers_number = 0;
-                                    decimal current_workers_number = 0;
-                                    foreach (var w_cons in curren_model.Owner.WorkerConsumptions)
-                                    {
-                                        var consumtion_report_card = w_cons.WorkersConsumptionReportCard.Where(rc => rc.Date == date);
-                                        foreach (var c in consumtion_report_card)
-                                            common_workers_number += c.Quantity;
-                                    }
-                                    foreach (var w_cons in curren_model.WorkerConsumptions)
-                                    {
-                                        var consumtion_report_card = w_cons.WorkersConsumptionReportCard.Where(rc => rc.Date == date);
-                                        foreach (var c in consumtion_report_card)
-                                            current_workers_number += c.Quantity;
-                                    }
-
-                                    decimal w_coefficent = 0;
-                                    if (common_workers_number != 0)
-                                        w_coefficent = current_workers_number / common_workers_number;
-                              
                                     project_quantity = (msg_work.ProjectQuantity - msg_work.PreviousComplatedQuantity) / workable_days_num ;
-                                    project_quantity = project_quantity * w_coefficent;
+                                    project_quantity = project_quantity * lobournes_coefficents[date];
                                 }
                                 else
                                     project_quantity = (msg_work.ProjectQuantity - msg_work.PreviousComplatedQuantity) / workable_days_num;
@@ -1006,15 +1022,31 @@ namespace MSGAddIn
                     {
                         NeedsOfWorkersDay needsOfWorkersDay = current_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == current_date);
                         if (needsOfWorkersDay != null)
-                            MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator,
+                        {
+                            if(curren_model.Owner!=null)
+                            {
+                                MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator,
+                                NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = needsOfWorkersDay.Quantity*lobournes_coefficents[current_date];
+                            }
+                          else
+                                MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator,
                                 NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = needsOfWorkersDay.Quantity;
+                        }
                     }
                     if (current_worker_consumption != null)
                     {
                         WorkerConsumptionDay worker_consumption_day = current_worker_consumption.WorkersConsumptionReportCard.FirstOrDefault(wcd => wcd.Date == current_date);
                         if (worker_consumption_day != null)
-                            MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator + 1,
-                                NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = worker_consumption_day.Quantity;
+                        {
+                            if (curren_model.Owner != null)
+                            {
+                                MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator + 1,
+                                NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = worker_consumption_day.Quantity * lobournes_coefficents[current_date]; ;
+                            }
+                            else
+                                MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator + 1,
+                               NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = worker_consumption_day.Quantity;
+                        }
                     }
                     work_needs_date_col_index++;
                     if (MSGNeedsOutWorksheet.Cells[NEEDS_WORKDAY_DATE_ROW, NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index].Value == null) break;

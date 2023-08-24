@@ -277,6 +277,8 @@ namespace ExellAddInsLib.MSG
             if (this.Number == null) return;
 
             string[] str = this.Number.Split('.');
+            if(!this.Number.Contains("."))
+                str = new string[] { this.Number};
             str[possition] = number;
             string out_str = "";
             foreach (string s in str)

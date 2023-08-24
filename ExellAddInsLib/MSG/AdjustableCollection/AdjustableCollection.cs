@@ -25,14 +25,22 @@ namespace ExellAddInsLib.MSG
                 var _previous_items = this.Where(itm => this.IndexOf(itm) <= index).ToList();
 
                 int item_suffix_num = _previous_items.Count + 1;
-
-                string item_number = $"{item.Owner.Number}.{item_suffix_num}";
+                string item_number = "";
+                if (item.Owner.Number != null && item.Owner.Number != "")
+                    item_number = $"{item.Owner.Number}.{item_suffix_num}";
+                else
+                    item_number = $"{item_suffix_num}";
                 string[] item_numbers = item_number.Split('.');
                 int num_loc_indx = 0;
                 foreach (string num in item_numbers)
                     item.SetNumberItem(num_loc_indx++, num);
 
-                string[] item_prefix_numbers = item.NumberPrefix.Split('.');
+                string[] item_prefix_numbers = { };
+              
+              if(item.NumberPrefix!=null)
+                    item_prefix_numbers = item.NumberPrefix.Split('.');
+             
+                   
                 foreach (T itm in _subsequent_items)
                 {
                     item_suffix_num++;

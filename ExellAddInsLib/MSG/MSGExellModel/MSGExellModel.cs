@@ -551,7 +551,7 @@ namespace ExellAddInsLib.MSG
 
             int schedule_number = 0;
 
-            while (registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value != null)
+            while (registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value != null )
             {
                 schedule_number++;
                 DateTime start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
@@ -574,10 +574,25 @@ namespace ExellAddInsLib.MSG
                 this.Register(work_sh_chunk, "StartTime", rowIndex, MSG_START_DATE_COL, this.RegisterSheet);
                 this.Register(work_sh_chunk, "EndTime", rowIndex, MSG_END_DATE_COL, this.RegisterSheet);
                 this.Register(work_sh_chunk, "IsSundayVacationDay", rowIndex, MSG_SUNDAY_IS_VOCATION_COL, this.RegisterSheet);
+
                 if (!msg_work.WorkSchedules.Contains(work_sh_chunk))
-                    msg_work.WorkSchedules.Add(work_sh_chunk);
+                {
+                    if (msg_work.WorkSchedules.IsIntersections(work_sh_chunk))
+                    {
+                        work_sh_chunk.IsValid = false;
+                        work_sh_chunk.CellAddressesMap["StartTime"].Cell.Interior.Color = XlRgbColor.rgbRed;
+                        work_sh_chunk.CellAddressesMap["EndTime"].Cell.Interior.Color = XlRgbColor.rgbRed;
+                     if(this.Owner==null)
+                            throw new Exception("Диапазона дат начали и конца МСГ работы пересекаются с уже имещимися!!");
+                    }
+                    else
+                        msg_work.WorkSchedules.Add(work_sh_chunk);
+
+                }
                 work_sh_chunk.Owner = msg_work;
+                if (registerSheet.Cells[rowIndex + 1, MSG_NUMBER_COL].Value != null) break;
                 rowIndex++;
+              
             }
         }
 
@@ -1187,7 +1202,7 @@ namespace ExellAddInsLib.MSG
             }
 
         }
-        internal void ClearAllSections()
+        public  void ClearAllSections()
         {
             this.ClearAllMSGWorks();
             foreach (var section in this.WorksSections)
@@ -1455,9 +1470,8 @@ namespace ExellAddInsLib.MSG
 
                 foreach (MSGExellModel model in Children)
                 {
-                    model.ClearAllSections();
-                    model.CopyOwnerObjectModels();
-                   // model.UpdateExcelRepresetation();
+               //     model.ClearAllSections();
+                //    model.CopyOwnerObjectModels();
                     model.ReloadSheetModel();
                 }
 
@@ -1473,7 +1487,7 @@ namespace ExellAddInsLib.MSG
 
                 this.LoadWorksReportCards();
                 this.AdjustRCWorksRecorCard();
-               // this.SetFormulas();
+                // this.SetFormulas();
 
                 this.LoadWorkerConsumptions();
                 this.LoadMachineConsumptions();
@@ -2125,10 +2139,10 @@ namespace ExellAddInsLib.MSG
         {
             this.WorksSections.Worksheet = this.RegisterSheet;
             this.ClearWorksheetCommonPart();
-            
+
 
             int last_row = FIRST_ROW_INDEX - _SECTIONS_GAP;
-            foreach (WorksSection w_section in this.WorksSections.OrderBy(s => s.Number))
+            foreach (WorksSection w_section in this.WorksSections.OrderBy(s => Int32.Parse(s.Number)))
             {
                 last_row = w_section.AdjustExcelRepresentionTree(last_row + _SECTIONS_GAP);
                 w_section.UpdateExcelRepresetation();
