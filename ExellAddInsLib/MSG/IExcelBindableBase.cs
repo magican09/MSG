@@ -20,7 +20,7 @@ namespace ExellAddInsLib.MSG
         IExcelBindableBase Owner { get; set; }
 
         bool IsValid { get; set; }
-
+        bool IsChanged { get; set; }
         //   ObservableCollection<IExcelBindableBase> Owners { get; set; }
         Excel.Range GetRange();
         Excel.Range GetRange(int right_border = 100000000, int low_borde = 1000000000, int left_border = 0, int up_border = 0);

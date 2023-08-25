@@ -453,8 +453,8 @@ namespace ExellAddInsLib.MSG
             this.Register(w_section, "Name", rowIndex, WSEC_NAME_COL, registerSheet);
 
             w_section.Number = number;
-            if (this.WorksSections.FirstOrDefault(ws => ws.Number == w_section.Number) != null)
-                w_section.CellAddressesMap["Number"].IsValid = false;
+           // if (this.WorksSections.FirstOrDefault(ws => ws.Number == w_section.Number) != null)
+             //   w_section.CellAddressesMap["Number"].IsValid = false;
 
             var name = registerSheet.Cells[rowIndex, WSEC_NAME_COL].Value;
             if (name != null)
@@ -494,8 +494,8 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            string number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value.ToString();
-
+            string number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value;
+            if (number == null) return;
             MSGWork msg_work = this.MSGWorks.FirstOrDefault(w => w.Number == number);
             if (msg_work == null)
                 msg_work = new MSGWork();
@@ -509,8 +509,8 @@ namespace ExellAddInsLib.MSG
             this.Register(msg_work, "UnitOfMeasurement.Name", rowIndex, MSG_MEASURE_COL, registerSheet);
 
             msg_work.Number = number;
-            if (this.MSGWorks.FirstOrDefault(w => w.Number == msg_work.Number) != null && this.Owner == null)
-                msg_work.CellAddressesMap["Number"].IsValid = false;
+          //  if (this.MSGWorks.FirstOrDefault(w => w.Number == msg_work.Number) != null && this.Owner == null)
+           //     msg_work.CellAddressesMap["Number"].IsValid = false;
 
             var name = registerSheet.Cells[rowIndex, MSG_NAME_COL].Value;
             if (name != null)
@@ -792,7 +792,8 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            string number = registerSheet.Cells[rowIndex, VOVR_NUMBER_COL].Value.ToString();
+            string number = registerSheet.Cells[rowIndex, VOVR_NUMBER_COL].Value;
+            if (number == null) return;
             VOVRWork vovr_work = this.VOVRWorks.FirstOrDefault(w => w.Number == number);
             if (vovr_work == null)
                 vovr_work = new VOVRWork();
@@ -807,8 +808,8 @@ namespace ExellAddInsLib.MSG
 
             vovr_work.Number = number;
 
-            if (this.VOVRWorks.FirstOrDefault(w => w.Number == vovr_work.Number) != null && this.Owner == null)
-                vovr_work.CellAddressesMap["Number"].IsValid = false;
+          //  if (this.VOVRWorks.FirstOrDefault(w => w.Number == vovr_work.Number) != null && this.Owner == null)
+             //   vovr_work.CellAddressesMap["Number"].IsValid = false;
 
             var name = registerSheet.Cells[rowIndex, VOVR_NAME_COL].Value;
             if (name != null)
@@ -870,7 +871,8 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            string number = registerSheet.Cells[rowIndex, KS_NUMBER_COL].Value.ToString();
+            string number = registerSheet.Cells[rowIndex, KS_NUMBER_COL].Value;
+            if (number == null) return;
             KSWork ks_work = this.KSWorks.FirstOrDefault(w => w.Number == number);
             if (ks_work == null)
                 ks_work = new KSWork();
@@ -951,7 +953,10 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
             int rowIndex = row;
-            string number = registerSheet.Cells[rowIndex, RC_NUMBER_COL].Value.ToString();
+
+            var number = registerSheet.Cells[rowIndex, RC_NUMBER_COL].Value;
+            if (number == null) return;
+
             RCWork rc_work = this.RCWorks.FirstOrDefault(w => w.Number == number);
             if (rc_work == null)
                 rc_work = new RCWork();
@@ -1041,7 +1046,12 @@ namespace ExellAddInsLib.MSG
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
             string rc_number = registerSheet.Cells[rowIndex, WRC_NUMBER_COL].Value.ToString(); ;
-            WorkReportCard report_card = new WorkReportCard();
+          
+            WorkReportCard report_card = this.WorkReportCards.FirstOrDefault(rc=>rc.Number== rc_number);
+            if (report_card == null)
+                report_card = new WorkReportCard();
+
+
             report_card.Worksheet = registerSheet;
             DateTime end_date = this.WorksEndDate;
             report_card.Number = rc_number;
@@ -1371,7 +1381,8 @@ namespace ExellAddInsLib.MSG
                 {
                     w_section.MSGWorks.Owner = w_section;
                     //  msg_work.Owner = w_section;
-                    w_section.MSGWorks.Add(msg_work);
+                    if (!w_section.MSGWorks.Contains(msg_work))
+                        w_section.MSGWorks.Add(msg_work);
 
                 }
                 foreach (VOVRWork vovr_work in this.VOVRWorks.Where(w => w.NumberPrefix == msg_work.Number).OrderBy(w => Int32.Parse(w.Number.Replace($"{w.NumberPrefix}.", ""))))
@@ -1381,7 +1392,8 @@ namespace ExellAddInsLib.MSG
                     {
                         msg_work.VOVRWorks.Owner = msg_work;
                         //     vovr_work.Owner = msg_work;
-                        msg_work.VOVRWorks.Add(vovr_work);
+                        if (!msg_work.VOVRWorks.Contains(vovr_work))
+                            msg_work.VOVRWorks.Add(vovr_work);
 
                     }
 
@@ -1392,7 +1404,8 @@ namespace ExellAddInsLib.MSG
                         {
                             vovr_work.KSWorks.Owner = vovr_work;
                             //ks_work.Owner = vovr_work;
-                            vovr_work.KSWorks.Add(ks_work);
+                            if (!vovr_work.KSWorks.Contains(ks_work))
+                                vovr_work.KSWorks.Add(ks_work);
 
                         }
 
@@ -1403,7 +1416,8 @@ namespace ExellAddInsLib.MSG
                             {
                                 ks_work.RCWorks.Owner = ks_work;
                                 //   rc_work.Owner = ks_work;
-                                ks_work.RCWorks.Add(rc_work);
+                                if(!ks_work.RCWorks.Contains(rc_work))
+                                     ks_work.RCWorks.Add(rc_work);
 
                             }
 
@@ -1482,6 +1496,7 @@ namespace ExellAddInsLib.MSG
             else
             {
                 this.SetFormulas();
+                this.LoadWorksSections();
                 this.LoadMSGWorks();
                 this.LoadVOVRWorks();
                 this.LoadKSWorks();
@@ -1490,6 +1505,7 @@ namespace ExellAddInsLib.MSG
 
                 this.LoadWorksReportCards();
                 this.AdjustRCWorksRecorCard();
+                this.AdjustObjectModel();
                 // this.SetFormulas();
 
                 this.LoadWorkerConsumptions();
@@ -1538,6 +1554,7 @@ namespace ExellAddInsLib.MSG
                 Excel.Range row_hash_range = registerSheet.Cells[rowIndex, HASH_FUNCTION_COL];
                 Excel.Range first_cell = registerSheet.Cells[rowIndex, WSEC_NUMBER_COL];
                 Excel.Range last_cell = registerSheet.Cells[rowIndex, RC_LABOURNESS_COL];
+                row_hash_range.NumberFormat = "0";
                 row_hash_range.Formula = $"= EasyHash(CONCAT({first_cell.RangeAddress()}:{last_cell.RangeAddress()}))";//= EasyHash(СЦЕП(B8: AK8))
                 var row_hash_val = registerSheet.Cells[rowIndex, HASH_FUNCTION_COL].Value;
                 if (row_hash_val != null)
@@ -1555,13 +1572,14 @@ namespace ExellAddInsLib.MSG
                 }
                 rowIndex++;
             }
+          
             for (int colIndex = WSEC_NUMBER_COL; colIndex <= RC_LABOURNESS_COL; colIndex++)
             {
                 Excel.Range col_hash_range = registerSheet.Cells[HASH_FUNCTION_ROW, colIndex];
                 Excel.Range first_cell = registerSheet.Cells[FIRST_ROW_INDEX, colIndex];
                 Excel.Range last_cell = registerSheet.Cells[FIRST_ROW_INDEX + MAX_HASH_FUNCTION_ROW, colIndex];
                 col_hash_range.Formula = $"= EasyHash(CONCAT({first_cell.RangeAddress()}:{last_cell.RangeAddress()}))";
-
+                col_hash_range.NumberFormat = "0";
                 var col_hash_val = registerSheet.Cells[HASH_FUNCTION_ROW, colIndex].Value;
                 if (col_hash_val != null)
                 {
@@ -1594,13 +1612,20 @@ namespace ExellAddInsLib.MSG
                 if (col_hash_val != null)
                 {
                     int col_hash = Int32.Parse(col_hash_val.ToString());
-                    if (!current_hash_columns.Contains(col_hash))
-                    {
-                        current_hash_columns.Add(col_hash);
-                    }
+                    current_hash_columns.Add(col_hash);
                 }
             }
+            List<int> _columns_with_changes = new List<int>();
+            foreach (int col_hash in current_hash_columns)
+            {
 
+                int col_index = current_hash_columns.IndexOf(col_hash);
+                int col_indexs = col_index + WSEC_NUMBER_COL;
+                if (!ColumnsHashValues.Contains(col_hash))
+                    _columns_with_changes.Add(col_indexs);
+            }
+
+            List<int> _rows_with_changes = new List<int>();
             while (null_str_count < 100)
             {
                 var row_hash_val = registerSheet.Cells[rowIndex, HASH_FUNCTION_COL].Value;
@@ -1611,14 +1636,15 @@ namespace ExellAddInsLib.MSG
                     {
                         int row_index = RowsHashValues.IndexOf(row_hash);
                         int row = rowIndex;
-                        foreach (int col_hash in current_hash_columns)
-                        {
+                        _rows_with_changes.Add(row);
+                        //foreach (int col_hash in current_hash_columns)
+                        //{
 
-                            int col_index = current_hash_columns.IndexOf(col_hash);
-                            int col_indexs = col_index + WSEC_NUMBER_COL;
-                            if (!ColumnsHashValues.Contains(col_hash))
-                                changed_objects_corredinates.Add(new Tuple<int, int>(row, col_indexs));
-                        }
+                        //    int col_index = current_hash_columns.IndexOf(col_hash);
+                        //    int col_indexs = col_index + WSEC_NUMBER_COL;
+                        //    if (!ColumnsHashValues.Contains(col_hash))
+                        //        changed_objects_corredinates.Add(new Tuple<int, int>(row, col_indexs));
+                        //}
                     }
                 }
                 var number = registerSheet.Cells[rowIndex, WRC_NUMBER_COL].Value;
@@ -1629,61 +1655,100 @@ namespace ExellAddInsLib.MSG
                 }
                 rowIndex++;
             }
+            int top_row = _rows_with_changes.OrderBy(r => r).FirstOrDefault();
+            int bottom_row = _rows_with_changes.OrderBy(r => r).LastOrDefault();
 
-            foreach (var crd in changed_objects_corredinates)
+            if (_columns_with_changes.Where(c => c >=WSEC_NUMBER_COL && c <= WSEC_NAME_COL).Any())
             {
-                var changed_objcs_cell_addresses = AllHashDictationary.Where(kvp => kvp.Value.Row == crd.Item1 && kvp.Value.Column == crd.Item2);
+                if (top_row == 0 || bottom_row == 0)
+                    this.LoadWorksSections();
+                else
+                    for (int row = top_row; row <= bottom_row; row++)
+                        this.LoadWorksSection(row);
+            }
 
-                var sections = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is WorksSection).GroupBy(ad => ad.Value.Owner).Select(x => x.First());
+            if (_columns_with_changes.Where(c => c >= MSG_NUMBER_COL && c <= MSG_NEEDS_OF_MACHINE_QUANTITY_COL).Any())
+            {
+                if (top_row == 0 || bottom_row == 0)
+                    this.LoadMSGWorks();
+                else
+                    for (int row = top_row; row <= bottom_row; row++)
+                        this.LoadMSGWork(row);
+            }
 
-                var msg_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is MSGWork w
-                && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
-                    .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-                var schedule_chunks = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is WorkScheduleChunk w
-                && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-                var needs_of_workers = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is NeedsOfWorker w
-                && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-                var needs_of_machines = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is NeedsOfMachine w
-                && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+            if (_columns_with_changes.Where(c => c >= VOVR_NUMBER_COL && c <= VOVR_LABOURNESS_COL).Any())
+            {
+                if (top_row == 0 || bottom_row == 0)
+                    this.LoadKSWorks();
+                else
+                    for (int row = top_row; row <= bottom_row; row++)
+                        this.LoadVOVRWork(row);
+            }
 
-                var vovr_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is VOVRWork w
-                && !msg_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
-                    .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+            if (_columns_with_changes.Where(c => c >= KS_NUMBER_COL && c <= KS_LABOURNESS_COL).Any())
+            {
+                if (top_row == 0 || bottom_row == 0)
+                    this.LoadKSWorks();
+                else
+                    for (int row = top_row; row <= bottom_row; row++)
+                        this.LoadKSWork(row);
+            }
 
-                var ks_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is KSWork w && !vovr_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
-                    .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-
-                var rc_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is RCWork w && !ks_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
-                    .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-
-                foreach (var s_adr in sections)
-                    this.LoadWorksSection(s_adr.Value.Row);
-
-                foreach (var s_adr in msg_works)
-                    this.LoadMSGWork(s_adr.Value.Row);
-
-                foreach (var s_adr in vovr_works)
-                    this.LoadVOVRWork(s_adr.Value.Row);
-
-                foreach (var s_adr in ks_works)
-                    this.LoadKSWork(s_adr.Value.Row);
-
-                foreach (var s_adr in rc_works)
-                    this.LoadRCWork(s_adr.Value.Row);
+            if (_columns_with_changes.Where(c => c >= RC_NUMBER_COL && c <= RC_LABOURNESS_COL).Any())
+            {
+                if (top_row == 0 || bottom_row == 0)
+                    this.LoadRCWorks();
+               else
+                    for (int row = top_row; row <= bottom_row; row++)
+                    this.LoadRCWork(row);
             }
 
 
-            //foreach (int row in changed_hash_rows)
-            //    foreach (int col in current_hash_columns)
+            this.SetHashFormulas();
+            this.AdjustObjectModel();
+            //foreach (var crd in changed_objects_corredinates)
+            //{
+            //    var changed_objcs_cell_addresses = AllHashDictationary.Where(kvp => kvp.Value.Row == crd.Item1 && kvp.Value.Column == crd.Item2);
+
+            //    var sections = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is WorksSection).GroupBy(ad => ad.Value.Owner).Select(x => x.First());
+
+            //    var msg_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is MSGWork w
+            //    && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
+            //        .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+            //    var schedule_chunks = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is WorkScheduleChunk w
+            //    && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+            //    var needs_of_workers = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is NeedsOfWorker w
+            //    && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+            //    var needs_of_machines = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is NeedsOfMachine w
+            //    && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+
+            //    var vovr_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is VOVRWork w
+            //    && !msg_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
+            //        .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+
+            //    var ks_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is KSWork w && !vovr_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
+            //        .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+
+            //    var rc_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is RCWork w && !ks_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
+            //        .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
+
+            //    foreach (var s_adr in sections)
+            //        this.LoadWorksSection(s_adr.Value.Row);
+
+            //    foreach (var s_adr in msg_works)
+            //        this.LoadMSGWork(s_adr.Value.Row);
+
+            //    foreach (var s_adr in vovr_works)
+            //        this.LoadVOVRWork(s_adr.Value.Row);
+
+            //    foreach (var s_adr in ks_works)
+            //        this.LoadKSWork(s_adr.Value.Row);
+
+            //    foreach (var s_adr in rc_works)
+            //        this.LoadRCWork(s_adr.Value.Row);
+            // }
 
 
-            //        var rows_with_added_info = AllHashDictationary.Where(kvp => !RowsColumns.Contains(Tuple.Create(kvp.Value.Row, kvp.Value.Column)));
-
-            //var rows_with_edit_info = AllHashDictationary.Where(kvp => !RowsColumns.Contains(Tuple.Create(kvp.Value.Row, kvp.Value.Column)));
-
-            //var section_colums = current_hash_columns.Where(c => c >= WSEC_NUMBER_COL && c <= WSEC_NAME_COL).ToList();
-
-            //Dictionary<Tuple<int, int>, ExcelBindableBase> chaged_sections = new Dictionary<Tuple<int, int>, ExcelBindableBase>();
 
 
 

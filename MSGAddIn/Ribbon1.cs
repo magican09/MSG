@@ -1,6 +1,7 @@
 ﻿using ExellAddInsLib.MSG;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Ribbon;
+using Microsoft.Vbe.Interop;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -174,7 +175,7 @@ namespace MSGAddIn
             btnChangeCommonMSG.Enabled = state;
 
             btnCalcLabournes.Enabled = state;
-            btnCreateTemplateFile.Enabled = state;
+            //   btnCreateTemplateFile.Enabled = state;
             buttonCalc.Enabled = state;
 
             menuSection.Enabled = state;
@@ -187,12 +188,47 @@ namespace MSGAddIn
             btnChangePosts.Enabled = state;
             btnChangeUOM.Enabled = state;
             btnMachines.Enabled = state;
-            //    chckBoxHashEnable.Enabled = state;
+            chckBoxHashEnable.Enabled = state;
+            btnLoadInModelLocal.Enabled = state & chckBoxHashEnable.Checked;
             btnCreateMSGForEmployers.Enabled = state;
         }
         private void AjastBtnsState()
         {
             this.SetBtnsState(true);
+        }
+        private void AddExcellVBAFunctions()
+        {
+            VBComponent vba_module = null;
+            try
+            {
+                vba_module = CurrentWorkbook.VBProject.VBComponents.Item("Functions");
+            }
+            catch
+            {
+                if (vba_module == null)
+                    vba_module = CurrentWorkbook.VBProject.VBComponents.Add(vbext_ComponentType.vbext_ct_StdModule);
+                vba_module.Name = "Functions";
+            }
+
+
+            var codeModule = vba_module.CodeModule;
+            var lineNum = codeModule.CountOfLines + 1;
+            var macroName = "EasyHash";
+            var lines = "";
+            if (codeModule.CountOfLines != 0)
+                lines = codeModule.Lines[1, codeModule.CountOfLines];
+            if (!lines.Contains(macroName))
+            {
+                var codeText = $"Function {macroName}(ByRef Str$) As Long\r\n" +
+                             "Dim i As Integer, Hash As Long\r\n" +
+                             "For i = 1 To Len(Str)\r\n" +
+                             "        Hash = i + 1664525 * AscB(Mid(Str, i, 1)) + 1013904223\r\n" +
+                             "        EasyHash = ((Hash Xor Abs(1365 / i)) And 65535) + EasyHash\r\n" +
+                             "Next\r\n" +
+                             "End Function";
+                codeModule.InsertLines(lineNum, codeText);
+            }
+
         }
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
@@ -208,6 +244,8 @@ namespace MSGAddIn
                 CommonMSGWorksheet = CurrentWorkbook.Worksheets["Ведомость_общая"];
                 CommonWorkConsumptionsWorksheet = CurrentWorkbook.Worksheets["Люди_общая"];
                 CommonMachineConsumptionsWorksheet = CurrentWorkbook.Worksheets["Техника_общая"];
+
+                this.AddExcellVBAFunctions();
 
                 EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
                 MachineMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
@@ -251,6 +289,7 @@ namespace MSGAddIn
                                         $"Объект:{CurrentMSGExellModel.ContructionObjectCode}";
 
                 this.SetBtnsState(true);
+
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
@@ -1429,7 +1468,7 @@ namespace MSGAddIn
                                 if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
                                 var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is MSGWork msg_obj
-                                                                                    
+
                                                                                    && obj.Owner != null);
 
                                 MSGWork _current_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() == selection.Row) as MSGWork;
@@ -1442,11 +1481,11 @@ namespace MSGAddIn
                                 else
                                     selected_work = _previous_work;
 
-                                if (selected_work != null )
+                                if (selected_work != null)
                                 {
                                     WorksSection selected_section = selected_work.Owner as WorksSection;
                                     if (selected_section == null) return;
-                                    int selected_work_index = selected_section.MSGWorks.IndexOf(selected_work );
+                                    int selected_work_index = selected_section.MSGWorks.IndexOf(selected_work);
 
                                     foreach (MSGWork msg_work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
                                     {
@@ -1460,7 +1499,7 @@ namespace MSGAddIn
                                     CurrentMSGExellModel.SetStyleFormats();
                                     commands_group_label = "";
                                 }
-            
+
                                 break;
                             }
                         case nameof(VOVRWork):
@@ -1477,7 +1516,7 @@ namespace MSGAddIn
                                 VOVRWork selected_work;
 
                                 if (_current_work != null) selected_work = _current_work;
-                                else if (_next_work != null && _previous_work != null && _next_work.Owner== _previous_work.Owner)
+                                else if (_next_work != null && _previous_work != null && _next_work.Owner == _previous_work.Owner)
                                     selected_work = _next_work;
                                 else
                                     selected_work = _previous_work;
@@ -1515,7 +1554,7 @@ namespace MSGAddIn
                                 KSWork _next_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() > selection.Row) as KSWork;
                                 KSWork _previous_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() < selection.Row) as KSWork;
                                 KSWork selected_work;
-                             
+
                                 if (_current_work != null) selected_work = _current_work;
                                 else if (_next_work != null && _previous_work != null && _next_work.Owner == _previous_work.Owner)
                                     selected_work = _next_work;
@@ -1706,7 +1745,7 @@ namespace MSGAddIn
                         buttonPaste.Enabled = true;
                         commands_group_label = $"Разадел(ы) скопирован.\n Выбрерите ячеку с номеров нового раздела.";
                     }
-                    
+
                 }
                 //Excel.Dialog dlg = Globals.ThisAddIn.Application.Dialogs[Excel.XlBuiltInDialog.xlDialogFont];
                 //dlg.Show();
@@ -1823,12 +1862,18 @@ namespace MSGAddIn
 
         private void btnLoadInModelLocal_Click(object sender, RibbonControlEventArgs e)
         {
-            CurrentMSGExellModel.ReloadSheetModelLocal();
+            //if (CurrentMSGExellModel.IsHasEnabled)
+            //    CurrentMSGExellModel.SetHashFormulas();
+            if (CurrentMSGExellModel.Owner == null)
+                CurrentMSGExellModel.ReloadSheetModelLocal();
         }
 
         private void chckBoxHashEnable_Click(object sender, RibbonControlEventArgs e)
         {
             CurrentMSGExellModel.IsHasEnabled = chckBoxHashEnable.Checked;
+            btnLoadInModelLocal.Enabled = chckBoxHashEnable.Checked;
+
+
         }
 
         private void btnCreateMSGForEmployers_Click(object sender, RibbonControlEventArgs e)
@@ -1857,7 +1902,12 @@ namespace MSGAddIn
                     temlate_file_name = openFileDialog1.FileName;
                     // CurrentMSGExellModel.ReloadSheetModel();
                     //  CurrentMSGExellModel.CalcAll();
-                    foreach (MSGExellModel model in CurrentMSGExellModel.Children)
+                    MSGExellModel current_model = CurrentMSGExellModel;
+
+                    if (CurrentMSGExellModel.Owner != null)
+                        current_model = CurrentMSGExellModel.Owner;
+
+                    foreach (MSGExellModel model in current_model.Children)
                     {
                         MSGTemplateWorkbook = Globals.ThisAddIn.Application.Workbooks.Open(temlate_file_name);
                         MSGTemplateWorkbook.Activate();

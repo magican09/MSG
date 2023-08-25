@@ -97,6 +97,8 @@ namespace ExellAddInsLib.MSG
             }
             set { _isValid = value; }
         }
+
+       public  bool IsChanged { get; set; } 
         public Guid Id
         {
 

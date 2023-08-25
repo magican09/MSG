@@ -162,6 +162,7 @@
             // 
             // chckBoxHashEnable
             // 
+            this.chckBoxHashEnable.Checked = true;
             this.chckBoxHashEnable.Enabled = false;
             this.chckBoxHashEnable.Label = "Включить хэширование";
             this.chckBoxHashEnable.Name = "chckBoxHashEnable";

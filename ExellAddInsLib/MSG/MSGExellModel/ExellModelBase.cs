@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -17,6 +18,8 @@ namespace ExellAddInsLib.MSG
         public const int HASH_FUNCTION_COL = 1;
         public const int HASH_FUNCTION_ROW = 7;
         public const int MAX_HASH_FUNCTION_ROW = 10000;
+        public const int MAX_HASH_FUNCTION_COL = 37;
+
         public Dictionary<Tuple<int, int>, ExcelPropAddress> AllHashDictationary = new Dictionary<Tuple<int, int>, ExcelPropAddress>();
         public List<int> RowsHashValues = new List<int>();
         public List<int> ColumnsHashValues = new List<int>();
@@ -51,14 +54,29 @@ namespace ExellAddInsLib.MSG
           //  try
             {
                 var prop_names = prop_name.Split(new char[] { '.' });
+                Type prop_type = notified_object.GetType().GetProperty(prop_names[0]).PropertyType;
+
                 if (this.IsRegistered(notified_object, prop_names[0]))
+                {
+                    var  _register = this.RegistedObjects.FirstOrDefault(r => r.Entity.Id == notified_object.Id && r.PropertyName == prop_names[0]);
+                   // _register.ExellPropAddress.Worksheet = worksheet;
+                    _register.ExellPropAddress.Row = row;
+                    _register.ExellPropAddress.Column = column;
+                    //_register.ExellPropAddress.Worksheet = worksheet;
+
+                    //_register.ExellPropAddress.Cell.Interior.Color = XlRgbColor.rgbGreenYellow;
+                    //_register.ExellPropAddress.ValidateValueCallBack = validate_value_call_back;
+                    //_register.ExellPropAddress.CoerceValueCallback = coerce_value_call_back;
+                    //_register.ExellPropAddress.ValueType = prop_type;
+                    //_register.ExellPropAddress.SetCellNumberFormat();
                     return;
+                }
+                 
                 RelateRecord local_register = new RelateRecord(notified_object);
                 if (register == null)
                 {
                     register = local_register;
-                    Type prop_type = notified_object.GetType().GetProperty(prop_names[0]).PropertyType;
-
+                 
                     if (notified_object.CellAddressesMap.ContainsKey(prop_name))
                     {
                         local_register.ExellPropAddress = notified_object.CellAddressesMap[prop_name];
@@ -73,7 +91,7 @@ namespace ExellAddInsLib.MSG
                         notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
                     }
 
-                    if (local_register.ExellPropAddress.Worksheet.Name.Contains("Ведомость_общая") && this.IsHasEnabled)
+                    if (local_register.ExellPropAddress.Worksheet.Name.Contains("Ведомость_общая") && this.IsHasEnabled && column<= MAX_HASH_FUNCTION_COL)
                     {
                         var row_hash = local_register.ExellPropAddress.Worksheet.Cells[row, HASH_FUNCTION_COL].Value;
                         var col_hash_str = local_register.ExellPropAddress.Worksheet.Cells[HASH_FUNCTION_ROW, column].Value.ToString();

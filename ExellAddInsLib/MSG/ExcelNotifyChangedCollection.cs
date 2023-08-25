@@ -18,6 +18,7 @@ namespace ExellAddInsLib.MSG
         public event BeforePropertyChangeEventHandler BeforePropertyChange;
 
         private bool _isValid = true;
+       public  bool IsChanged { get; set; }
         private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
