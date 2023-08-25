@@ -624,20 +624,20 @@ namespace MSGAddIn
         {
             try
             {
-                if(CurrentMSGExellModel.Owner!=null)
+                if (CurrentMSGExellModel.Owner != null)
                 {
                     CurrentMSGExellModel.ClearAllSections();
                     CurrentMSGExellModel.CopyOwnerObjectModels();
                     CurrentMSGExellModel.ReloadSheetModel();
-                  
+
                 }
-              //  else
+                //  else
                 {
                     CurrentMSGExellModel.UpdateExcelRepresetation();
                     CurrentMSGExellModel.SetFormulas();
                     CurrentMSGExellModel.SetStyleFormats();
                 }
-              
+
             }
             catch (Exception exp)
             {
@@ -839,7 +839,7 @@ namespace MSGAddIn
 
 
 
-                foreach (WorksSection w_section in curren_model.WorksSections)
+            foreach (WorksSection w_section in curren_model.WorksSections)
             {
                 int section_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
                 int section_null_cell_counter = 0;
@@ -950,7 +950,7 @@ namespace MSGAddIn
                     // MSGOutWorksheet.Cells[row_index, TMP_WORK_DAYS_NUMBER_COL] = (msg_work.WorkSchedules.EndDate - msg_work.WorkSchedules.StartDate)?.Days;
                     ///Заполняем плановые объемы в календарной части
                     MSGExellModel owner_model = curren_model.Owner;
-             
+
                     int? workable_days_num = msg_work.WorkSchedules.GetShedulesAllDaysNumber();
                     foreach (WorkScheduleChunk schedule_chunk in msg_work.WorkSchedules)
                     {
@@ -964,9 +964,9 @@ namespace MSGAddIn
                                 && (date.DayOfWeek != DayOfWeek.Sunday || schedule_chunk.IsSundayVacationDay == "Нет"))
                             {
                                 decimal? project_quantity = 0;
-                                if(curren_model.Owner != null)
+                                if (curren_model.Owner != null)
                                 {
-                                    project_quantity = (msg_work.ProjectQuantity - msg_work.PreviousComplatedQuantity) / workable_days_num ;
+                                    project_quantity = (msg_work.ProjectQuantity - msg_work.PreviousComplatedQuantity) / workable_days_num;
                                     project_quantity = project_quantity * lobournes_coefficents[date];
                                 }
                                 else
@@ -1023,12 +1023,12 @@ namespace MSGAddIn
                         NeedsOfWorkersDay needsOfWorkersDay = current_needs_of_worker.NeedsOfWorkersReportCard.FirstOrDefault(nwd => nwd.Date == current_date);
                         if (needsOfWorkersDay != null)
                         {
-                            if(curren_model.Owner!=null)
+                            if (curren_model.Owner != null)
                             {
                                 MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator,
-                                NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = needsOfWorkersDay.Quantity*lobournes_coefficents[current_date];
+                                NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = needsOfWorkersDay.Quantity * lobournes_coefficents[current_date];
                             }
-                          else
+                            else
                                 MSGNeedsOutWorksheet.Cells[NEEDS_WORKERS_FIRST_ROW + work_needs_iterator,
                                 NEEDS_WORKDAY_DATE_FIRST_COL + work_needs_date_col_index] = needsOfWorkersDay.Quantity;
                         }
@@ -1429,94 +1429,157 @@ namespace MSGAddIn
                                 if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
                                 var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is MSGWork msg_obj
-                                                                                   && msg_obj.GetTopRow() <= selection.Rows[1].Row
+                                                                                    
                                                                                    && obj.Owner != null);
-                                MSGWork selected_work = selected_above_msg_works[0] as MSGWork;
-                                WorksSection selected_section = selected_work.Owner as WorksSection;
 
-                                if (selected_section == null) return;
-                                int selected_work_index = selected_section.MSGWorks.IndexOf(selected_work);
+                                MSGWork _current_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() == selection.Row) as MSGWork;
+                                MSGWork _next_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() > selection.Row) as MSGWork;
+                                MSGWork _previous_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() < selection.Row) as MSGWork;
+                                MSGWork selected_work;
 
-                                foreach (MSGWork msg_work in CopyedObjectsList)
-                                    selected_section.MSGWorks.Insert(selected_work_index + 1, msg_work);
+                                if (_current_work != null) selected_work = _current_work;
+                                else if (_next_work != null) selected_work = _next_work;
+                                else
+                                    selected_work = _previous_work;
 
-                                CurrentMSGExellModel.UpdateExcelRepresetation();
-                                foreach (MSGWork msg_work in CopyedObjectsList)
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                                if (selected_work != null )
+                                {
+                                    WorksSection selected_section = selected_work.Owner as WorksSection;
+                                    if (selected_section == null) return;
+                                    int selected_work_index = selected_section.MSGWorks.IndexOf(selected_work );
 
-                                CurrentMSGExellModel.SetStyleFormats();
-                                commands_group_label = "";
+                                    foreach (MSGWork msg_work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
+                                    {
+                                        selected_section.MSGWorks.Insert(selected_work_index, msg_work);
+                                        selected_work_index++;
+                                    }
+                                    CurrentMSGExellModel.UpdateExcelRepresetation();
+                                    foreach (MSGWork msg_work in CopyedObjectsList)
+                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+
+                                    CurrentMSGExellModel.SetStyleFormats();
+                                    commands_group_label = "";
+                                }
+            
                                 break;
                             }
                         case nameof(VOVRWork):
                             {
                                 if (selection.Column <= MSGExellModel.VOVR_NUMBER_COL | selection.Column >= MSGExellModel.VOVR_LABOURNESS_COL) return;
-                                var selected_above_vovr_works = CurrentMSGExellModel
+                                var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is VOVRWork msg_obj
-                                                                                   && msg_obj.GetTopRow() <= selection.Rows[1].Row
+
                                                                                    && obj.Owner != null);
-                                VOVRWork selected_work = selected_above_vovr_works[0] as VOVRWork;
-                                MSGWork selected_msg_work = selected_work.Owner as MSGWork;
 
-                                if (selected_msg_work == null) return;
-                                int selected_work_index = selected_msg_work.VOVRWorks.IndexOf(selected_work);
-                                foreach (VOVRWork work in CopyedObjectsList)
-                                    selected_msg_work.VOVRWorks.Insert(selected_work_index, work);
+                                VOVRWork _current_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() == selection.Row) as VOVRWork;
+                                VOVRWork _next_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() > selection.Row) as VOVRWork;
+                                VOVRWork _previous_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() < selection.Row) as VOVRWork;
+                                VOVRWork selected_work;
 
-                                CurrentMSGExellModel.UpdateExcelRepresetation();
+                                if (_current_work != null) selected_work = _current_work;
+                                else if (_next_work != null && _previous_work != null && _next_work.Owner== _previous_work.Owner)
+                                    selected_work = _next_work;
+                                else
+                                    selected_work = _previous_work;
 
-                                foreach (VOVRWork work in CopyedObjectsList)
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
+                                if (selected_work != null)
+                                {
+                                    MSGWork selected_msg_work = selected_work.Owner as MSGWork;
+                                    if (selected_msg_work == null) return;
+                                    int selected_work_index = selected_msg_work.VOVRWorks.IndexOf(selected_work);
 
+                                    foreach (VOVRWork _work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
+                                    {
+                                        selected_msg_work.VOVRWorks.Insert(selected_work_index, _work);
+                                        selected_work_index++;
+                                    }
+                                    CurrentMSGExellModel.UpdateExcelRepresetation();
+                                    foreach (VOVRWork msg_work in CopyedObjectsList)
+                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
 
-                                CurrentMSGExellModel.SetStyleFormats();
-                                commands_group_label = "";
+                                    CurrentMSGExellModel.SetStyleFormats();
+                                    commands_group_label = "";
+                                }
+
                                 break;
                             }
                         case nameof(KSWork):
                             {
                                 if (selection.Column <= MSGExellModel.KS_NUMBER_COL | selection.Column >= MSGExellModel.KS_LABOURNESS_COL) return;
-                                var selected_above_works = CurrentMSGExellModel
+                                var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is KSWork msg_obj
-                                                                                   && msg_obj.GetTopRow() <= selection.Rows[1].Row
+
                                                                                    && obj.Owner != null);
-                                KSWork selected_work = selected_above_works[0] as KSWork;
-                                VOVRWork selected_owner_work = selected_work.Owner as VOVRWork;
 
-                                if (selected_owner_work == null) return;
-                                int selected_work_index = selected_owner_work.KSWorks.IndexOf(selected_work);
-                                foreach (KSWork work in CopyedObjectsList)
-                                    selected_owner_work.KSWorks.Insert(selected_work_index, work);
+                                KSWork _current_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() == selection.Row) as KSWork;
+                                KSWork _next_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() > selection.Row) as KSWork;
+                                KSWork _previous_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() < selection.Row) as KSWork;
+                                KSWork selected_work;
+                             
+                                if (_current_work != null) selected_work = _current_work;
+                                else if (_next_work != null && _previous_work != null && _next_work.Owner == _previous_work.Owner)
+                                    selected_work = _next_work;
+                                else
+                                    selected_work = _previous_work;
 
-                                CurrentMSGExellModel.UpdateExcelRepresetation();
-                                foreach (KSWork work in CopyedObjectsList)
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
+                                if (selected_work != null)
+                                {
+                                    VOVRWork selected_vovr_work = selected_work.Owner as VOVRWork;
+                                    if (selected_vovr_work == null) return;
+                                    int selected_work_index = selected_vovr_work.KSWorks.IndexOf(selected_work);
 
-                                CurrentMSGExellModel.SetStyleFormats();
-                                commands_group_label = "";
+                                    foreach (KSWork _work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
+                                    {
+                                        selected_vovr_work.KSWorks.Insert(selected_work_index, _work);
+                                        selected_work_index++;
+                                    }
+                                    CurrentMSGExellModel.UpdateExcelRepresetation();
+                                    foreach (KSWork msg_work in CopyedObjectsList)
+                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+
+                                    CurrentMSGExellModel.SetStyleFormats();
+                                    commands_group_label = "";
+                                }
                                 break;
                             }
 
                         case nameof(RCWork):
                             {
                                 if (selection.Column <= MSGExellModel.RC_NUMBER_COL | selection.Column >= MSGExellModel.RC_LABOURNESS_COL) return;
-                                var selected_above_works = CurrentMSGExellModel
+                                var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is RCWork msg_obj
-                                                                                   && msg_obj.GetTopRow() <= selection.Rows[1].Row
+
                                                                                    && obj.Owner != null);
-                                RCWork selected_work = selected_above_works[0] as RCWork;
-                                KSWork selected_owner_work = selected_work.Owner as KSWork;
 
-                                if (selected_owner_work == null) return;
-                                int selected_work_index = selected_owner_work.RCWorks.IndexOf(selected_work);
-                                foreach (RCWork work in CopyedObjectsList)
-                                    selected_owner_work.RCWorks.Insert(selected_work_index, work);
+                                RCWork _current_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() == selection.Row) as RCWork;
+                                RCWork _next_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() > selection.Row) as RCWork;
+                                RCWork _previous_work = selected_above_msg_works.FirstOrDefault(ob => ob.GetTopRow() < selection.Row) as RCWork;
+                                RCWork selected_work;
 
-                                CurrentMSGExellModel.UpdateExcelRepresetation();
-                                foreach (RCWork work in CopyedObjectsList)
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(work);
-                                CurrentMSGExellModel.SetStyleFormats();
-                                commands_group_label = "";
+                                if (_current_work != null) selected_work = _current_work;
+                                else if (_next_work != null && _previous_work != null && _next_work.Owner == _previous_work.Owner)
+                                    selected_work = _next_work;
+                                else
+                                    selected_work = _previous_work;
+
+                                if (selected_work != null)
+                                {
+                                    KSWork selected_KS_work = selected_work.Owner as KSWork;
+                                    if (selected_KS_work == null) return;
+                                    int selected_work_index = selected_KS_work.RCWorks.IndexOf(selected_work);
+
+                                    foreach (RCWork _work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
+                                    {
+                                        selected_KS_work.RCWorks.Insert(selected_work_index, _work);
+                                        selected_work_index++;
+                                    }
+                                    CurrentMSGExellModel.UpdateExcelRepresetation();
+                                    foreach (RCWork msg_work in CopyedObjectsList)
+                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+
+                                    CurrentMSGExellModel.SetStyleFormats();
+                                    commands_group_label = "";
+                                }
                                 break;
                             }
                         case nameof(NeedsOfWorker):
@@ -1638,8 +1701,12 @@ namespace MSGAddIn
                     foreach (var obj in sected_objects)
                         CopyedObjectsList.Add((WorksSection)obj.Clone()); ;
 
-                    buttonPaste.Enabled = true;
-                    commands_group_label = $"Разадел(ы) скопирован.\n Выбрерите ячеку с номеров нового раздела.";
+                    if (CopyedObjectsList.Count > 0)
+                    {
+                        buttonPaste.Enabled = true;
+                        commands_group_label = $"Разадел(ы) скопирован.\n Выбрерите ячеку с номеров нового раздела.";
+                    }
+                    
                 }
                 //Excel.Dialog dlg = Globals.ThisAddIn.Application.Dialogs[Excel.XlBuiltInDialog.xlDialogFont];
                 //dlg.Show();

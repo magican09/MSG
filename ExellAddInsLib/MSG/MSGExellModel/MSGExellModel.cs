@@ -463,7 +463,10 @@ namespace ExellAddInsLib.MSG
                 w_section.CellAddressesMap["Name"].IsValid = false;
 
             if (!this.WorksSections.Contains(w_section))
+            {
                 this.WorksSections.Add(w_section);
+                w_section.Owner = this;
+            }
         }
         /// <summary>
         /// Функция из части РАЗДЕЛЫ  листа Worksheet создает и помещает в модель  разделы работ
@@ -551,7 +554,7 @@ namespace ExellAddInsLib.MSG
 
             int schedule_number = 0;
 
-            while (registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value != null )
+            while (registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value != null)
             {
                 schedule_number++;
                 DateTime start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
@@ -582,7 +585,7 @@ namespace ExellAddInsLib.MSG
                         work_sh_chunk.IsValid = false;
                         work_sh_chunk.CellAddressesMap["StartTime"].Cell.Interior.Color = XlRgbColor.rgbRed;
                         work_sh_chunk.CellAddressesMap["EndTime"].Cell.Interior.Color = XlRgbColor.rgbRed;
-                     if(this.Owner==null)
+                        if (this.Owner == null)
                             throw new Exception("Диапазона дат начали и конца МСГ работы пересекаются с уже имещимися!!");
                     }
                     else
@@ -592,7 +595,7 @@ namespace ExellAddInsLib.MSG
                 work_sh_chunk.Owner = msg_work;
                 if (registerSheet.Cells[rowIndex + 1, MSG_NUMBER_COL].Value != null) break;
                 rowIndex++;
-              
+
             }
         }
 
@@ -1202,7 +1205,7 @@ namespace ExellAddInsLib.MSG
             }
 
         }
-        public  void ClearAllSections()
+        public void ClearAllSections()
         {
             this.ClearAllMSGWorks();
             foreach (var section in this.WorksSections)
@@ -1470,8 +1473,8 @@ namespace ExellAddInsLib.MSG
 
                 foreach (MSGExellModel model in Children)
                 {
-               //     model.ClearAllSections();
-                //    model.CopyOwnerObjectModels();
+                    //     model.ClearAllSections();
+                    //    model.CopyOwnerObjectModels();
                     model.ReloadSheetModel();
                 }
 
@@ -2400,11 +2403,14 @@ namespace ExellAddInsLib.MSG
             }
             IExcelBindableBase finded_obj = null;
             var tuple = objects_distation.OrderBy(el => el.Item1).FirstOrDefault();
+            if (tuple != null)
+                finded_obj = tuple.Item2 as IExcelBindableBase;
+
             foreach (var kvp in objects_distation.OrderBy(_kvp => _kvp.Item1))
                 finded_objects.Add(kvp.Item2);
 
-            if (tuple != null)
-                finded_obj = tuple.Item2 as IExcelBindableBase;
+            if (selection.Rows.Count == 1)
+                return new List<IExcelBindableBase>() { finded_obj };
 
             return finded_objects;
         }
@@ -2430,13 +2436,46 @@ namespace ExellAddInsLib.MSG
             }
             IExcelBindableBase finded_obj = null;
             var tuple = objects_distation.OrderBy(el => el.Item1).FirstOrDefault();
-            foreach (var kvp in objects_distation.OrderBy(_kvp => _kvp.Item1))
-                finded_objects.Add(kvp.Item2);
-
             if (tuple != null)
                 finded_obj = tuple.Item2 as IExcelBindableBase;
 
+            foreach (var kvp in objects_distation.OrderBy(_kvp => _kvp.Item1))
+                finded_objects.Add(kvp.Item2);
+
             return finded_objects;
+        }
+
+        public IExcelBindableBase SelectedObjectForInsert(Excel.Range selection, Func<IExcelBindableBase, bool> obj_predicate)
+        {
+            ObservableCollection<Tuple<double, IExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IExcelBindableBase>>();
+            List<IExcelBindableBase> finded_objects = new List<IExcelBindableBase>();
+            int top_row = selection.Rows[1].Row;
+            int bottom_row = selection.Rows[selection.Rows.Count].Row;
+            List<IExcelBindableBase> uniq_objcts = new List<IExcelBindableBase>();
+
+            foreach (var kvp in this.RegistedObjects.Where(rr => obj_predicate(rr.Entity)))
+            {
+                int obj_row = kvp.ExellPropAddress.Row;
+                int obj_col = kvp.ExellPropAddress.Column;
+                double dist = Math.Sqrt(Math.Pow(obj_row - selection.Row, 2) + Math.Pow(obj_col - selection.Column, 2));
+                if (!uniq_objcts.Contains(kvp.Entity))
+                {
+                    objects_distation.Add(new Tuple<double, IExcelBindableBase>(dist, kvp.Entity));
+                    uniq_objcts.Add(kvp.Entity);
+                }
+
+            }
+            IExcelBindableBase finded_obj = null;
+            var tuple = objects_distation.OrderBy(el => el.Item1).FirstOrDefault();
+            foreach (var kvp in objects_distation.OrderBy(_kvp => _kvp.Item1))
+                finded_objects.Add(kvp.Item2);
+
+            var above_obj = finded_objects.FirstOrDefault(ob => ob.GetTopRow() >= selection.Row);
+
+            if (above_obj != null)
+                finded_obj = above_obj;
+
+            return finded_obj;
         }
 
         public void InsertRow(int row)
