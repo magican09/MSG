@@ -233,7 +233,7 @@ namespace MSGAddIn
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
-            // try
+            try
             {
                 CurrentWorkbook = Globals.ThisAddIn.CurrentActivWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -245,7 +245,7 @@ namespace MSGAddIn
                 CommonWorkConsumptionsWorksheet = CurrentWorkbook.Worksheets["Люди_общая"];
                 CommonMachineConsumptionsWorksheet = CurrentWorkbook.Worksheets["Техника_общая"];
 
-                this.AddExcellVBAFunctions();
+             //   this.AddExcellVBAFunctions();
 
                 EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
                 MachineMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
@@ -293,9 +293,9 @@ namespace MSGAddIn
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-            //    catch (Exception exp)
+               catch (Exception exp)
             {
-                //        MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
+                       MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
             }
 
         }
