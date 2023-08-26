@@ -175,7 +175,7 @@ namespace MSGAddIn
             btnChangeCommonMSG.Enabled = state;
 
             btnCalcLabournes.Enabled = state;
-            //   btnCreateTemplateFile.Enabled = state;
+            btnCreateTemplateFile.Enabled = state;
             buttonCalc.Enabled = state;
 
             menuSection.Enabled = state;
@@ -835,11 +835,12 @@ namespace MSGAddIn
 
 
             Excel.Range tmp_works_selection_range = MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_SELECTION_FIRST_ROW];
-            Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
+           // Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
+            Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGOutWorksheet.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
             Excel.Range tmp_dest = MSGTemplateWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, 1];
             tmp_work_rows_range.Copy();
             tmp_dest.PasteSpecial(XlPasteType.xlPasteAll);
-            tmp_work_rows_range = MSGTemplateWorksheet.Range[MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
+            tmp_work_rows_range = MSGTemplateWorksheet.Range[MSGTemplateWorksheet.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGTemplateWorksheet.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
 
             #region Заполнение формы данными из модели...
             const int LAST_ROW_MAX_COUNT = 100;
@@ -847,7 +848,7 @@ namespace MSGAddIn
             int work_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
             int saved_iterator = TMP_WORK_SELECTION_FIRST_ROW;
             Dictionary<DateTime, decimal> lobournes_coefficents = new Dictionary<DateTime, decimal>();
-
+       
             if (curren_model.Owner != null)
             {
                 for (DateTime date = curren_model.Owner.WorksStartDate; date <= curren_model.WorksEndDate; date = date.AddDays(1))
@@ -876,13 +877,14 @@ namespace MSGAddIn
                 }
             }
 
+            MSGOutWorksheet.Activate();
 
 
             foreach (WorksSection w_section in curren_model.WorksSections)
             {
                 int section_local_index_iterator = TMP_WORK_SELECTION_FIRST_ROW;
                 int section_null_cell_counter = 0;
-
+                ///Находим и фиксируем позицию записи текущего Раздела в МСГ
                 while (section_null_cell_counter <= LAST_ROW_MAX_COUNT)
                 {
                     if (MSGOutWorksheet.Cells[section_local_index_iterator, TMP_WORK_NUMBER_COL].Value == null)
@@ -900,25 +902,25 @@ namespace MSGAddIn
                     }
                     section_local_index_iterator++;
                 }
-                if (section_null_cell_counter >= LAST_ROW_MAX_COUNT)
+             
+                if (section_null_cell_counter >= LAST_ROW_MAX_COUNT) //Если записть раздела не была найдерна - текущий итератор устанваливаем на последний сохранненый
                     section_local_index_iterator = saved_iterator;
-
+                ///Записываем имя текущего раздела в текущую позицию
                 tmp_works_selection_range.Copy();
                 Excel.Range sect_row_dest = MSGOutWorksheet.Cells[section_local_index_iterator, 1];
                 sect_row_dest.PasteSpecial(XlPasteType.xlPasteAll);
                 MSGOutWorksheet.Cells[section_local_index_iterator, 1] = $"{w_section.Number} {w_section.Name}";
 
-                saved_iterator = section_local_index_iterator + 1;
+                saved_iterator = section_local_index_iterator + 1; //
                 var works = w_section.MSGWorks.Where(w => selection_predicate(w));
 
                 foreach (MSGWork msg_work in w_section.MSGWorks.Where(w => selection_predicate(w)))
                 {
                     ///Копируем и вставляем строку для работы в МСГ
-                    work_local_index_iterator = section_local_index_iterator + 1;
+                    work_local_index_iterator = section_local_index_iterator + 1;//И после переходим к просмотру записей работ Раздела
                     int null_cell_counter = 0;
 
-
-                    while (null_cell_counter <= LAST_ROW_MAX_COUNT)
+                    while (null_cell_counter < LAST_ROW_MAX_COUNT)
                     {
                         if (MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value == null)
                             null_cell_counter++;
@@ -929,16 +931,14 @@ namespace MSGAddIn
                             if (MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value != null)
                                 msg_work_number = MSGOutWorksheet.Cells[work_local_index_iterator, TMP_WORK_NUMBER_COL].Value.ToString();
 
-
-
-                            if (curren_model.WorksSections.FirstOrDefault(wc => wc.Name == msg_work_number) != null
+                            ///Если работу не нашли и наткнулись на записть следующего Раздела - вставляем строчки для новой работы.
+                            if (curren_model.WorksSections.FirstOrDefault(s => $"{s.Number} {s.Name}" == msg_work_number) != null
                                                  && msg_work_number != w_section.Name)
                             {
                                 saved_iterator = work_local_index_iterator;
                                 tmp_work_rows_range.Copy();
                                 Excel.Range dest = MSGOutWorksheet.Rows[saved_iterator];
                                 dest.Insert(Excel.XlInsertShiftDirection.xlShiftDown, Type.Missing);
-
                                 break;
                             }
                             if (msg_work.Number == msg_work_number)
@@ -953,32 +953,23 @@ namespace MSGAddIn
                         }
                         work_local_index_iterator++;
                     }
+
                     row_index = saved_iterator;
-                    if (null_cell_counter >= LAST_ROW_MAX_COUNT)
+                    if (null_cell_counter == LAST_ROW_MAX_COUNT)
                     {
-                        //  row_index = saved_iterator;
                         tmp_work_rows_range.Copy();
                         Excel.Range dest = MSGOutWorksheet.Rows[row_index];
                         dest.PasteSpecial(XlPasteType.xlPasteAll);
                         saved_iterator += 2;
                     }
 
-                    //tmp_work_rows_range.Copy();
-                    //Excel.Range dest = MSGOutWorksheet.Rows[row_index];
-                    //dest.Insert(Excel.XlInsertShiftDirection.xlShiftDown,Type.Missing);
 
                     ///Заполняем основыне данные работы                
-                    MSGOutWorksheet.Cells[row_index, TMP_WORK_NUMBER_COL] = msg_work.Number;
+                    Excel.Range number_cell = MSGOutWorksheet.Cells[row_index, TMP_WORK_NUMBER_COL];
+                    number_cell.NumberFormat = "@";
+                    number_cell.Value = msg_work.Number;
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_NAME_COL] = msg_work.Name;
 
-                    //decimal project_quantity = 0;
-                    //if (curren_model.Owner == null)
-                    //    project_quantity = msg_work.ProjectQuantity;
-                    //else
-                    //{
-                    //    var owner_model = curren_model.Owner;
-
-                    //}
                     MSGOutWorksheet.Cells[row_index, TMP_WORK_PROJECT_QUANTITY_COL] = msg_work.ProjectQuantity;
                     MSGOutWorksheet.Cells[row_index, TMP_U_MRASURE_COL] = msg_work.UnitOfMeasurement.Name;
 
@@ -1035,9 +1026,10 @@ namespace MSGAddIn
                                 date_index++;
                             }
                         }
-                    //row_index += 2;
+
                     work_local_index_iterator += 2;
                 }
+               
             }
             #endregion
 
