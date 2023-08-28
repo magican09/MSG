@@ -24,6 +24,14 @@ namespace ExellAddInsLib.MSG
             get { return _endTime; }
             set { SetProperty(ref _endTime, value); }
         }//Дата окончания
+       
+        private int _duration;
+
+        public int Duration
+        {
+            get { return _duration; }
+            set { SetProperty(ref _duration, value); }
+        }
         public WorkScheduleChunk(DateTime start_time, DateTime ent_time)
         {
             StartTime = start_time;

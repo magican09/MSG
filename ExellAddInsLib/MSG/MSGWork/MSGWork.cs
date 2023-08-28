@@ -11,13 +11,20 @@ namespace ExellAddInsLib.MSG
     {
         public const int MSG_NUMBER_COL = 4;
         public const int MSG_NAME_COL = MSG_NUMBER_COL + 1;
-        public const int MSG_MEASURE_COL = MSG_NUMBER_COL + 2;
-        public const int MSG_QUANTITY_COL = MSG_NUMBER_COL + 3;
+        public const int MSG_QUANTITY_COL = MSG_NUMBER_COL + 2;
+        public const int MSG_MEASURE_COL = MSG_NUMBER_COL + 3;
         public const int MSG_QUANTITY_FACT_COL = MSG_NUMBER_COL + 4;
         public const int MSG_LABOURNESS_COL = MSG_NUMBER_COL + 5;
         public const int MSG_START_DATE_COL = MSG_NUMBER_COL + 6;
-        public const int MSG_END_DATE_COL = MSG_NUMBER_COL + 7;
-        public const int MSG_SUNDAY_IS_VOCATION_COL = MSG_NUMBER_COL + 8;
+        public const int MSG_END_DATE_COL = MSG_NUMBER_COL +7;
+        public const int MSG_DURATION_DATE_COL = MSG_NUMBER_COL + 8;
+        public const int MSG_SUNDAY_IS_VOCATION_COL = MSG_NUMBER_COL + 9;
+
+        public const int MSG_NEEDS_OF_WORKERS_NAME_COL = MSG_SUNDAY_IS_VOCATION_COL + 1;
+        public const int MSG_NEEDS_OF_WORKERS_QUANTITY_COL = MSG_NEEDS_OF_WORKERS_NAME_COL + 1;
+
+        public const int MSG_NEEDS_OF_MACHINE_NAME_COL = MSG_NEEDS_OF_WORKERS_QUANTITY_COL + 1;
+        public const int MSG_NEEDS_OF_MACHINE_QUANTITY_COL = MSG_NEEDS_OF_MACHINE_NAME_COL + 1;
 
         public const int _MSG_WORKS_GAP = 1;
         private Excel.Worksheet _worksheet;
@@ -62,7 +69,10 @@ namespace ExellAddInsLib.MSG
             get { return _vOVRWorks; }
             set { _vOVRWorks = value; }
         }
+
       
+
+
         public MSGWork() : base()
         {
             this.VOVRWorks.Owner = this;

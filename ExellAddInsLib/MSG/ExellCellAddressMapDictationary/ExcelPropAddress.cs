@@ -82,10 +82,15 @@ namespace ExellAddInsLib.MSG
         public void SetCellNumberFormat()
         {
             if (_valueType == null) return;
-            if (_valueType == typeof(int) || _valueType == typeof(double) || _valueType == typeof(decimal))
+            if ( _valueType == typeof(double) || _valueType == typeof(decimal))
             {
                 Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
                 CellNumberFormat = $"0.00";
+            }
+            if (_valueType == typeof(int) )
+            {
+                Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
+                CellNumberFormat = $"0";
             }
             if (_valueType == typeof(DateTime))
             {

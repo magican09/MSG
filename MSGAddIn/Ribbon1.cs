@@ -233,7 +233,7 @@ namespace MSGAddIn
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
-            try
+            //try
             {
                 CurrentWorkbook = Globals.ThisAddIn.CurrentActivWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -293,9 +293,9 @@ namespace MSGAddIn
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-               catch (Exception exp)
+         //     catch (Exception exp)
             {
-                       MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
+           //            MessageBox.Show($"Ошибка при зазугрузка данных. Ошибка: {exp.Message}");
             }
 
         }
@@ -735,7 +735,7 @@ namespace MSGAddIn
                     if (CommonMSGExellModel != null)
                         this.FillMSG_OUT_File(CurrentMSGExellModel, (w) => { return true; });
 
-                    MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{CurrentMSGExellModel.ContractCode}.xlsx");
+                    MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\График. {CurrentMSGExellModel.ContractCode}. {CurrentMSGExellModel.ContructionObjectCode}. {CurrentMSGExellModel.ConstructionSubObjectCode}. ООО НИПТ. {DateTime.Now.ToString("d")}.xlsx");
                     MSGTemplateWorkbook.Close();
                 }
             }
@@ -834,10 +834,14 @@ namespace MSGAddIn
 
 
 
-            Excel.Range tmp_works_selection_range = MSGTemplateWorksheet.UsedRange.Rows[TMP_WORK_SELECTION_FIRST_ROW];
-           // Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGOutWorksheet.UsedRange.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
+            Excel.Range tmp_works_selection_range = MSGTemplateWorksheet.Rows[TMP_WORK_SELECTION_FIRST_ROW];
+            tmp_works_selection_range.Copy();
+            Excel.Range tmp_dest = MSGTemplateWorksheet.Cells[TMP_WORK_SELECTION_FIRST_ROW, 1];
+            tmp_dest.PasteSpecial(XlPasteType.xlPasteAll);
+            tmp_works_selection_range = MSGTemplateWorksheet.Rows[TMP_WORK_SELECTION_FIRST_ROW];
+
             Excel.Range tmp_work_rows_range = MSGOutWorksheet.Range[MSGOutWorksheet.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGOutWorksheet.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
-            Excel.Range tmp_dest = MSGTemplateWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, 1];
+            tmp_dest = MSGTemplateWorksheet.Cells[TMP_WORK_FIRST_INDEX_ROW, 1];
             tmp_work_rows_range.Copy();
             tmp_dest.PasteSpecial(XlPasteType.xlPasteAll);
             tmp_work_rows_range = MSGTemplateWorksheet.Range[MSGTemplateWorksheet.Rows[TMP_WORK_FIRST_INDEX_ROW], MSGTemplateWorksheet.Rows[TMP_WORK_FIRST_INDEX_ROW + 1]];
@@ -914,7 +918,7 @@ namespace MSGAddIn
                 saved_iterator = section_local_index_iterator + 1; //
                 var works = w_section.MSGWorks.Where(w => selection_predicate(w));
 
-                foreach (MSGWork msg_work in w_section.MSGWorks.Where(w => selection_predicate(w)))
+                foreach (MSGWork msg_work in w_section.MSGWorks.Where(w => selection_predicate(w)).OrderBy(w=>Int32.Parse(w.NumberSuffix)))
                 {
                     ///Копируем и вставляем строку для работы в МСГ
                     work_local_index_iterator = section_local_index_iterator + 1;//И после переходим к просмотру записей работ Раздела
@@ -1188,7 +1192,7 @@ namespace MSGAddIn
 
                         ///Заполняем из шаблона МСГ недельный столбец в каледаре 
                         string week_name_signatura =
-                          $"неделя\r\n {date.ToString("dd")} - {this.GetLastWeekdayDate(date).ToString("dd")}";
+                          $"неделя\r\n {date.ToString("dd.MM")} - {this.GetLastWeekdayDate(date).ToString("dd.MM")}";
                         MSGOutWorksheet.Cells[WORKDAY_DATE_ROW, WORKDAY_DATE_FIRST_COL + date_col_index] = week_name_signatura;
                         MSGOutWorksheet.Cells[WORKDAY_DATE_ROW + 1, WORKDAY_DATE_FIRST_COL + date_col_index] = in_worksheet_number++;
 
@@ -1457,7 +1461,7 @@ namespace MSGAddIn
                             }
                         case nameof(MSGWork):
                             {
-                                if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+                                if (selection.Column <= MSGWork.MSG_NUMBER_COL | selection.Column >= MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
                                 var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is MSGWork msg_obj
 
@@ -1615,7 +1619,7 @@ namespace MSGAddIn
                             }
                         case nameof(NeedsOfWorker):
                             {
-                                if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+                                if (selection.Column <= MSGWork.MSG_NUMBER_COL | selection.Column >= MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
 
                                 var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
 
@@ -1640,7 +1644,7 @@ namespace MSGAddIn
                             }
                         case nameof(NeedsOfMachine):
                             {
-                                if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+                                if (selection.Column <= MSGWork.MSG_NUMBER_COL | selection.Column >= MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
 
                                 var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
 
@@ -1759,7 +1763,7 @@ namespace MSGAddIn
             {
                 CopyedObjectsList.Clear();
                 var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-                if (selection.Column <= MSGExellModel.MSG_NUMBER_COL | selection.Column >= MSGExellModel.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
+                if (selection.Column <= MSGWork.MSG_NUMBER_COL | selection.Column >= MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL) return;
 
                 var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork)).Where(ob => !CopyedObjectsList.Contains(ob));
                 if (sected_objects != null)

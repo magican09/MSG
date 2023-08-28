@@ -38,33 +38,10 @@ namespace ExellAddInsLib.MSG
         public const int WSEC_NUMBER_COL = 2;
         public const int WSEC_NAME_COL = WSEC_NUMBER_COL + 1;
 
-        public const int MSG_NUMBER_COL = 4;
-        public const int MSG_NAME_COL = MSG_NUMBER_COL + 1;
-        public const int MSG_MEASURE_COL = MSG_NUMBER_COL + 2;
-        public const int MSG_QUANTITY_COL = MSG_NUMBER_COL + 3;
-        public const int MSG_QUANTITY_FACT_COL = MSG_NUMBER_COL + 4;
-        public const int MSG_LABOURNESS_COL = MSG_NUMBER_COL + 5;
-        public const int MSG_START_DATE_COL = MSG_NUMBER_COL + 6;
-        public const int MSG_END_DATE_COL = MSG_NUMBER_COL + 7;
-        public const int MSG_SUNDAY_IS_VOCATION_COL = MSG_NUMBER_COL + 8;
-
-        //public const int MSG_NEEDS_OF_WORKERS_NUMBER_COL = MSG_SUNDAY_IS_VOCATION_COL + 1;
-        //public const int MSG_NEEDS_OF_WORKERS_NAME_COL = MSG_NEEDS_OF_WORKERS_NUMBER_COL + 1;
-        //public const int MSG_NEEDS_OF_WORKERS_QUANTITY_COL = MSG_NEEDS_OF_WORKERS_NUMBER_COL + 2;
+        
 
 
-        public const int MSG_NEEDS_OF_WORKERS_NAME_COL = MSG_SUNDAY_IS_VOCATION_COL + 1;
-        public const int MSG_NEEDS_OF_WORKERS_QUANTITY_COL = MSG_NEEDS_OF_WORKERS_NAME_COL + 1;
-
-        //public const int MSG_NEEDS_OF_MACHINE_NUMBER_COL = MSG_NEEDS_OF_WORKERS_QUANTITY_COL + 1;
-        //public const int MSG_NEEDS_OF_MACHINE_NAME_COL = MSG_NEEDS_OF_MACHINE_NUMBER_COL + 1;
-        //public const int MSG_NEEDS_OF_MACHINE_QUANTITY_COL = MSG_NEEDS_OF_MACHINE_NUMBER_COL + 2;
-
-        public const int MSG_NEEDS_OF_MACHINE_NAME_COL = MSG_NEEDS_OF_WORKERS_QUANTITY_COL + 1;
-        public const int MSG_NEEDS_OF_MACHINE_QUANTITY_COL = MSG_NEEDS_OF_MACHINE_NAME_COL + 1;
-
-
-        public const int VOVR_NUMBER_COL = MSG_NEEDS_OF_MACHINE_QUANTITY_COL + 1;
+        public const int VOVR_NUMBER_COL =MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL + 1;
         public const int VOVR_NAME_COL = VOVR_NUMBER_COL + 1;
         public const int VOVR_MEASURE_COL = VOVR_NUMBER_COL + 2;
         public const int VOVR_QUANTITY_COL = VOVR_NUMBER_COL + 3;
@@ -494,47 +471,47 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            string number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value;
+            string number = registerSheet.Cells[rowIndex,MSGWork.MSG_NUMBER_COL].Value;
             if (number == null) return;
             MSGWork msg_work = this.MSGWorks.FirstOrDefault(w => w.Number == number);
             if (msg_work == null)
                 msg_work = new MSGWork();
 
             msg_work.Worksheet = registerSheet;
-            this.Register(msg_work, "Number", rowIndex, MSG_NUMBER_COL, this.RegisterSheet, (v) => Regex.IsMatch((string)v, @"^\d+\.\d+$"));
-            this.Register(msg_work, "Name", rowIndex, MSG_NAME_COL, this.RegisterSheet);
-            this.Register(msg_work, "ProjectQuantity", rowIndex, MSG_QUANTITY_COL, this.RegisterSheet, (v) => ((decimal)v) != 0);
-            this.Register(msg_work, "Quantity", rowIndex, MSG_QUANTITY_FACT_COL, this.RegisterSheet);
-            this.Register(msg_work, "Laboriousness", rowIndex, MSG_LABOURNESS_COL, this.RegisterSheet);
-            this.Register(msg_work, "UnitOfMeasurement.Name", rowIndex, MSG_MEASURE_COL, registerSheet);
+            this.Register(msg_work, "Number", rowIndex,MSGWork.MSG_NUMBER_COL, this.RegisterSheet, (v) => Regex.IsMatch((string)v, @"^\d+\.\d+$"));
+            this.Register(msg_work, "Name", rowIndex,MSGWork.MSG_NAME_COL, this.RegisterSheet);
+            this.Register(msg_work, "ProjectQuantity", rowIndex,MSGWork.MSG_QUANTITY_COL, this.RegisterSheet, (v) => ((decimal)v) != 0);
+            this.Register(msg_work, "Quantity", rowIndex,MSGWork.MSG_QUANTITY_FACT_COL, this.RegisterSheet);
+            this.Register(msg_work, "Laboriousness", rowIndex,MSGWork.MSG_LABOURNESS_COL, this.RegisterSheet);
+            this.Register(msg_work, "UnitOfMeasurement.Name", rowIndex,MSGWork.MSG_MEASURE_COL, registerSheet);
 
             msg_work.Number = number;
           //  if (this.MSGWorks.FirstOrDefault(w => w.Number == msg_work.Number) != null && this.Owner == null)
            //     msg_work.CellAddressesMap["Number"].IsValid = false;
 
-            var name = registerSheet.Cells[rowIndex, MSG_NAME_COL].Value;
+            var name = registerSheet.Cells[rowIndex,MSGWork.MSG_NAME_COL].Value;
             if (name != null)
                 msg_work.Name = name;
             else
                 msg_work.CellAddressesMap["Name"].IsValid = false;
 
-            var unit_of_measurement_name = registerSheet.Cells[rowIndex, MSG_MEASURE_COL].Value;
+            var unit_of_measurement_name = registerSheet.Cells[rowIndex,MSGWork.MSG_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 msg_work.UnitOfMeasurement = UnitOfMeasurements.FirstOrDefault(um => um.Name == unit_of_measurement_name.ToString());
             else
                 msg_work.CellAddressesMap["UnitOfMeasurement.Name"].IsValid = false;
 
-            var pr_quantity = registerSheet.Cells[rowIndex, MSG_QUANTITY_COL].Value;
+            var pr_quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_QUANTITY_COL].Value;
             if (pr_quantity != null)
                 msg_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
                 msg_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
 
-            var quantity = registerSheet.Cells[rowIndex, MSG_QUANTITY_FACT_COL].Value;
+            var quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_QUANTITY_FACT_COL].Value;
             if (quantity != null)
                 msg_work.Quantity = Decimal.Parse(quantity.ToString());
 
-            var labourness = registerSheet.Cells[rowIndex, MSG_LABOURNESS_COL].Value;
+            var labourness = registerSheet.Cells[rowIndex,MSGWork.MSG_LABOURNESS_COL].Value;
             if (labourness != null)
                 msg_work.Laboriousness = Decimal.Parse(labourness.ToString());
             else
@@ -551,14 +528,30 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Worksheet registerSheet = this.RegisterSheet; ;
             int rowIndex = msg_work.CellAddressesMap["Number"].Row;
-
+            if (msg_work.Number == "1.1")
+                ;
             int schedule_number = 0;
 
-            while (registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value != null)
+            while (registerSheet.Cells[rowIndex,MSGWork.MSG_START_DATE_COL].Value != null)
             {
                 schedule_number++;
-                DateTime start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_START_DATE_COL].Value.ToString());
-                DateTime end_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSG_END_DATE_COL].Value.ToString());
+                int duration = 0;
+                DateTime start_time = DateTime.Parse(registerSheet.Cells[rowIndex, MSGWork.MSG_START_DATE_COL].Value.ToString());
+                Excel.Range end_date_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_END_DATE_COL];
+                Excel.Range duration_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_DURATION_DATE_COL];
+                DateTime end_time;
+
+                if (duration_cell.Value != null && Int32.TryParse(duration_cell.Value.ToString(), out duration) && duration!=0)
+                {
+                    end_time = start_time.AddDays(duration-1);
+                    end_date_cell.Value = end_time.ToString("d");
+                }
+                else
+                {
+                    end_time = DateTime.Parse(end_date_cell.Value.ToString());
+                    duration_cell.NumberFormat = "0";
+                    duration_cell.Value = (end_time - start_time).Days+1;
+                }
 
                 WorkScheduleChunk work_sh_chunk = msg_work.WorkSchedules.FirstOrDefault(shd => shd.Number == $"{msg_work.Number}.{schedule_number}");
                 if (work_sh_chunk == null)
@@ -566,17 +559,19 @@ namespace ExellAddInsLib.MSG
 
                 work_sh_chunk.Worksheet = registerSheet;
                 work_sh_chunk.Number = $"{msg_work.Number}.{schedule_number.ToString()}";
+                work_sh_chunk.Duration = duration;
 
-                string is_snaday_vacation = registerSheet.Cells[rowIndex, MSG_SUNDAY_IS_VOCATION_COL].Value;
-                is_snaday_vacation = registerSheet.Cells[rowIndex, MSG_SUNDAY_IS_VOCATION_COL].Value;
+                string is_snaday_vacation = registerSheet.Cells[rowIndex,MSGWork.MSG_SUNDAY_IS_VOCATION_COL].Value;
+                is_snaday_vacation = registerSheet.Cells[rowIndex,MSGWork.MSG_SUNDAY_IS_VOCATION_COL].Value;
                 if (is_snaday_vacation != null && is_snaday_vacation.Contains("Нет"))
                     work_sh_chunk.IsSundayVacationDay = "Нет";
                 else
                     work_sh_chunk.IsSundayVacationDay = "Да";
 
-                this.Register(work_sh_chunk, "StartTime", rowIndex, MSG_START_DATE_COL, this.RegisterSheet);
-                this.Register(work_sh_chunk, "EndTime", rowIndex, MSG_END_DATE_COL, this.RegisterSheet);
-                this.Register(work_sh_chunk, "IsSundayVacationDay", rowIndex, MSG_SUNDAY_IS_VOCATION_COL, this.RegisterSheet);
+                this.Register(work_sh_chunk, "StartTime", rowIndex,MSGWork.MSG_START_DATE_COL, this.RegisterSheet);
+                this.Register(work_sh_chunk, "EndTime", rowIndex,MSGWork.MSG_END_DATE_COL, this.RegisterSheet);
+                this.Register(work_sh_chunk, "Duration", rowIndex, MSGWork.MSG_DURATION_DATE_COL, this.RegisterSheet);
+                this.Register(work_sh_chunk, "IsSundayVacationDay", rowIndex,MSGWork.MSG_SUNDAY_IS_VOCATION_COL, this.RegisterSheet);
 
                 if (!msg_work.WorkSchedules.Contains(work_sh_chunk))
                 {
@@ -593,10 +588,11 @@ namespace ExellAddInsLib.MSG
 
                 }
                 work_sh_chunk.Owner = msg_work;
-                if (registerSheet.Cells[rowIndex + 1, MSG_NUMBER_COL].Value != null) break;
+                if (registerSheet.Cells[rowIndex + 1,MSGWork.MSG_NUMBER_COL].Value != null) break;
                 rowIndex++;
 
             }
+            
         }
 
         /// <summary>
@@ -612,7 +608,7 @@ namespace ExellAddInsLib.MSG
 
             while (null_str_count < 100)
             {
-                var number = registerSheet.Cells[rowIndex, MSG_NUMBER_COL].Value;
+                var number = registerSheet.Cells[rowIndex,MSGWork.MSG_NUMBER_COL].Value;
                 if (number == null) null_str_count++;
                 else
                 {
@@ -631,7 +627,7 @@ namespace ExellAddInsLib.MSG
 
             int rowIndex = msg_work.CellAddressesMap["Number"].Row;
             int need_number = 0;
-            while (registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL].Value != null)
+            while (registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL].Value != null)
             {
                 need_number++;
                 NeedsOfWorker msg_needs_of_workers = msg_work.WorkersComposition.FirstOrDefault(n_w => n_w.Number == $"{msg_work.Number}.{need_number}");// n_w.NumberSuffix == msg_work.Number);
@@ -640,14 +636,14 @@ namespace ExellAddInsLib.MSG
                 msg_needs_of_workers.NeedsOfWorkersReportCard.Clear();
 
                 msg_needs_of_workers.Worksheet = registerSheet;
-                //   this.Register(msg_needs_of_workers, "Number", rowIndex, MSG_NEEDS_OF_WORKERS_NUMBER_COL, this.RegisterSheet);
-                this.Register(msg_needs_of_workers, "Name", rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL, this.RegisterSheet);
-                this.Register(msg_needs_of_workers, "Quantity", rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL, this.RegisterSheet);
+                //   this.Register(msg_needs_of_workers, "Number", rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NUMBER_COL, this.RegisterSheet);
+                this.Register(msg_needs_of_workers, "Name", rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL, this.RegisterSheet);
+                this.Register(msg_needs_of_workers, "Quantity", rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_QUANTITY_COL, this.RegisterSheet);
 
                 msg_needs_of_workers.Number = $"{msg_work.Number}.{need_number.ToString()}";
-                msg_needs_of_workers.Name = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_NAME_COL].Value;
+                msg_needs_of_workers.Name = registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL].Value;
 
-                var quantity = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value;
+                var quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value;
                 if (quantity != null)
                     msg_needs_of_workers.Quantity = Decimal.Parse(quantity.ToString());
                 else
@@ -715,7 +711,7 @@ namespace ExellAddInsLib.MSG
 
             int rowIndex = msg_work.CellAddressesMap["Number"].Row;
             int need_number = 0;
-            while (registerSheet.Cells[rowIndex, MSG_NEEDS_OF_MACHINE_NAME_COL].Value != null)
+            while (registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL].Value != null)
             {
 
                 need_number++;
@@ -726,14 +722,14 @@ namespace ExellAddInsLib.MSG
                 msg_needs_of_machines.NeedsOfMachinesReportCard.Clear();
 
                 msg_needs_of_machines.Worksheet = registerSheet;
-                //    this.Register(msg_needs_of_machines, "Number", rowIndex, MSG_NEEDS_OF_MACHINE_NUMBER_COL, this.RegisterSheet);
-                this.Register(msg_needs_of_machines, "Name", rowIndex, MSG_NEEDS_OF_MACHINE_NAME_COL, this.RegisterSheet);
-                this.Register(msg_needs_of_machines, "Quantity", rowIndex, MSG_NEEDS_OF_MACHINE_QUANTITY_COL, this.RegisterSheet);
+                //    this.Register(msg_needs_of_machines, "Number", rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NUMBER_COL, this.RegisterSheet);
+                this.Register(msg_needs_of_machines, "Name", rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL, this.RegisterSheet);
+                this.Register(msg_needs_of_machines, "Quantity", rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL, this.RegisterSheet);
 
                 msg_needs_of_machines.Number = $"{msg_work.Number}.{need_number.ToString()}";
-                msg_needs_of_machines.Name = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_MACHINE_NAME_COL].Value;
+                msg_needs_of_machines.Name = registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL].Value;
 
-                var quantity = registerSheet.Cells[rowIndex, MSG_NEEDS_OF_MACHINE_QUANTITY_COL].Value;
+                var quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL].Value;
                 if (quantity != null)
                     msg_needs_of_machines.Quantity = decimal.Parse(quantity.ToString());
                 else
@@ -1667,7 +1663,7 @@ namespace ExellAddInsLib.MSG
                         this.LoadWorksSection(row);
             }
 
-            if (_columns_with_changes.Where(c => c >= MSG_NUMBER_COL && c <= MSG_NEEDS_OF_MACHINE_QUANTITY_COL).Any())
+            if (_columns_with_changes.Where(c => c >=MSGWork.MSG_NUMBER_COL && c <=MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL).Any())
             {
                 if (top_row == 0 || bottom_row == 0)
                     this.LoadMSGWorks();
@@ -1706,53 +1702,6 @@ namespace ExellAddInsLib.MSG
 
             this.SetHashFormulas();
             this.AdjustObjectModel();
-            //foreach (var crd in changed_objects_corredinates)
-            //{
-            //    var changed_objcs_cell_addresses = AllHashDictationary.Where(kvp => kvp.Value.Row == crd.Item1 && kvp.Value.Column == crd.Item2);
-
-            //    var sections = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is WorksSection).GroupBy(ad => ad.Value.Owner).Select(x => x.First());
-
-            //    var msg_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is MSGWork w
-            //    && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
-            //        .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-            //    var schedule_chunks = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is WorkScheduleChunk w
-            //    && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-            //    var needs_of_workers = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is NeedsOfWorker w
-            //    && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-            //    var needs_of_machines = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is NeedsOfMachine w
-            //    && !sections.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id)).GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-
-            //    var vovr_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is VOVRWork w
-            //    && !msg_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
-            //        .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-
-            //    var ks_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is KSWork w && !vovr_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
-            //        .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-
-            //    var rc_works = changed_objcs_cell_addresses.Where(ad => ad.Value.Owner is RCWork w && !ks_works.Any(sk => sk.Value.Owner.Owner.Id != w.Owner.Id))
-            //        .GroupBy(ad => ad.Value.Owner).Select(x => x.First()).ToList();
-
-            //    foreach (var s_adr in sections)
-            //        this.LoadWorksSection(s_adr.Value.Row);
-
-            //    foreach (var s_adr in msg_works)
-            //        this.LoadMSGWork(s_adr.Value.Row);
-
-            //    foreach (var s_adr in vovr_works)
-            //        this.LoadVOVRWork(s_adr.Value.Row);
-
-            //    foreach (var s_adr in ks_works)
-            //        this.LoadKSWork(s_adr.Value.Row);
-
-            //    foreach (var s_adr in rc_works)
-            //        this.LoadRCWork(s_adr.Value.Row);
-            // }
-
-
-
-
-
-
         }
 
         private void ReloadLoadExbbObject(IExcelBindableBase obj)
