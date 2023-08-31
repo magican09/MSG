@@ -411,14 +411,14 @@ namespace MSGAddIn
                     dest = employer_worker_consumption_worksheet.Range[employer_worker_consumption_worksheet.Cells[1, 1], last_dest];
                     dest.PasteSpecial(XlPasteType.xlPasteAll);
                     Excel.Range comsup_day_range = employer_worker_consumption_worksheet.Range[
-                        employer_worker_consumption_worksheet.Cells[MSGExellModel.W_CONSUMPTIONS_DATE_RAW + 1, MSGExellModel.W_CONSUMPTIONS_FIRST_DATE_COL],
-                         employer_worker_consumption_worksheet.Cells[MSGExellModel.W_CONSUMPTIONS_DATE_RAW + 20, 5000]];
+                        employer_worker_consumption_worksheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW + 1, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL],
+                         employer_worker_consumption_worksheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW + 20, 5000]];
                     comsup_day_range.ClearContents();
                     EmployerWorkConsumptionsWorksheets.Add(employer_worker_consumption_worksheet);
                     var start_date_cell = CommonMSGWorksheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_START_DATE_COL];
                     string date_formula = $"={CommonMSGWorksheet.Name}!{Func.RangeAddress(start_date_cell)}";
 
-                    Excel.Range cons_start_date_cell = employer_worker_consumption_worksheet.Cells[MSGExellModel.W_CONSUMPTIONS_DATE_RAW, MSGExellModel.W_CONSUMPTIONS_FIRST_DATE_COL];
+                    Excel.Range cons_start_date_cell = employer_worker_consumption_worksheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL];
                     cons_start_date_cell.Formula = date_formula;
                     new_employer_worksheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_START_DATE_COL]
                         .Formula = date_formula;
@@ -437,12 +437,12 @@ namespace MSGAddIn
                     dest = employer_machine_consumption_worksheet.Range[employer_machine_consumption_worksheet.Cells[1, 1], last_dest];
                     dest.PasteSpecial(XlPasteType.xlPasteAll);
                     Excel.Range machine_comsup_day_range = employer_machine_consumption_worksheet.Range[
-                        employer_machine_consumption_worksheet.Cells[MSGExellModel.MCH_CONSUMPTIONS_DATE_RAW + 1, MSGExellModel.MCH_CONSUMPTIONS_FIRST_DATE_COL],
-                         employer_machine_consumption_worksheet.Cells[MSGExellModel.MCH_CONSUMPTIONS_DATE_RAW + 20, 5000]];
+                        employer_machine_consumption_worksheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW + 1, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL],
+                         employer_machine_consumption_worksheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW + 20, 5000]];
                     machine_comsup_day_range.ClearContents();
                     MachineConsumptionsWorksheets.Add(employer_machine_consumption_worksheet);
 
-                    Excel.Range machine_cons_start_date_cell = employer_machine_consumption_worksheet.Cells[MSGExellModel.MCH_CONSUMPTIONS_DATE_RAW, MSGExellModel.MCH_CONSUMPTIONS_FIRST_DATE_COL];
+                    Excel.Range machine_cons_start_date_cell = employer_machine_consumption_worksheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL];
                     cons_start_date_cell.Formula = date_formula;
 
                     ///////////////////
@@ -667,10 +667,14 @@ namespace MSGAddIn
                 {
                     CurrentMSGExellModel.ClearAllSections();
                     CurrentMSGExellModel.CopyOwnerObjectModels();
-                    CurrentMSGExellModel.ReloadSheetModel();
-
+                    CurrentMSGExellModel.LoadWorksReportCards();
+                    CurrentMSGExellModel.AdjustObjectModel();
+                    CurrentMSGExellModel.UpdateExcelRepresetation();
+                    CurrentMSGExellModel.LoadMSGWorks();
+                    CurrentMSGExellModel.SetFormulas();
+                    CurrentMSGExellModel.SetStyleFormats();
                 }
-                //  else
+                 else
                 {
                     CurrentMSGExellModel.UpdateExcelRepresetation();
                     CurrentMSGExellModel.SetFormulas();
@@ -735,7 +739,11 @@ namespace MSGAddIn
                     if (CommonMSGExellModel != null)
                         this.FillMSG_OUT_File(CurrentMSGExellModel, (w) => { return true; });
 
-                    MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\График. {CurrentMSGExellModel.ContractCode}. {CurrentMSGExellModel.ContructionObjectCode}. {CurrentMSGExellModel.ConstructionSubObjectCode}. ООО НИПТ. {DateTime.Now.ToString("d")}.xlsx");
+                    string construction_subobject_code = CurrentMSGExellModel.ConstructionSubObjectCode;
+                    if (construction_subobject_code.Length > 30) construction_subobject_code = construction_subobject_code.Substring(0, 100);
+                    string file_name = $"График. {CurrentMSGExellModel.ContractCode}. {CurrentMSGExellModel.ContructionObjectCode}. {construction_subobject_code}. ООО НИПТ. {DateTime.Now.ToString("d")}.xlsx";
+                    file_name = file_name.RemoveInvalidChars();
+                    MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{file_name}");
                     MSGTemplateWorkbook.Close();
                 }
             }
@@ -743,6 +751,8 @@ namespace MSGAddIn
             {
 
                 MessageBox.Show($"Ошибка при выводе данных в шаблом графика МСГ. Ошибка:{exp.Message}");
+                MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\default_file_name.xlsx");
+                MSGTemplateWorkbook.Close();
             }
         }
 
@@ -1359,12 +1369,12 @@ namespace MSGAddIn
                     vovr_work.ProjectQuantity = msg_work.ProjectQuantity;
                     vovr_work.Laboriousness = msg_work.Laboriousness;
                     int rowIndex = msg_work.CellAddressesMap["Number"].Row;
-                    CurrentMSGExellModel.Register(vovr_work, "Number", rowIndex, MSGExellModel.VOVR_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "Name", rowIndex, MSGExellModel.VOVR_NAME_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "ProjectQuantity", rowIndex, MSGExellModel.VOVR_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "Quantity", rowIndex, MSGExellModel.VOVR_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "Laboriousness", rowIndex, MSGExellModel.VOVR_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, MSGExellModel.VOVR_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(vovr_work, "Number", rowIndex, VOVRWork.VOVR_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(vovr_work, "Name", rowIndex, VOVRWork.VOVR_NAME_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(vovr_work, "ProjectQuantity", rowIndex, VOVRWork.VOVR_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(vovr_work, "Quantity", rowIndex, VOVRWork.VOVR_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(vovr_work, "Laboriousness", rowIndex, VOVRWork.VOVR_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, VOVRWork.VOVR_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
 
                     KSWork ks_work = new KSWork();
                     ks_work.Worksheet = CurrentMSGExellModel.RegisterSheet;
@@ -1374,13 +1384,13 @@ namespace MSGAddIn
                     ks_work.UnitOfMeasurement = msg_work.UnitOfMeasurement;
                     ks_work.ProjectQuantity = msg_work.ProjectQuantity;
                     ks_work.Laboriousness = msg_work.Laboriousness;
-                    CurrentMSGExellModel.Register(ks_work, "Number", rowIndex, MSGExellModel.KS_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "Code", rowIndex, MSGExellModel.KS_CODE_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "Name", rowIndex, MSGExellModel.KS_NAME_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "ProjectQuantity", rowIndex, MSGExellModel.KS_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "Quantity", rowIndex, MSGExellModel.KS_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "Laboriousness", rowIndex, MSGExellModel.KS_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, MSGExellModel.KS_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(ks_work, "Number", rowIndex,KSWork.KS_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(ks_work, "Code", rowIndex,KSWork.KS_CODE_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(ks_work, "Name", rowIndex,KSWork.KS_NAME_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(ks_work, "ProjectQuantity", rowIndex,KSWork.KS_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(ks_work, "Quantity", rowIndex,KSWork.KS_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(ks_work, "Laboriousness", rowIndex,KSWork.KS_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(ks_work, "UnitOfMeasurement.Name", rowIndex,KSWork.KS_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
 
                     RCWork rc_work = new RCWork();
                     rc_work.Worksheet = CurrentMSGExellModel.RegisterSheet;
@@ -1390,14 +1400,14 @@ namespace MSGAddIn
                     rc_work.UnitOfMeasurement = msg_work.UnitOfMeasurement;
                     rc_work.ProjectQuantity = msg_work.ProjectQuantity;
                     rc_work.Laboriousness = msg_work.Laboriousness;
-                    CurrentMSGExellModel.Register(rc_work, "Number", rowIndex, MSGExellModel.RC_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "Code", rowIndex, MSGExellModel.RC_CODE_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "Name", rowIndex, MSGExellModel.RC_NAME_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "ProjectQuantity", rowIndex, MSGExellModel.RC_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "Quantity", rowIndex, MSGExellModel.RC_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "LabournessCoefficient", rowIndex, MSGExellModel.RC_LABOURNESS_COEFFICIENT_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "Laboriousness", rowIndex, MSGExellModel.RC_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "UnitOfMeasurement.Name", rowIndex, MSGExellModel.RC_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(rc_work, "Number", rowIndex,RCWork.RC_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(rc_work, "Code", rowIndex,RCWork.RC_CODE_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(rc_work, "Name", rowIndex,RCWork.RC_NAME_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(rc_work, "ProjectQuantity", rowIndex,RCWork.RC_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(rc_work, "Quantity", rowIndex,RCWork.RC_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(rc_work, "LabournessCoefficient", rowIndex,RCWork.RC_LABOURNESS_COEFFICIENT_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(rc_work, "Laboriousness", rowIndex,RCWork.RC_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
+                    CurrentMSGExellModel.Register(rc_work, "UnitOfMeasurement.Name", rowIndex,RCWork.RC_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
 
                     msg_work.VOVRWorks.Add(vovr_work);
                     vovr_work.KSWorks.Add(ks_work);
@@ -1431,7 +1441,7 @@ namespace MSGAddIn
 
                                 try
                                 {
-                                    if (selection.Column != MSGExellModel.WSEC_NUMBER_COL) return;
+                                    if (selection.Column !=WorksSection.WSEC_NUMBER_COL) return;
                                     int cell_val;
                                     Int32.TryParse(selection.Value.ToString(), out cell_val);
                                     int _serction_row = selection.Row;
@@ -1500,7 +1510,7 @@ namespace MSGAddIn
                             }
                         case nameof(VOVRWork):
                             {
-                                if (selection.Column <= MSGExellModel.VOVR_NUMBER_COL | selection.Column >= MSGExellModel.VOVR_LABOURNESS_COL) return;
+                                if (selection.Column <= VOVRWork.VOVR_NUMBER_COL | selection.Column >= VOVRWork.VOVR_LABOURNESS_COL) return;
                                 var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is VOVRWork msg_obj
 
@@ -1540,7 +1550,7 @@ namespace MSGAddIn
                             }
                         case nameof(KSWork):
                             {
-                                if (selection.Column <= MSGExellModel.KS_NUMBER_COL | selection.Column >= MSGExellModel.KS_LABOURNESS_COL) return;
+                                if (selection.Column <=KSWork.KS_NUMBER_COL | selection.Column >=KSWork.KS_LABOURNESS_COL) return;
                                 var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is KSWork msg_obj
 
@@ -1580,7 +1590,7 @@ namespace MSGAddIn
 
                         case nameof(RCWork):
                             {
-                                if (selection.Column <= MSGExellModel.RC_NUMBER_COL | selection.Column >= MSGExellModel.RC_LABOURNESS_COL) return;
+                                if (selection.Column <=RCWork.RC_NUMBER_COL | selection.Column >=RCWork.RC_LABOURNESS_COL) return;
                                 var selected_above_msg_works = CurrentMSGExellModel
                                         .GetObjectsBySelection(selection, (obj) => obj is RCWork msg_obj
 
@@ -1788,7 +1798,7 @@ namespace MSGAddIn
             {
                 CopyedObjectsList.Clear();
                 var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-                if (selection.Column <= MSGExellModel.VOVR_NUMBER_COL | selection.Column >= MSGExellModel.VOVR_LABOURNESS_COL) return;
+                if (selection.Column <= VOVRWork.VOVR_NUMBER_COL | selection.Column >= VOVRWork.VOVR_LABOURNESS_COL) return;
                 var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(VOVRWork)).Where(ob => !CopyedObjectsList.Contains(ob));
                 if (sected_objects != null)
                 {
@@ -1813,7 +1823,7 @@ namespace MSGAddIn
             {
                 CopyedObjectsList.Clear();
                 var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-                if (selection.Column <= MSGExellModel.KS_NUMBER_COL | selection.Column >= MSGExellModel.KS_LABOURNESS_COL) return;
+                if (selection.Column <=KSWork.KS_NUMBER_COL | selection.Column >=KSWork.KS_LABOURNESS_COL) return;
                 var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(KSWork)).Where(ob => !CopyedObjectsList.Contains(ob));
                 if (sected_objects != null)
                 {
@@ -1837,7 +1847,7 @@ namespace MSGAddIn
             {
                 CopyedObjectsList.Clear();
                 var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-                if (selection.Column <= MSGExellModel.RC_NUMBER_COL | selection.Column >= MSGExellModel.RC_LABOURNESS_COL) return;
+                if (selection.Column <=RCWork.RC_NUMBER_COL | selection.Column >=RCWork.RC_LABOURNESS_COL) return;
                 var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(RCWork)).Where(ob => !CopyedObjectsList.Contains(ob));
                 if (sected_objects != null)
                 {
@@ -1874,7 +1884,7 @@ namespace MSGAddIn
 
         private void btnCreateMSGForEmployers_Click(object sender, RibbonControlEventArgs e)
         {
-            //  try
+             try
             {
                 OpenFileDialog openFileDialog1 = new OpenFileDialog
                 {
@@ -1910,7 +1920,9 @@ namespace MSGAddIn
                         model.ReloadSheetModel();
                         model.CalcAll();
                         this.FillMSG_OUT_File(model, (w) => w.Quantity != 0);
-                        MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{model.Employer.Name}_{model.ContractCode}.xlsx");
+                        string file_name = $"{model.Employer.Name}_{model.ContractCode}.xlsx";
+                        file_name = file_name.RemoveInvalidChars();
+                        MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{file_name}");
                         MSGTemplateWorkbook.Close();
                     }
 
@@ -1918,10 +1930,10 @@ namespace MSGAddIn
 
                 }
             }
-            //   catch (Exception exp)
+               catch (Exception exp)
             {
 
-                //     MessageBox.Show($"Ошибка при выводе данных в шаблом графика МСГ. Ошибка:{exp.Message}");
+                     MessageBox.Show($"Ошибка при выводе данных в шаблом графика МСГ. Ошибка:{exp.Message}");
             }
         }
     }

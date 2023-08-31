@@ -8,14 +8,14 @@ namespace ExellAddInsLib.MSG
 {
     public class KSWork : Work
     {
-        public const int KS_NUMBER_COL = 23;
+      
+        public const int KS_NUMBER_COL = VOVRWork.VOVR_LABOURNESS_COL + 1;
         public const int KS_CODE_COL = KS_NUMBER_COL + 1;
         public const int KS_NAME_COL = KS_NUMBER_COL + 2;
         public const int KS_MEASURE_COL = KS_NUMBER_COL + 3;
         public const int KS_QUANTITY_COL = KS_NUMBER_COL + 4;
         public const int KS_QUANTITY_FACT_COL = KS_NUMBER_COL + 5;
         public const int KS_LABOURNESS_COL = KS_NUMBER_COL + 6;
-
         private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]

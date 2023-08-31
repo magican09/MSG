@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -122,6 +123,19 @@ namespace ExellAddInsLib.MSG
             range.Borders[Excel.XlBordersIndex.xlEdgeTop].LineStyle = top;
             range.Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = bottom;
             range.Borders[Excel.XlBordersIndex.xlEdgeRight].LineStyle = right;
+        }
+        /// <summary>
+        /// удаляет все символы которые не разрешены в именах файлов
+        /// </summary>
+        /// <param name="file_name"></param>
+        /// <returns></returns>
+        public static String RemoveInvalidChars(this String file_name)
+        {
+            foreach (Char invalid_char in Path.GetInvalidFileNameChars())
+            {
+                file_name = file_name.Replace(oldValue: invalid_char.ToString(), newValue: "");
+            }
+            return file_name;
         }
     }
 

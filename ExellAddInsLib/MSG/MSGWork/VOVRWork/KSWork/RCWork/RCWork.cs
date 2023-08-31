@@ -5,7 +5,7 @@ namespace ExellAddInsLib.MSG
     public class RCWork : Work
     {
 
-        public const int RC_NUMBER_COL = 31;
+        public const int RC_NUMBER_COL = KSWork.KS_LABOURNESS_COL + 1;
         public const int RC_CODE_COL = RC_NUMBER_COL + 1;
         public const int RC_NAME_COL = RC_NUMBER_COL + 2;
         public const int RC_MEASURE_COL = RC_NUMBER_COL + 3;

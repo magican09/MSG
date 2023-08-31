@@ -11,6 +11,7 @@ namespace ExellAddInsLib.MSG
     {
         public const int WSEC_NUMBER_COL = 2;
         public const int WSEC_NAME_COL = WSEC_NUMBER_COL + 1;
+
         public const int _SECTIONS_GAP = 2;
         public const int _MSG_WORKS_GAP = 1;
         private Excel.Worksheet _worksheet;

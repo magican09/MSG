@@ -7,7 +7,7 @@ namespace ExellAddInsLib.MSG
     {
         public const int WRC_DATE_ROW = 6;
 
-        public const int WRC_NUMBER_COL = 38;
+        public const int WRC_NUMBER_COL = RCWork.RC_LABOURNESS_COL + 1;
         public const int WRC_PC_QUANTITY_COL = WRC_NUMBER_COL + 1;
         public const int WRC_DATE_COL = WRC_PC_QUANTITY_COL + 1;
 
@@ -58,9 +58,14 @@ namespace ExellAddInsLib.MSG
                 cr_range.Interior.ColorIndex = col;
                 cr_range.SetBordersLine(XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
 
+                int max_day_number = WRC_PC_QUANTITY_COL + 30 + this.Count;
+
+                if (this?.Owner?.Owner?.Owner?.Owner?.Owner?.Owner is MSGExellModel model)
+                    max_day_number = (model.WorksEndDate - model.WorksStartDate).Days;
+
                 Excel.Range days_row_range = this.Worksheet.Range[
                        this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1],
-                       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 30 + this.Count]];
+                       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1+ max_day_number]];
                 days_row_range.Interior.ColorIndex = col;
                 days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
 

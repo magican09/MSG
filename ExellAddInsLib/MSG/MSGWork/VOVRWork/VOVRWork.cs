@@ -9,6 +9,14 @@ namespace ExellAddInsLib.MSG
     public class VOVRWork : Work
     {
 
+        public const int VOVR_NUMBER_COL = MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL + 1;
+        public const int VOVR_NAME_COL = VOVR_NUMBER_COL + 1;
+        public const int VOVR_MEASURE_COL = VOVR_NUMBER_COL + 2;
+        public const int VOVR_QUANTITY_COL = VOVR_NUMBER_COL + 3;
+        public const int VOVR_QUANTITY_FACT_COL = VOVR_NUMBER_COL + 4;
+        public const int VOVR_LABOURNESS_COL = VOVR_NUMBER_COL + 5;
+
+
         private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]

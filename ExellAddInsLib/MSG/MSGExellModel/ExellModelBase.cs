@@ -346,38 +346,41 @@ namespace ExellAddInsLib.MSG
         /// <param name="sender"></param>
         /// <param name="e"></param>
         public void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
+        { object lock_obj = new object();
+
             if (sender is IExcelBindableBase bindable_object)
             {
-
-                var ralated_records = this.RegistedObjects
-                    .Where(rr => rr.Entity.Id == bindable_object.Id)
-                    .Where(r =>
-                    {
-                        var prop_names_array = r.PropertyName.Split('.');
-                        foreach (string name in prop_names_array)
-                            if (name == e.PropertyName)
-                                return true;
-                        return false;
-                    });
-                foreach (RelateRecord related_rec in ralated_records) //Находим все зависимые записиыыы
+                lock (lock_obj)
                 {
-                    var parent_rrecord = this.GetFirstParentRelateRecord(related_rec);
-                    ObservableCollection<Tuple<RelateRecord, string>> all_children_records = new ObservableCollection<Tuple<RelateRecord, string>>(); ;
-                    this.GetChildrenRelateRecords(parent_rrecord, all_children_records); //Находим все зависяцщие дочерние записи
-                    var children_for_read_props = all_children_records.Where(ch => ch.Item2 == parent_rrecord.ExellPropAddress.ProprertyName); //Находим объект находящийся по зарегисрированному в реестре пути
-                    foreach (Tuple<RelateRecord, string> rr_tuple in children_for_read_props)
-                    {
-                        var val = GetValueFromObject(parent_rrecord.Entity, rr_tuple.Item2);
-                        if (parent_rrecord.ExellPropAddress.Cell.Value == null
-                           || parent_rrecord.ExellPropAddress.Cell.Value.ToString() != val.ToString())
+                    var ralated_records = this.RegistedObjects
+                        .Where(rr => rr.Entity.Id == bindable_object.Id)
+                        .Where(r =>
                         {
-                            parent_rrecord.ExellPropAddress.Cell.Value = val;
-                            parent_rrecord.ExellPropAddress.Cell.Interior.Color = XlRgbColor.rgbAquamarine;
+                            var prop_names_array = r.PropertyName.Split('.');
+                            foreach (string name in prop_names_array)
+                                if (name == e.PropertyName)
+                                    return true;
+                            return false;
+                        });
+                    foreach (RelateRecord related_rec in ralated_records) //Находим все зависимые записиыыы
+                    {
+                        var parent_rrecord = this.GetFirstParentRelateRecord(related_rec);
+                        ObservableCollection<Tuple<RelateRecord, string>> all_children_records = new ObservableCollection<Tuple<RelateRecord, string>>(); ;
+                        this.GetChildrenRelateRecords(parent_rrecord, all_children_records); //Находим все зависяцщие дочерние записи
+                        var children_for_read_props = all_children_records.Where(ch => ch.Item2 == parent_rrecord.ExellPropAddress.ProprertyName); //Находим объект находящийся по зарегисрированному в реестре пути
+                        foreach (Tuple<RelateRecord, string> rr_tuple in children_for_read_props)
+                        {
+                            var val = GetValueFromObject(parent_rrecord.Entity, rr_tuple.Item2);
+                            if (parent_rrecord.ExellPropAddress.Cell.Value == null
+                               || parent_rrecord.ExellPropAddress.Cell.Value.ToString() != val.ToString())
+                            {
+                                parent_rrecord.ExellPropAddress.Cell.Value = val;
+                                parent_rrecord.ExellPropAddress.Cell.Interior.Color = XlRgbColor.rgbAquamarine;
+
+                            }
+
 
                         }
-
-
                     }
                 }
             }

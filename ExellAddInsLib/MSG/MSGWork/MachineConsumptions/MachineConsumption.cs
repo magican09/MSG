@@ -2,6 +2,12 @@
 {
     public class MachineConsumption : Machine
     {
+        public const int MCH_CONSUMPTIONS_FIRST_ROW_INDEX = 4;
+        public const int MCH_CONSUMPTIONS_NUMBER_COL = 1;
+        public const int MCH_CONSUMPTIONS_NAME_COL = 2;
+        public const int MCH_CONSUMPTIONS_DATE_RAW = 3;
+        public const int MCH_CONSUMPTIONS_FIRST_DATE_COL = 3;
+
         private decimal _quantity;
 
         public decimal Quantity
