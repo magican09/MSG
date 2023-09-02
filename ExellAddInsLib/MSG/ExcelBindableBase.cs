@@ -280,13 +280,6 @@ namespace ExellAddInsLib.MSG
             foreach (PropertyInfo prop_inf in prop_infoes)
             {
                 var prop_val = prop_inf.GetValue(this);
-                if (prop_val is WorkersComposition)
-                    ;
-                if (prop_val is IObservableExcelBindableBase)
-                    ;
-                if (prop_val is IExcelNotifyChangedCollection)
-                    ;
-
                 if (prop_val is IObservableExcelBindableBase exbb_prop_value)
                 {
 
