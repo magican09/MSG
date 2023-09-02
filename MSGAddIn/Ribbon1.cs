@@ -691,6 +691,7 @@ namespace MSGAddIn
         {
             try
             {
+
                 if (CurrentMSGExellModel.Owner == null)
                     foreach (MSGExellModel model in CurrentMSGExellModel.Children)
                         model.UpdateExcelRepresetation();
