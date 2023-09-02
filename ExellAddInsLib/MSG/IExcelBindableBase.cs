@@ -12,12 +12,12 @@ namespace ExellAddInsLib.MSG
           event BeforePropertyChangeEventHandler BeforePropertyChange;
         void PropertyChange(object sender, string property_name);
    //     void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
-        ExellCellAddressMapDictationary CellAddressesMap { get; set; }
+       // ExellCellAddressMapDictationary CellAddressesMap { get; set; }
         Guid Id { get; }
         string Number { get; set; }
         string NumberPrefix { get; }
         string NumberSuffix { get; }
-        IExcelBindableBase Owner { get; set; }
+        IObservableExcelBindableBase Owner { get; set; }
 
         bool IsValid { get; set; }
         bool IsChanged { get; set; }
@@ -28,6 +28,8 @@ namespace ExellAddInsLib.MSG
         void ChangeTopRow(int row);
         int GetBottomRow();
         int GetTopRow();
+        int GetLeftColumn();
+
         int GetRowsCount();
         void SetNumberItem(int possition, string number, bool first_itaration = true);
         string GetSelfNamber();

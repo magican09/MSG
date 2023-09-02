@@ -1,9 +1,11 @@
 ﻿using Microsoft.Office.Interop.Excel;
+using System;
+using System.Collections.Generic;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class WorkReportCard : ExcelNotifyChangedCollection<WorkDay>
+    public class WorkReportCard : ExcelNotifyChangedCollection<WorkDay>,IObservable<PropertyChangeState>
     {
         public const int WRC_DATE_ROW = 6;
 
@@ -74,17 +76,11 @@ namespace ExellAddInsLib.MSG
 
             }
 
-            //if (this.Count>0)
-            //{
-            //    Excel.Range last_day_range = this.OrderBy(d => d.Date).LastOrDefault().GetRange();
-            //    Excel.Range days_row_range = Worksheet.Application.Union(this.GetRange(), last_day_range);
-            //    days_row_range.Interior.ColorIndex = col;
-            //    days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
-
-            //    days_row_range.SetBordersLine(XlLineStyle.xlDashDot, XlLineStyle.xlDashDot,
-            //                                      XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
-            //}
+            
 
         }
+       
+        
+      
     }
 }

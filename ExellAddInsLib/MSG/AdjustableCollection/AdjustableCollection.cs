@@ -2,7 +2,7 @@
 
 namespace ExellAddInsLib.MSG
 {
-    public class AdjustableCollection<T> : ExcelNotifyChangedCollection<T> where T : IExcelBindableBase
+    public class AdjustableCollection<T> : ExcelNotifyChangedCollection<T> where T : IObservableExcelBindableBase
     {
         protected override void SetItem(int index, T item)
         {

@@ -20,14 +20,14 @@ namespace ExellAddInsLib.MSG
         [NonRegisterInUpCellAddresMap]
         public override Excel.Worksheet Worksheet
         {
-            get { return _worksheet; }
+            get { return base.Worksheet; }
             set
             {
-                _worksheet = value;
-                if (this.ReportCard != null) this.ReportCard.Worksheet = _worksheet;
-                this.WorkersComposition.Worksheet = _worksheet;
-                this.MachinesComposition.Worksheet = _worksheet;
-                this.CellAddressesMap.SetWorksheet(_worksheet);
+            
+                if (this.ReportCard != null) this.ReportCard.Worksheet = value;
+                this.WorkersComposition.Worksheet = value;
+                this.MachinesComposition.Worksheet = value;
+               base.Worksheet = value;
             }
         }
         private string _code;

@@ -2,7 +2,7 @@
 
 namespace ExellAddInsLib.MSG
 {
-    public interface IExcelNotifyChangedCollection : IList, IExcelBindableBase
+    public interface IExcelNotifyChangedCollection : IList, IObservableExcelBindableBase
     {
     }
 }

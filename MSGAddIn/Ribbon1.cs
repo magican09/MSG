@@ -1369,7 +1369,7 @@ namespace MSGAddIn
                     vovr_work.UnitOfMeasurement = msg_work.UnitOfMeasurement;
                     vovr_work.ProjectQuantity = msg_work.ProjectQuantity;
                     vovr_work.Laboriousness = msg_work.Laboriousness;
-                    int rowIndex = msg_work.CellAddressesMap["Number"].Row;
+                    int rowIndex = msg_work["Number"].Row;
                     CurrentMSGExellModel.Register(vovr_work, "Number", rowIndex, VOVRWork.VOVR_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
                     CurrentMSGExellModel.Register(vovr_work, "Name", rowIndex, VOVRWork.VOVR_NAME_COL, CurrentMSGExellModel.RegisterSheet);
                     CurrentMSGExellModel.Register(vovr_work, "ProjectQuantity", rowIndex, VOVRWork.VOVR_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
@@ -1456,8 +1456,8 @@ namespace MSGAddIn
                                     }
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
 
-                                    foreach (WorksSection section in CopyedObjectsList)
-                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
+                                   // foreach (WorksSection section in CopyedObjectsList)
+                                      //  CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
 
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
                                     CurrentMSGExellModel.SetStyleFormats();
@@ -1500,8 +1500,8 @@ namespace MSGAddIn
                                         selected_work_index++;
                                     }
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
-                                    foreach (MSGWork msg_work in CopyedObjectsList)
-                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                                 //   foreach (MSGWork msg_work in CopyedObjectsList)
+                                  //      CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
 
                                     CurrentMSGExellModel.SetStyleFormats();
                                     commands_group_label = "";
@@ -1540,8 +1540,8 @@ namespace MSGAddIn
                                         selected_work_index++;
                                     }
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
-                                    foreach (VOVRWork msg_work in CopyedObjectsList)
-                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                               //     foreach (VOVRWork msg_work in CopyedObjectsList)
+                                //        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
 
                                     CurrentMSGExellModel.SetStyleFormats();
                                     commands_group_label = "";
@@ -1580,8 +1580,8 @@ namespace MSGAddIn
                                         selected_work_index++;
                                     }
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
-                                    foreach (KSWork msg_work in CopyedObjectsList)
-                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                                 //   foreach (KSWork msg_work in CopyedObjectsList)
+                                 //       CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
 
                                     CurrentMSGExellModel.SetStyleFormats();
                                     commands_group_label = "";
@@ -1620,8 +1620,8 @@ namespace MSGAddIn
                                         selected_work_index++;
                                     }
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
-                                    foreach (RCWork msg_work in CopyedObjectsList)
-                                        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                               //     foreach (RCWork msg_work in CopyedObjectsList)
+                                //        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
 
                                     CurrentMSGExellModel.SetStyleFormats();
                                     commands_group_label = "";
@@ -1648,8 +1648,8 @@ namespace MSGAddIn
                                 }
 
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
-                                foreach (MSGWork msg_work in sected_object)
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                           //     foreach (MSGWork msg_work in sected_object)
+                           //         CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
                                 CurrentMSGExellModel.SetStyleFormats();
                                 break;
                             }
@@ -1671,8 +1671,8 @@ namespace MSGAddIn
                                     }
                                 }
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
-                                foreach (MSGWork msg_work in sected_object)
-                                    CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
+                              //  foreach (MSGWork msg_work in sected_object)
+                             //       CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
 
                                 CurrentMSGExellModel.SetStyleFormats();
                                 break;

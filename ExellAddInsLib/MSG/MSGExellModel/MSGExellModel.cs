@@ -196,11 +196,11 @@ namespace ExellAddInsLib.MSG
         }
 
 
-        private ExcelNotifyChangedCollection<IExcelBindableBase> _invalidObjects = new ExcelNotifyChangedCollection<IExcelBindableBase>();
+        private ExcelNotifyChangedCollection<IObservableExcelBindableBase> _invalidObjects = new ExcelNotifyChangedCollection<IObservableExcelBindableBase>();
         /// <summary>
         /// Коллекция с единицами измерения модели
         /// </summary>
-        public ExcelNotifyChangedCollection<IExcelBindableBase> InvalidObjects
+        public ExcelNotifyChangedCollection<IObservableExcelBindableBase> InvalidObjects
         {
             get { return _invalidObjects; }
             set { SetProperty(ref _invalidObjects, value); }
@@ -374,7 +374,7 @@ namespace ExellAddInsLib.MSG
             if (name != null)
                 w_section.Name = name;
             else
-                w_section.CellAddressesMap["Name"].IsValid = false;
+                w_section.SetPropertyValidStatus("Name",false);
 
             if (!this.WorksSections.Contains(w_section))
             {
@@ -430,20 +430,20 @@ namespace ExellAddInsLib.MSG
             if (name != null)
                 msg_work.Name = name;
             else
-                msg_work.CellAddressesMap["Name"].IsValid = false;
+                msg_work.SetPropertyValidStatus("Name", false); ;
 
             var unit_of_measurement_name = registerSheet.Cells[rowIndex,MSGWork.MSG_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 msg_work.UnitOfMeasurement = UnitOfMeasurements.FirstOrDefault(um => um.Name == unit_of_measurement_name.ToString());
             else
-                msg_work.CellAddressesMap["UnitOfMeasurement.Name"].IsValid = false;
+                msg_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false); 
 
             var pr_quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_QUANTITY_COL].Value;
             if (pr_quantity != null)
                 msg_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
-                msg_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
-
+                msg_work.SetPropertyValidStatus("ProjectQuantity", false);
+         
             var quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_QUANTITY_FACT_COL].Value;
             if (quantity != null)
                 msg_work.Quantity = Decimal.Parse(quantity.ToString());
@@ -452,7 +452,7 @@ namespace ExellAddInsLib.MSG
             if (labourness != null)
                 msg_work.Laboriousness = Decimal.Parse(labourness.ToString());
             else
-                msg_work.CellAddressesMap["Laboriousness"].IsValid = false;
+                msg_work.SetPropertyValidStatus("Laboriousness", false); 
 
             this.LoadWorksSchedules(msg_work);
             this.LoadMSGWorkerCompositions(msg_work);
@@ -464,7 +464,7 @@ namespace ExellAddInsLib.MSG
         public void LoadWorksSchedules(MSGWork msg_work)
         {
             Excel.Worksheet registerSheet = this.RegisterSheet; ;
-            int rowIndex = msg_work.CellAddressesMap["Number"].Row;
+            int rowIndex = msg_work.GetTopRow();
             if (msg_work.Number == "1.1")
                 ;
             int schedule_number = 0;
@@ -515,8 +515,8 @@ namespace ExellAddInsLib.MSG
                     if (msg_work.WorkSchedules.IsIntersections(work_sh_chunk))
                     {
                         work_sh_chunk.IsValid = false;
-                        work_sh_chunk.CellAddressesMap["StartTime"].Cell.Interior.Color = XlRgbColor.rgbRed;
-                        work_sh_chunk.CellAddressesMap["EndTime"].Cell.Interior.Color = XlRgbColor.rgbRed;
+                        work_sh_chunk.SetPropertyValidStatus("StartTime", false);
+                        work_sh_chunk.SetPropertyValidStatus("EndTime", false);
                         if (this.Owner == null)
                             throw new Exception("Диапазона дат начали и конца МСГ работы пересекаются с уже имещимися!!");
                     }
@@ -562,7 +562,7 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
 
-            int rowIndex = msg_work.CellAddressesMap["Number"].Row;
+            int rowIndex = msg_work.GetTopRow();
             int need_number = 0;
             while (registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL].Value != null)
             {
@@ -584,7 +584,7 @@ namespace ExellAddInsLib.MSG
                 if (quantity != null)
                     msg_needs_of_workers.Quantity = Decimal.Parse(quantity.ToString());
                 else
-                    msg_needs_of_workers.CellAddressesMap["Quantity"].IsValid = false;
+                    msg_needs_of_workers.SetPropertyValidStatus("Quantity",false); 
 
                 if (!msg_work.WorkersComposition.Contains(msg_needs_of_workers))
                     msg_work.WorkersComposition.Add(msg_needs_of_workers);
@@ -646,7 +646,7 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Worksheet registerSheet = this.RegisterSheet;
 
-            int rowIndex = msg_work.CellAddressesMap["Number"].Row;
+            int rowIndex = msg_work.GetTopRow();
             int need_number = 0;
             while (registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL].Value != null)
             {
@@ -670,7 +670,7 @@ namespace ExellAddInsLib.MSG
                 if (quantity != null)
                     msg_needs_of_machines.Quantity = decimal.Parse(quantity.ToString());
                 else
-                    msg_needs_of_machines.CellAddressesMap["Quantity"].IsValid = false;
+                    msg_needs_of_machines.SetPropertyValidStatus("Quantity", false);   
 
                 if (!msg_work.MachinesComposition.Contains(msg_needs_of_machines))
                     msg_work.MachinesComposition.Add(msg_needs_of_machines);
@@ -748,18 +748,18 @@ namespace ExellAddInsLib.MSG
             if (name != null)
                 vovr_work.Name = name.ToString();
             else
-                vovr_work.CellAddressesMap["Name"].IsValid = false;
+                vovr_work.SetPropertyValidStatus("Name", false);   
             var unit_of_measurement_name = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 vovr_work.UnitOfMeasurement = new UnitOfMeasurement(unit_of_measurement_name);
             else
-                vovr_work.CellAddressesMap["UnitOfMeasurement.Name"].IsValid = false;
+                vovr_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);  
 
             var pr_quantity = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_QUANTITY_COL].Value;
             if (pr_quantity != null)
                 vovr_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
-                vovr_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
+                vovr_work.SetPropertyValidStatus("ProjectQuantity", false);   
 
             var quantity = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_QUANTITY_FACT_COL].Value;
             if (quantity != null)
@@ -771,7 +771,7 @@ namespace ExellAddInsLib.MSG
             if (labouriosness != null)
                 vovr_work.Laboriousness = Decimal.Parse(labouriosness.ToString());
             else
-                vovr_work.CellAddressesMap["Laboriousness"].IsValid = false;
+                vovr_work.SetPropertyValidStatus("Laboriousness", false);  
 
             if (!this.VOVRWorks.Contains(vovr_work))
                 this.VOVRWorks.Add(vovr_work);
@@ -825,25 +825,25 @@ namespace ExellAddInsLib.MSG
             if (code != null)
                 ks_work.Code = code.ToString();
             else
-                ks_work.CellAddressesMap["Code"].IsValid = false;
+                ks_work.SetPropertyValidStatus("Code", false); 
 
             var name = registerSheet.Cells[rowIndex,KSWork.KS_NAME_COL].Value;
             if (name != null)
                 ks_work.Name = name.ToString();
             else
-                ks_work.CellAddressesMap["Name"].IsValid = false;
+                ks_work.SetPropertyValidStatus("Name", false);   
 
             var unit_of_measurement_name = registerSheet.Cells[rowIndex,KSWork.KS_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 ks_work.UnitOfMeasurement = new UnitOfMeasurement(unit_of_measurement_name);
             else
-                ks_work.CellAddressesMap["UnitOfMeasurement.Name"].IsValid = false;
+                ks_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);  
 
             var pr_quantity = registerSheet.Cells[rowIndex,KSWork.KS_QUANTITY_COL].Value;
             if (pr_quantity != null && pr_quantity != 0)
                 ks_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
-                ks_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
+                ks_work.SetPropertyValidStatus("ProjectQuantity", false);   
 
             var quantity = registerSheet.Cells[rowIndex,KSWork.KS_QUANTITY_FACT_COL].Value;
             if (quantity != null)
@@ -853,7 +853,7 @@ namespace ExellAddInsLib.MSG
             if (laboriousness != null && laboriousness != 0)
                 ks_work.Laboriousness = Decimal.Parse(laboriousness.ToString());
             else
-                ks_work.CellAddressesMap["Laboriousness"].IsValid = false;
+                ks_work.SetPropertyValidStatus("Laboriousness", false);   
 
 
             if (!this.KSWorks.Contains(ks_work))
@@ -910,25 +910,25 @@ namespace ExellAddInsLib.MSG
             if (code != null)
                 rc_work.Code = code;
             else
-                rc_work.CellAddressesMap["Code"].IsValid = false;
+                rc_work.SetPropertyValidStatus("Code", false);  
 
             var name = registerSheet.Cells[rowIndex,RCWork.RC_NAME_COL].Value;
             if (name != null)
                 rc_work.Name = name;
             else
-                rc_work.CellAddressesMap["Name"].IsValid = false;
+                rc_work.SetPropertyValidStatus("Name", false);   
 
             var unit_of_measurement_name = registerSheet.Cells[rowIndex,RCWork.RC_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 rc_work.UnitOfMeasurement = new UnitOfMeasurement(unit_of_measurement_name);
             else
-                rc_work.CellAddressesMap["UnitOfMeasurement.Name"].IsValid = false;
+                rc_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);  
 
             var pr_quantity = registerSheet.Cells[rowIndex,RCWork.RC_QUANTITY_COL].Value;
             if (pr_quantity != null && pr_quantity != 0)
                 rc_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
-                rc_work.CellAddressesMap["ProjectQuantity"].IsValid = false;
+                rc_work.SetPropertyValidStatus("ProjectQuantity", false);   
 
             var quantity = registerSheet.Cells[rowIndex,RCWork.RC_QUANTITY_FACT_COL].Value;
             if (quantity != null)
@@ -938,13 +938,13 @@ namespace ExellAddInsLib.MSG
             if (laboriosness_coef != null)
                 rc_work.LabournessCoefficient = Decimal.Parse(laboriosness_coef.ToString());
             else
-                rc_work.CellAddressesMap["LabournessCoefficient"].IsValid = false;
+                rc_work.SetPropertyValidStatus("LabournessCoefficient", false);   
 
             var laboriousness = registerSheet.Cells[rowIndex,RCWork.RC_LABOURNESS_COL].Value;
             if (laboriousness != null && laboriousness != 0)
                 rc_work.Laboriousness = Decimal.Parse(laboriousness.ToString());
             else
-                rc_work.CellAddressesMap["Laboriousness"].IsValid = false;
+                rc_work.SetPropertyValidStatus("Laboriousness", false);  
 
             if (!this.RCWorks.Contains(rc_work))
                 this.RCWorks.Add(rc_work);
@@ -1220,11 +1220,11 @@ namespace ExellAddInsLib.MSG
                 var sections = this.WorksSections.Where(s => s.Number == section.Number && !InvalidObjects.Contains(s)).ToList();
                 if (sections.Count > 1)
                 {
-                    sections[0].CellAddressesMap["Number"].IsValid = false;
+                    sections[0].SetPropertyValidStatus("Number", false);   
                     sections.Remove(sections[0]);
                     foreach (WorksSection s in sections)
                     {
-                        s.CellAddressesMap["Number"].IsValid = false;
+                        s.SetPropertyValidStatus("Number", false);  
                         InvalidObjects.Add(s);
                         this.WorksSections.Remove(s);
                     }
@@ -1235,11 +1235,11 @@ namespace ExellAddInsLib.MSG
                 var works = this.MSGWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
-                    works[0].CellAddressesMap["Number"].IsValid = false;
+                    works[0].SetPropertyValidStatus("Number", false);   
                     works.Remove(works[0]);
                     foreach (MSGWork w in works)
                     {
-                        w.CellAddressesMap["Number"].IsValid = false;
+                        w.SetPropertyValidStatus("Number", false);  
                         InvalidObjects.Add(w);
                         this.MSGWorks.Remove(w);
                     }
@@ -1250,11 +1250,11 @@ namespace ExellAddInsLib.MSG
                 var works = this.VOVRWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
-                    works[0].CellAddressesMap["Number"].IsValid = false;
+                    works[0].SetPropertyValidStatus("Number", false);  
                     works.Remove(works[0]);
                     foreach (VOVRWork w in works)
                     {
-                        w.CellAddressesMap["Number"].IsValid = false;
+                        w.SetPropertyValidStatus("Number", false);   
                         InvalidObjects.Add(w);
                         this.VOVRWorks.Remove(w);
                     }
@@ -1265,11 +1265,11 @@ namespace ExellAddInsLib.MSG
                 var works = this.KSWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
-                    works[0].CellAddressesMap["Number"].IsValid = false;
+                    works[0].SetPropertyValidStatus("Number", false);   
                     works.Remove(works[0]);
                     foreach (KSWork w in works)
                     {
-                        w.CellAddressesMap["Number"].IsValid = false;
+                        w.SetPropertyValidStatus("Number", false);   
                         InvalidObjects.Add(w);
                         this.KSWorks.Remove(w);
                     }
@@ -1280,11 +1280,11 @@ namespace ExellAddInsLib.MSG
                 var works = this.RCWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
-                    works[0].CellAddressesMap["Number"].IsValid = false;
+                    works[0].SetPropertyValidStatus("Number", false);   
                     works.Remove(works[0]);
                     foreach (RCWork w in works)
                     {
-                        w.CellAddressesMap["Number"].IsValid = false;
+                        w.SetPropertyValidStatus("Number", false);  
                         InvalidObjects.Add(w);
                         this.RCWorks.Remove(w);
                     }
@@ -1295,11 +1295,11 @@ namespace ExellAddInsLib.MSG
                 var rcards = this.WorkReportCards.Where(w => w.Number == rcard.Number && !InvalidObjects.Contains(w)).ToList();
                 if (rcards.Count > 1)
                 {
-                    rcards[0].CellAddressesMap["Number"].IsValid = false;
+                    rcards[0].SetPropertyValidStatus("Number", false);  
                     rcards.Remove(rcards[0]);
                     foreach (WorkReportCard rc in rcards)
                     {
-                        rc.CellAddressesMap["Number"].IsValid = false;
+                        rc.SetPropertyValidStatus("Number", false);  
                         InvalidObjects.Add(rc);
                         this.WorkReportCards.Remove(rc);
                     }
@@ -1520,7 +1520,7 @@ namespace ExellAddInsLib.MSG
         }
 
 
-        public ObservableCollection<IExcelBindableBase> ChangedObjectsCollection = new ObservableCollection<IExcelBindableBase>();
+        public ObservableCollection<IObservableExcelBindableBase> ChangedObjectsCollection = new ObservableCollection<IObservableExcelBindableBase>();
 
         /// <summary>
         /// Функция находит строки и стобцы с измененными данными и обновляет объекты которые попадают в эти строки и стобцы
@@ -1635,19 +1635,20 @@ namespace ExellAddInsLib.MSG
             this.SetHashFormulas();
             this.AdjustObjectModel();
         }
+        
 
-        private void ReloadLoadExbbObject(IExcelBindableBase obj)
-        {
-            foreach (var kvp in obj.CellAddressesMap)
-            {
-                var prop_infoes = obj.GetType().GetProperties().Where(p => p.Name == kvp.Key);
-                foreach (PropertyInfo prop_info in prop_infoes)
-                {
-                    var prop_val = prop_info.GetValue(obj);
-                    prop_info.SetValue(obj, kvp.Value.Cell.Value);
-                }
-            }
-        }
+        //private void ReloadLoadExbbObject(IObservableExcelBindableBase obj)
+        //{
+        //    foreach (var kvp in obj.CellAddressesMap)
+        //    {
+        //        var prop_infoes = obj.GetType().GetProperties().Where(p => p.Name == kvp.Key);
+        //        foreach (PropertyInfo prop_info in prop_infoes)
+        //        {
+        //            var prop_val = prop_info.GetValue(obj);
+        //            prop_info.SetValue(obj, kvp.Value.Cell.Value);
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Функция форматирует представления модели на листе Excel
@@ -1659,16 +1660,16 @@ namespace ExellAddInsLib.MSG
             int selectin_col = col;
             if (this.WorksSections.Count > 0)
             {
-                Excel.Range _sections_left_edge_range = this.WorksSections.Worksheet.Range[this.WorksSections[0].CellAddressesMap["Number"].Cell,
-                                                                      this.WorksSections[this.WorksSections.Count - 1].CellAddressesMap["Number"].Cell];
-                _sections_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
+              //  Excel.Range _sections_left_edge_range = this.WorksSections.Worksheet.Range[this.WorksSections[0].CellAddressesMap["Number"].Cell,
+          //                                                            this.WorksSections[this.WorksSections.Count - 1].CellAddressesMap["Number"].Cell];
+      //          _sections_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
 
             }
 
             foreach (WorksSection section in this.WorksSections)
                 section.SetStyleFormats(selectin_col);
 
-            foreach (IExcelBindableBase obj in InvalidObjects)
+            foreach (IObservableExcelBindableBase obj in InvalidObjects)
                 obj.SetStyleFormats(selectin_col);
 
             this.WorksSections.SetInvalidateCellsColor(XlRgbColor.rgbRed);
@@ -1686,8 +1687,8 @@ namespace ExellAddInsLib.MSG
                 // consumption.GetRange(this.WorkerConsumptionsSheet).Interior.ColorIndex = w_consumption_col++;
                 int days_namber = (this.WorksEndDate - this.WorksStartDate).Days;
                 Excel.Range cons_range = this.WorkerConsumptionsSheet.Range[
-                    this.WorkerConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, WorkerConsumption.W_CONSUMPTIONS_NUMBER_COL],
-                    this.WorkerConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, days_namber]];
+                    this.WorkerConsumptionsSheet.Cells[consumption.GetTopRow(), WorkerConsumption.W_CONSUMPTIONS_NUMBER_COL],
+                    this.WorkerConsumptionsSheet.Cells[consumption.GetTopRow(), days_namber]];
                 cons_range.Interior.ColorIndex = w_consumption_col++;
                 cons_range.Borders.LineStyle = XlLineStyle.xlDashDotDot;
                 cons_range.SetBordersLine(XlLineStyle.xlDouble, XlLineStyle.xlDouble,
@@ -1699,8 +1700,8 @@ namespace ExellAddInsLib.MSG
                 // consumption.GetRange(this.WorkerConsumptionsSheet).Interior.ColorIndex = w_consumption_col++;
                 int days_namber = (this.WorksEndDate - this.WorksStartDate).Days;
                 Excel.Range cons_range = this.MachineConsumptionsSheet.Range[
-                    this.MachineConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, MachineConsumption.MCH_CONSUMPTIONS_NUMBER_COL],
-                    this.MachineConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, days_namber]];
+                    this.MachineConsumptionsSheet.Cells[consumption.GetTopRow(), MachineConsumption.MCH_CONSUMPTIONS_NUMBER_COL],
+                    this.MachineConsumptionsSheet.Cells[consumption.GetTopRow(), days_namber]];
                 cons_range.Interior.ColorIndex = w_consumption_col++;
                 cons_range.Borders.LineStyle = XlLineStyle.xlDashDotDot;
                 cons_range.SetBordersLine(XlLineStyle.xlDouble, XlLineStyle.xlDouble,
@@ -1736,8 +1737,8 @@ namespace ExellAddInsLib.MSG
                 && this.WorksSections[0].MSGWorks[0].VOVRWorks[0].KSWorks[0].RCWorks.Count > 0)
             {
                 RCWork first_rc_work = this.WorksSections[0].MSGWorks[0].VOVRWorks[0].KSWorks[0].RCWorks[0];
-                Excel.Range first_cell = this.RegisterSheet.Cells[first_rc_work.CellAddressesMap["Number"].Row, WorkReportCard.WRC_PC_QUANTITY_COL];
-                Excel.Range last_cell = this.RegisterSheet.Cells[first_rc_work.CellAddressesMap["Number"].Row, WorkReportCard.WRC_PC_QUANTITY_COL + days_number + 1];
+                Excel.Range first_cell = this.RegisterSheet.Cells[first_rc_work.GetTopRow(), WorkReportCard.WRC_PC_QUANTITY_COL];
+                Excel.Range last_cell = this.RegisterSheet.Cells[first_rc_work.GetTopRow(), WorkReportCard.WRC_PC_QUANTITY_COL + days_number + 1];
 
                 string first_rc_record_day_formula = "";
                 Excel.Range tmp_first_rc_record_day_range = first_cell;
@@ -1778,21 +1779,21 @@ namespace ExellAddInsLib.MSG
                                 {
                                     rc_work.ReportCard = new WorkReportCard();
                                     rc_work.ReportCard.Worksheet = rc_work.Worksheet;
-                                    this.Register(rc_work.ReportCard, "Number", rc_work.CellAddressesMap["Number"].Row, WorkReportCard.WRC_NUMBER_COL, this.RegisterSheet);
-                                    this.Register(rc_work.ReportCard, "PreviousComplatedQuantity", rc_work.CellAddressesMap["Number"].Row, WorkReportCard.WRC_PC_QUANTITY_COL, this.RegisterSheet);
+                                    this.Register(rc_work.ReportCard, "Number", rc_work.GetTopRow(), WorkReportCard.WRC_NUMBER_COL, this.RegisterSheet);
+                                    this.Register(rc_work.ReportCard, "PreviousComplatedQuantity", rc_work.GetTopRow(), WorkReportCard.WRC_PC_QUANTITY_COL, this.RegisterSheet);
                                     rc_work.ReportCard.Number = rc_work.Number;
                                     if (this.Owner == null) tmp_first_rc_card_days_row.Copy();
 
                                 }
 
-                                var first_cell = this.RegisterSheet.Cells[rc_work.CellAddressesMap["Number"].Row, WorkReportCard.WRC_PC_QUANTITY_COL];
-                                var lastt_cell = this.RegisterSheet.Cells[rc_work.CellAddressesMap["Number"].Row, WorkReportCard.WRC_PC_QUANTITY_COL + 1 + days_number];
-                                Excel.Range q_summ_range = this.RegisterSheet.Cells[rc_work.CellAddressesMap["Number"].Row,RCWork.RC_QUANTITY_FACT_COL];
+                                var first_cell = this.RegisterSheet.Cells[rc_work.GetTopRow(), WorkReportCard.WRC_PC_QUANTITY_COL];
+                                var lastt_cell = this.RegisterSheet.Cells[rc_work.GetTopRow(), WorkReportCard.WRC_PC_QUANTITY_COL + 1 + days_number];
+                                Excel.Range q_summ_range = this.RegisterSheet.Cells[rc_work.GetTopRow(), RCWork.RC_QUANTITY_FACT_COL];
                                 q_summ_range.Formula = $"=SUM({Func.RangeAddress(first_cell)}:{Func.RangeAddress(lastt_cell)})";
 
                                 if (this.Owner == null)
                                 {
-                                    Excel.Range w_days_row_range = this.RegisterSheet.Cells[rc_work.ReportCard.CellAddressesMap["Number"].Row, WorkReportCard.WRC_PC_QUANTITY_COL];
+                                    Excel.Range w_days_row_range = this.RegisterSheet.Cells[rc_work.ReportCard.GetTopRow(), WorkReportCard.WRC_PC_QUANTITY_COL];
                                     if (tmp_first_rc_card_days_row != null && this.Owner == null)
                                     {
                                         //        tmp_first_rc_card_days_row.Copy();
@@ -1800,36 +1801,36 @@ namespace ExellAddInsLib.MSG
                                     }
                                 }
                                 rc_works_labourness_sum_formula +=
-                                       $"{Func.RangeAddress(rc_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(rc_work.CellAddressesMap["Laboriousness"].Cell)}+";
+                                       $"{Func.RangeAddress(rc_work["Quantity"].Cell)}*{Func.RangeAddress(rc_work["Laboriousness"].Cell)}+";
 
 
                             }
                             rc_works_labourness_sum_formula = rc_works_labourness_sum_formula.TrimEnd('+');
                             if (rc_works_labourness_sum_formula != "")
                             {
-                                string ks_quantity_formula = $"=({rc_works_labourness_sum_formula})/{Func.RangeAddress(ks_work.CellAddressesMap["Laboriousness"].Cell)}";
-                                ks_work.CellAddressesMap["Quantity"].Cell.Formula = ks_quantity_formula;
+                                string ks_quantity_formula = $"=({rc_works_labourness_sum_formula})/{Func.RangeAddress(ks_work["Laboriousness"].Cell)}";
+                                ks_work["Quantity"].Cell.Formula = ks_quantity_formula;
 
                                 vovr_works_labourness_sum_formula +=
-                                    $"{Func.RangeAddress(ks_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(ks_work.CellAddressesMap["Laboriousness"].Cell)}+";
+                                    $"{Func.RangeAddress(ks_work["Quantity"].Cell)}*{Func.RangeAddress(ks_work["Laboriousness"].Cell)}+";
                             }
                         }
                         vovr_works_labourness_sum_formula = vovr_works_labourness_sum_formula.TrimEnd('+');
 
                         if (vovr_works_labourness_sum_formula != "")
                         {
-                            string vovr_quantity_formula = $"=({vovr_works_labourness_sum_formula})/{Func.RangeAddress(vovr_work.CellAddressesMap["Laboriousness"].Cell)}";
-                            vovr_work.CellAddressesMap["Quantity"].Cell.Formula = vovr_quantity_formula;
+                            string vovr_quantity_formula = $"=({vovr_works_labourness_sum_formula})/{Func.RangeAddress(vovr_work["Laboriousness"].Cell)}";
+                            vovr_work["Quantity"].Cell.Formula = vovr_quantity_formula;
                         }
                         msg_works_labourness_sum_formula +=
-                                             $"{Func.RangeAddress(vovr_work.CellAddressesMap["Quantity"].Cell)}*{Func.RangeAddress(vovr_work.CellAddressesMap["Laboriousness"].Cell)}+";
+                                             $"{Func.RangeAddress(vovr_work["Quantity"].Cell)}*{Func.RangeAddress(vovr_work["Laboriousness"].Cell)}+";
 
                     }
                     msg_works_labourness_sum_formula = msg_works_labourness_sum_formula.TrimEnd('+');
                     if (msg_works_labourness_sum_formula != "")
                     {
-                        string msg_quantity_formula = $"=({msg_works_labourness_sum_formula})/{Func.RangeAddress(msg_work.CellAddressesMap["Laboriousness"].Cell)}";
-                        msg_work.CellAddressesMap["Quantity"].Cell.Formula = msg_quantity_formula;
+                        string msg_quantity_formula = $"=({msg_works_labourness_sum_formula})/{Func.RangeAddress(msg_work["Laboriousness"].Cell)}";
+                        msg_work["Quantity"].Cell.Formula = msg_quantity_formula;
                     }
 
                 }
@@ -1841,14 +1842,14 @@ namespace ExellAddInsLib.MSG
                 int col_iterator = WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL;
                 while (col_iterator <= (this.WorksEndDate - this.WorksStartDate).Days)
                 {
-                    var cons_day_range = this.WorkerConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, col_iterator];
+                    var cons_day_range = this.WorkerConsumptionsSheet.Cells[consumption["Number"].Row, col_iterator];
                     string cons_quantity_formula = "";
                     foreach (MSGExellModel model in this.Children)
                     {
                         var child_consumption = model.WorkerConsumptions.FirstOrDefault(cn => cn.Number == consumption.Number);
                         if (child_consumption != null)
                         {
-                            int cons_row = child_consumption.CellAddressesMap["Number"].Row;
+                            int cons_row = child_consumption["Number"].Row;
                             var child_cons_day_range =
                                  model.WorkerConsumptionsSheet.Cells[cons_row, col_iterator];
                             cons_quantity_formula += $"{model.WorkerConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
@@ -1866,14 +1867,14 @@ namespace ExellAddInsLib.MSG
                 int col_iterator = MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL;
                 while (col_iterator <= (this.WorksEndDate - this.WorksStartDate).Days)
                 {
-                    var cons_day_range = this.MachineConsumptionsSheet.Cells[consumption.CellAddressesMap["Number"].Row, col_iterator];
+                    var cons_day_range = this.MachineConsumptionsSheet.Cells[consumption["Number"].Row, col_iterator];
                     string cons_quantity_formula = "";
                     foreach (MSGExellModel model in this.Children)
                     {
                         var child_consumption = model.MachineConsumptions.FirstOrDefault(cn => cn.Number == consumption.Number);
                         if (child_consumption != null)
                         {
-                            int cons_row = child_consumption.CellAddressesMap["Number"].Row;
+                            int cons_row = child_consumption["Number"].Row;
                             var child_cons_day_range =
                                  model.MachineConsumptionsSheet.Cells[cons_row, col_iterator];
                             cons_quantity_formula += $"{model.MachineConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
@@ -1947,7 +1948,7 @@ namespace ExellAddInsLib.MSG
                 if (coef <= 0)
                 {
 
-                    rc_work.CellAddressesMap[nameof(rc_work.LabournessCoefficient)].IsValid = false;
+                    rc_work[nameof(rc_work.LabournessCoefficient)].IsValid = false;
                     throw new Exception("Кофицент должен быть больше нуля!");
                 }
                 rc_work.LabournessCoefficient = coef;
@@ -2043,25 +2044,26 @@ namespace ExellAddInsLib.MSG
 
                                     DateTime end_date = DateTime.Parse(this.RegisterSheet.Cells[WORKS_END_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
 
-                                    foreach (KeyValuePair<string, ExcelPropAddress> map_item in child_w_day.CellAddressesMap)
-                                    {
-                                        int date_index = 0;
-                                        while (this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value != null &&
-                                          DateTime.Parse(this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString()) < end_date)
-                                        {
-                                            if (DateTime.Parse(this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString()) == curent_w_day.Date)
-                                                break;
-                                            date_index++;
-                                        }
-                                        int curent_w_consumption_row = worker_consumption.WorkersConsumptionReportCard.CellAddressesMap["WorkersConsumptionReportCard"].Row;
+                                    //foreach (KeyValuePair<string, ExcelPropAddress> map_item in child_w_day.CellAddressesMap)
+                                    //{
+                                    //    int date_index = 0;
+                                    //    while (this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value != null &&
+                                    //      DateTime.Parse(this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString()) < end_date)
+                                    //    {
+                                    //        if (DateTime.Parse(this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index].Value.ToString()) == curent_w_day.Date)
+                                    //            break;
+                                    //        date_index++;
+                                    //    }
+                                    //    int curent_w_consumption_row = worker_consumption.WorkersConsumptionReportCard.GetPropAddress("WorkersConsumptionReportCard").Row;
 
-                                        curent_w_day.CellAddressesMap.Add(map_item.Key, new ExcelPropAddress(curent_w_consumption_row, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index, this.WorkerConsumptionsSheet, typeof(DateTime)));
-                                        curent_w_day.Quantity = curent_w_day.Quantity;
-                                        //          this.WorkerConsumptionsSheet.Cells[curent_w_consumption_row, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index] =
-                                        //      curent_w_day.Quantity.ToString();
+                                    //    this.Register(curent_w_day,map_item.Key, new ExcelPropAddress(curent_w_consumption_row, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index, this.WorkerConsumptionsSheet, typeof(DateTime)));
+                                       
+                                    //    curent_w_day.Quantity = curent_w_day.Quantity;
+                                    //    //          this.WorkerConsumptionsSheet.Cells[curent_w_consumption_row, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index] =
+                                    //    //      curent_w_day.Quantity.ToString();
 
-                                        //   this.Register(curent_w_day);
-                                    }
+                                    //    //   this.Register(curent_w_day);
+                                    //}
                                     worker_consumption.WorkersConsumptionReportCard.Add(curent_w_day);
                                 }
                             }
@@ -2110,7 +2112,7 @@ namespace ExellAddInsLib.MSG
             int rc_work_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS;
             int repordCard_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS;
 
-            foreach (IExcelBindableBase obj in this.InvalidObjects)
+            foreach (IObservableExcelBindableBase obj in this.InvalidObjects)
             {
 
                 if (obj is WorksSection section) section_first_row = section.AdjustExcelRepresentionTree(section_first_row + _SECTIONS_GAP);
@@ -2139,8 +2141,8 @@ namespace ExellAddInsLib.MSG
                 this.SetCommonModelCollections();
 
 
-                foreach (var section in this.WorksSections)
-                    this.RegisterObjectInObjectPropertyNameRegister(section);
+            //    foreach (var section in this.WorksSections)
+              //      this.RegisterObjectInObjectPropertyNameRegister(section);
             }
 
         }
@@ -2194,37 +2196,37 @@ namespace ExellAddInsLib.MSG
         public void UpdateCellAddressMapsWorkSheets_bk()
         {
 
-            this.WorksSections.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+            this.WorksSections.Worksheet=this.RegisterSheet;
             foreach (WorksSection w_section in this.WorksSections)
             {
-                w_section.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                w_section.Worksheet = this.RegisterSheet;
                 foreach (MSGWork msg_work in w_section.MSGWorks)
                 {
-                    msg_work.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                    msg_work.Worksheet = this.RegisterSheet;
                     //   if (!this.MSGWorks.Contains(msg_work)) this.MSGWorks.Add(msg_work);
 
                     foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
-                        w_ch.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                        w_ch.Worksheet = this.RegisterSheet;
 
                     foreach (NeedsOfWorker n_w in msg_work.WorkersComposition)
-                        n_w.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                        n_w.Worksheet = this.RegisterSheet;
 
                     foreach (NeedsOfMachine n_m in msg_work.MachinesComposition)
-                        n_m.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                        n_m.Worksheet = this.RegisterSheet;
 
                     foreach (VOVRWork vovr_work in msg_work.VOVRWorks)
                     {
                         //  if (!this.VOVRWorks.Contains(vovr_work)) this.VOVRWorks.Add(vovr_work);
-                        vovr_work.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                        vovr_work.Worksheet = this.RegisterSheet;
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
                             //      if (!this.KSWorks.Contains(ks_work)) this.KSWorks.Add(ks_work);
-                            ks_work.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                            ks_work.Worksheet = this.RegisterSheet;
                             foreach (RCWork rc_work in ks_work.RCWorks)
                             {
                                 //    if (!this.RCWorks.Contains(rc_work)) this.RCWorks.Add(rc_work);
                                 rc_work.ReportCard = this.WorkReportCards.Where(rc => rc.Number == rc_work.Number).FirstOrDefault();
-                                rc_work.CellAddressesMap.SetWorksheet(this.RegisterSheet);
+                                rc_work.Worksheet = this.RegisterSheet;
                             }
                         }
                     }
@@ -2239,8 +2241,8 @@ namespace ExellAddInsLib.MSG
         {
             //    Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
             Excel.Range common_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WorkReportCard.WRC_DATE_COL],
-                this.RegisterSheet.Cells[this.KSWorks[this.KSWorks.Count - 1].CellAddressesMap["Laboriousness"].Row,
-                                          this.KSWorks[this.KSWorks.Count - 1].CellAddressesMap["Laboriousness"].Column]];
+                this.RegisterSheet.Cells[this.KSWorks[this.KSWorks.Count - 1].GetPropAddress("Laboriousness").Row,
+                                          this.KSWorks[this.KSWorks.Count - 1].GetPropAddress("Laboriousness").Column]];
             if (this.Owner != null)
                 common_area_range.ClearContents();
 
@@ -2261,7 +2263,7 @@ namespace ExellAddInsLib.MSG
             if (last_work_consumption_Day != null)
             {
                 common_area_range = this.WorkerConsumptionsSheet.Range[this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_FIRST_ROW_INDEX, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL],
-                            this.WorkerConsumptionsSheet.Cells[last_work_consumption_Day.CellAddressesMap["Quantity"].Row, last_work_consumption_Day.CellAddressesMap["Quantity"].Column]];
+                            this.WorkerConsumptionsSheet.Cells[last_work_consumption_Day["Quantity"].Row, last_work_consumption_Day["Quantity"].Column]];
                 common_area_range.ClearContents();
                 common_area_range.Interior.ColorIndex = 0;
             }
@@ -2330,66 +2332,69 @@ namespace ExellAddInsLib.MSG
         /// <param name="section"></param>
         /// <param name="object_type"></param>
         /// <returns></returns>
-        public List<IExcelBindableBase> GetObjectsBySelection(Excel.Range selection, Type object_type)
+        public List<IObservableExcelBindableBase> GetObjectsBySelection(Excel.Range selection, Type object_type)
         {
-            ObservableCollection<Tuple<double, IExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IExcelBindableBase>>();
-            List<IExcelBindableBase> finded_objects = new List<IExcelBindableBase>();
+            ObservableCollection<Tuple<double, IObservableExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IObservableExcelBindableBase>>();
+            List<IObservableExcelBindableBase> finded_objects = new List<IObservableExcelBindableBase>();
             int top_row = selection.Rows[1].Row;
             int bottom_row = selection.Rows[selection.Rows.Count].Row;
-            List<IExcelBindableBase> uniq_objcts = new List<IExcelBindableBase>();
+            List<IObservableExcelBindableBase> uniq_objcts = new List<IObservableExcelBindableBase>();
 
-            foreach (var kvp in this.RegistedObjects.Where(rr => (rr.Entity.GetType() == object_type || rr.Entity.GetType().GetInterface(object_type.Name) != null)
-                                                               && rr.Entity.Owner != null
-                                                               && rr.Entity.GetTopRow() >= top_row
-                                                               && rr.Entity.GetTopRow() <= bottom_row))
+            foreach (var subscr_obj in this.ExcelSubsriptions.Where(rr => rr.Observable is IObservableExcelBindableBase obj 
+                                                           && (obj.GetType() == object_type || obj.GetType().GetInterface(object_type.Name) != null)
+                                                               && obj.Owner != null
+                                                               && obj.GetTopRow() >= top_row
+                                                               && obj.GetTopRow() <= bottom_row))
             {
-                int obj_row = kvp.ExellPropAddress.Row;
-                int obj_col = kvp.ExellPropAddress.Column;
+                var obj = subscr_obj.Observable as IObservableExcelBindableBase;
+                int obj_row = obj.GetTopRow();
+                int obj_col = obj.GetLeftColumn();
                 double dist = Math.Sqrt(Math.Pow(obj_row - selection.Row, 2) + Math.Pow(obj_col - selection.Column, 2));
-                if (uniq_objcts.FirstOrDefault(ob => ob.Id == kvp.Entity.Id) == null)
+                if (uniq_objcts.FirstOrDefault(ob => ob.Id == obj.Id) == null)
                 {
-                    objects_distation.Add(new Tuple<double, IExcelBindableBase>(dist, kvp.Entity));
-                    uniq_objcts.Add(kvp.Entity);
+                    objects_distation.Add(new Tuple<double, IObservableExcelBindableBase>(dist, obj));
+                    uniq_objcts.Add(obj);
                 }
 
             }
-            IExcelBindableBase finded_obj = null;
+            IObservableExcelBindableBase finded_obj = null;
             var tuple = objects_distation.OrderBy(el => el.Item1).FirstOrDefault();
             if (tuple != null)
-                finded_obj = tuple.Item2 as IExcelBindableBase;
+                finded_obj = tuple.Item2 as IObservableExcelBindableBase;
 
             foreach (var kvp in objects_distation.OrderBy(_kvp => _kvp.Item1))
                 finded_objects.Add(kvp.Item2);
 
             if (selection.Rows.Count == 1)
-                return new List<IExcelBindableBase>() { finded_obj };
+                return new List<IObservableExcelBindableBase>() { finded_obj };
 
             return finded_objects;
         }
-        public List<IExcelBindableBase> GetObjectsBySelection(Excel.Range selection, Func<IExcelBindableBase, bool> obj_predicate)
+        public List<IObservableExcelBindableBase> GetObjectsBySelection(Excel.Range selection, Func<IObservableExcelBindableBase, bool> obj_predicate)
         {
-            ObservableCollection<Tuple<double, IExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IExcelBindableBase>>();
-            List<IExcelBindableBase> finded_objects = new List<IExcelBindableBase>();
+            ObservableCollection<Tuple<double, IObservableExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IObservableExcelBindableBase>>();
+            List<IObservableExcelBindableBase> finded_objects = new List<IObservableExcelBindableBase>();
             int top_row = selection.Rows[1].Row;
             int bottom_row = selection.Rows[selection.Rows.Count].Row;
-            List<IExcelBindableBase> uniq_objcts = new List<IExcelBindableBase>();
+            List<IObservableExcelBindableBase> uniq_objcts = new List<IObservableExcelBindableBase>();
 
-            foreach (var kvp in this.RegistedObjects.Where(rr => obj_predicate(rr.Entity)))
+            foreach (var subscr_obj in this.ExcelSubsriptions.Where(rr => obj_predicate(rr.Observable as IObservableExcelBindableBase)))
             {
-                int obj_row = kvp.ExellPropAddress.Row;
-                int obj_col = kvp.ExellPropAddress.Column;
+                var obj = subscr_obj.Observable as IObservableExcelBindableBase;
+                int obj_row = obj.GetTopRow();
+                int obj_col = obj.GetLeftColumn();
                 double dist = Math.Sqrt(Math.Pow(obj_row - selection.Row, 2) + Math.Pow(obj_col - selection.Column, 2));
-                if (!uniq_objcts.Contains(kvp.Entity))
+                if (!uniq_objcts.Contains(obj))
                 {
-                    objects_distation.Add(new Tuple<double, IExcelBindableBase>(dist, kvp.Entity));
-                    uniq_objcts.Add(kvp.Entity);
+                    objects_distation.Add(new Tuple<double, IObservableExcelBindableBase>(dist, obj));
+                    uniq_objcts.Add(obj);
                 }
 
             }
-            IExcelBindableBase finded_obj = null;
+            IObservableExcelBindableBase finded_obj = null;
             var tuple = objects_distation.OrderBy(el => el.Item1).FirstOrDefault();
             if (tuple != null)
-                finded_obj = tuple.Item2 as IExcelBindableBase;
+                finded_obj = tuple.Item2 as IObservableExcelBindableBase;
 
             foreach (var kvp in objects_distation.OrderBy(_kvp => _kvp.Item1))
                 finded_objects.Add(kvp.Item2);
@@ -2397,27 +2402,28 @@ namespace ExellAddInsLib.MSG
             return finded_objects;
         }
 
-        public IExcelBindableBase SelectedObjectForInsert(Excel.Range selection, Func<IExcelBindableBase, bool> obj_predicate)
+        public IObservableExcelBindableBase SelectedObjectForInsert(Excel.Range selection, Func<IObservableExcelBindableBase, bool> obj_predicate)
         {
-            ObservableCollection<Tuple<double, IExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IExcelBindableBase>>();
-            List<IExcelBindableBase> finded_objects = new List<IExcelBindableBase>();
+            ObservableCollection<Tuple<double, IObservableExcelBindableBase>> objects_distation = new ObservableCollection<Tuple<double, IObservableExcelBindableBase>>();
+            List<IObservableExcelBindableBase> finded_objects = new List<IObservableExcelBindableBase>();
             int top_row = selection.Rows[1].Row;
             int bottom_row = selection.Rows[selection.Rows.Count].Row;
-            List<IExcelBindableBase> uniq_objcts = new List<IExcelBindableBase>();
+            List<IObservableExcelBindableBase> uniq_objcts = new List<IObservableExcelBindableBase>();
 
-            foreach (var kvp in this.RegistedObjects.Where(rr => obj_predicate(rr.Entity)))
+            foreach (var subscr_obj in this.ExcelSubsriptions.Where(rr => obj_predicate(rr.Observable as IObservableExcelBindableBase)))
             {
-                int obj_row = kvp.ExellPropAddress.Row;
-                int obj_col = kvp.ExellPropAddress.Column;
+                var obj = subscr_obj.Observable as IObservableExcelBindableBase;
+                int obj_row = obj.GetTopRow();
+                int obj_col = obj.GetLeftColumn();
                 double dist = Math.Sqrt(Math.Pow(obj_row - selection.Row, 2) + Math.Pow(obj_col - selection.Column, 2));
-                if (!uniq_objcts.Contains(kvp.Entity))
+                if (!uniq_objcts.Contains(obj))
                 {
-                    objects_distation.Add(new Tuple<double, IExcelBindableBase>(dist, kvp.Entity));
-                    uniq_objcts.Add(kvp.Entity);
+                    objects_distation.Add(new Tuple<double, IObservableExcelBindableBase>(dist, obj));
+                    uniq_objcts.Add(obj);
                 }
 
             }
-            IExcelBindableBase finded_obj = null;
+            IObservableExcelBindableBase finded_obj = null;
             var tuple = objects_distation.OrderBy(el => el.Item1).FirstOrDefault();
             foreach (var kvp in objects_distation.OrderBy(_kvp => _kvp.Item1))
                 finded_objects.Add(kvp.Item2);

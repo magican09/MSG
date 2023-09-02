@@ -40,155 +40,37 @@ namespace ExellAddInsLib.MSG
         /// Времення колеекция для предотвращения зацикливания в рекурсии Register(..)/
         /// </summary>
         private Dictionary<IExcelBindableBase, string> RegisterTemporalStopList = new Dictionary<IExcelBindableBase, string>();
+
+        public List<ExellCellSubsciption> ExcelSubsriptions = new List<ExellCellSubsciption>();
         /// <summary>
         /// Функция для регистрации объекта реализующего интрефейс INotifyPropertyChanged 
         /// для обработки событий изменения полей объета и соотвествующего изменения связанной с 
         /// с этим полем ячейки в документе Worksheet
         /// </summary>
         /// <param name="work"></param>
-        public void Register(IExcelBindableBase notified_object, string prop_name, int row, int column,
+        public void Register(IObservable<PropertyChangeState> notified_object, string prop_name, int row, int column,
             Excel.Worksheet worksheet, Func<object, bool> validate_value_call_back = null,
                Func<object, object> coerce_value_call_back = null, RelateRecord register = null)
         {
 
-          //  try
+            //  try
             {
-                var prop_names = prop_name.Split(new char[] { '.' });
-                Type prop_type = notified_object.GetType().GetProperty(prop_names[0]).PropertyType;
+                var prop_names_chain = prop_name.Split(new char[] { '.' });
+                Type prop_type = notified_object.GetType().GetProperty(prop_names_chain[prop_names_chain.Length-1]).PropertyType;
 
-                if (this.IsRegistered(notified_object, prop_names[0]))
-                {
-                    var  _register = this.RegistedObjects.FirstOrDefault(r => r.Entity.Id == notified_object.Id && r.PropertyName == prop_names[0]);
-                   // _register.ExellPropAddress.Worksheet = worksheet;
-                    _register.ExellPropAddress.Row = row;
-                    _register.ExellPropAddress.Column = column;
-                    //_register.ExellPropAddress.Worksheet = worksheet;
-
-                    //_register.ExellPropAddress.Cell.Interior.Color = XlRgbColor.rgbGreenYellow;
-                    //_register.ExellPropAddress.ValidateValueCallBack = validate_value_call_back;
-                    //_register.ExellPropAddress.CoerceValueCallback = coerce_value_call_back;
-                    //_register.ExellPropAddress.ValueType = prop_type;
-                    //_register.ExellPropAddress.SetCellNumberFormat();
-                    return;
-                }
-                 
-                RelateRecord local_register = new RelateRecord(notified_object);
-                if (register == null)
-                {
-                    register = local_register;
-                 
-                    if (notified_object.CellAddressesMap.ContainsKey(prop_name))
-                    {
-                        local_register.ExellPropAddress = notified_object.CellAddressesMap[prop_name];
-                        local_register.ExellPropAddress.ValueType = prop_type;
-                      
-                    }
-                    else
-                    {
-
-                        local_register.ExellPropAddress = new ExcelPropAddress(row, column, worksheet, prop_type, prop_name, validate_value_call_back, coerce_value_call_back);
-                        local_register.ExellPropAddress.Owner = notified_object;
-                        notified_object.CellAddressesMap.Add(prop_name, local_register.ExellPropAddress);
-                    }
-
-                    if (local_register.ExellPropAddress.Worksheet.Name.Contains("Ведомость_общая") && this.IsHasEnabled && column<= MAX_HASH_FUNCTION_COL)
-                    {
-                        var row_hash = local_register.ExellPropAddress.Worksheet.Cells[row, HASH_FUNCTION_COL].Value;
-                        var col_hash_str = local_register.ExellPropAddress.Worksheet.Cells[HASH_FUNCTION_ROW, column].Value.ToString();
-                        var col_hash = 0 ;
-                        Int32.TryParse(col_hash_str, out col_hash);
-                        local_register.ExellPropAddress.Owner = notified_object;
-                     
-                        if (row_hash != null)
-                            local_register.ExellPropAddress.RowHashValue = Int32.Parse(row_hash.ToString());
-                        if (col_hash != null)
-                            local_register.ExellPropAddress.ColumnHashValue = Int32.Parse(col_hash.ToString());
-                        if(!AllHashDictationary.ContainsKey(Tuple.Create(row, column)))
-                        {
-                            AllHashDictationary.Add(new Tuple<int, int>(row, column), local_register.ExellPropAddress);
-                        }
-
-                    }
-
-                    local_register.PropertyName = prop_names[0];
-                    this.RegistedObjects.Add(local_register);
-                    this.ObjectPropertyNameRegister.Add(local_register);
-
-                    RegisterTemporalStopList.Clear();
-                    RegisterTemporalStopList.Add(local_register.Entity, prop_names[0]);
-
-                }
-                else
-                    register.Items.Add(local_register);
-
-                foreach (string name in prop_names)
-                {
-                    string rest_prop_name_part = prop_name;
-                    if (prop_name.Contains(".")) rest_prop_name_part = prop_name.Replace($"{name}.", "");
-
-                    if (!RegisterTemporalStopList.ContainsKey(local_register.Entity))
-                    {
-                        RegisterTemporalStopList.Add(local_register.Entity, name);
-                        local_register.PropertyName = name;
-                        ObjectPropertyNameRegister.Add(local_register);
-                    }
-
-                    var prop_value = notified_object.GetType().GetProperty(name).GetValue(notified_object);
-                    if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
-                    {
-                        this.Register(excel_bimdable_prop_value, rest_prop_name_part, row, column, worksheet, null,null, local_register);
-                    }
-
-                }
-
-                if (!notified_object.IsPropertyChangedHaveSubsctribers())
-                {
-                    notified_object.PropertyChanged += OnPropertyChanged;
-                    notified_object.BeforePropertyChange += OnBeforPropertyChanged;
-                }
-                else
-                    ;
+                var address = new ExcelPropAddress(row, column, worksheet, prop_type, prop_name, validate_value_call_back, coerce_value_call_back);
+                address.Owner = notified_object;
+                // notified_object.CellAddressesMap.Add(prop_name, address);
+                ExcelSubsriptions.Add(notified_object.Subscribe(address) as ExellCellSubsciption);
             }
-          //  catch (Exception ex)
+            //  catch (Exception ex)
             {
-           //     throw  new Exception($"Ошибка при регистрации объектов в MSGExelModel. MSHExcelModel.Register(..): {ex.Message}");
+                //     throw  new Exception($"Ошибка при регистрации объектов в MSGExelModel. MSHExcelModel.Register(..): {ex.Message}");
             }
 
         }
 
-        private (bool,object)  OnBeforPropertyChanged(object sender, PropertyChangedEventArgs e, object new_val)
-        {
-            IExcelBindableBase notified_object = sender as IExcelBindableBase;
-            if (!notified_object.CellAddressesMap.ContainsKey(e.PropertyName) || notified_object == null) return (true, new_val);
-            var excel_prop_address = notified_object.CellAddressesMap[e.PropertyName];
-
-
-            if (excel_prop_address.ValidateValueCallBack == null) return (false, new_val);
-
-            if (excel_prop_address.ValidateValueCallBack != null
-                              && excel_prop_address.ValidateValueCallBack(new_val))
-            {
-                if (excel_prop_address.CoerceValueCallback != null)
-                {
-                    var member = excel_prop_address.CoerceValueCallback?.Invoke(new_val);
-                    return (true, member);
-                }
-                else
-                    return (true, new_val);
-            }
-            else 
-            {
-                notified_object.IsValid = false;
-                excel_prop_address.Cell.Interior.Color = XlRgbColor.rgbRed;
-                int row = excel_prop_address.Row;
-                int col = excel_prop_address.Column;
-                throw new Exception($"Неверный формат! Срока:{row}, стобец:{col}");
-                return (false, new_val); ;
-            }
-
-                 
-        }
-
+       
         private bool IsRegistered(IExcelBindableBase obj, string prop_name)
         {
             if (this.RegistedObjects.FirstOrDefault(r => r.Entity.Id == obj.Id && r.PropertyName == prop_name) != null)
@@ -205,24 +87,24 @@ namespace ExellAddInsLib.MSG
         /// <param name="first_iteration"></param>
         public void Unregister(IExcelBindableBase notified_object, bool first_iteration = true)
         {
-            if (first_iteration) unregistedObjects.Clear();
-            if (unregistedObjects.Contains(notified_object)) return;
-            var all_registed_rrecords = this.RegistedObjects.Where(ro => ro.Entity.Id == notified_object.Id).ToList();
-            foreach (var r_obj in all_registed_rrecords)
-            {
-                notified_object.PropertyChanged -= OnPropertyChanged;
-                notified_object.BeforePropertyChange -= OnBeforPropertyChanged;
-                this.RegistedObjects.Remove(r_obj);
-            }
-            if (notified_object is IList exbb_list)
-                foreach (IExcelBindableBase elm in exbb_list)
-                    this.Unregister(elm);
+            //if (first_iteration) unregistedObjects.Clear();
+            //if (unregistedObjects.Contains(notified_object)) return;
+            //var all_registed_rrecords = this.RegistedObjects.Where(ro => ro.Entity.Id == notified_object.Id).ToList();
+            //foreach (var r_obj in all_registed_rrecords)
+            //{
+            //    notified_object.PropertyChanged -= OnPropertyChanged;
+            //    notified_object.BeforePropertyChange -= OnBeforPropertyChanged;
+            //    this.RegistedObjects.Remove(r_obj);
+            //}
+            //if (notified_object is IList exbb_list)
+            //    foreach (IExcelBindableBase elm in exbb_list)
+            //        this.Unregister(elm);
 
-            var all_object_prop_names_registed_rrecords = new ObservableCollection<RelateRecord>(
-                this.ObjectPropertyNameRegister.Where(op => op.Entity.Id == notified_object.Id).ToList());
+            //var all_object_prop_names_registed_rrecords = new ObservableCollection<RelateRecord>(
+            //    this.ObjectPropertyNameRegister.Where(op => op.Entity.Id == notified_object.Id).ToList());
 
-            foreach (var rr in all_object_prop_names_registed_rrecords)
-                this.ObjectPropertyNameRegister.Remove(rr);
+            //foreach (var rr in all_object_prop_names_registed_rrecords)
+            //    this.ObjectPropertyNameRegister.Remove(rr);
 
             //var prop_infoes = notified_object.GetType().GetRuntimeProperties().Where(pr => pr.GetIndexParameters().Length == 0
             //                                                         && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null
@@ -243,42 +125,7 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="firt_itaration"></param>
-        public void RegisterObjectInObjectPropertyNameRegister(IExcelBindableBase obj, bool firt_itaration = true)
-        {
-            if (firt_itaration == true) registed_objects.Clear();
-
-            if (!registed_objects.Contains(obj))
-            {
-                var cell_eddr_maps = obj.CellAddressesMap.Where(kvp => !kvp.Key.Contains('_'));
-                foreach (var kvp in cell_eddr_maps)
-                {
-                    string prop_name = kvp.Key;
-                    string kvp_worksheet_name = kvp.Value.Worksheet.Name;
-                    string sheet_root_name = kvp_worksheet_name.Substring(0, kvp_worksheet_name.IndexOf('_'));
-                    var work_sheet = this.AllWorksheets.FirstOrDefault(wh => wh.Name.Contains(sheet_root_name));
-                    kvp.Value.Owner = obj;
-                    this.Register(obj, prop_name, kvp.Value.Row, kvp.Value.Column, work_sheet);
-
-                }
-                registed_objects.Add(obj);
-                var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
-                                                                            && pr.GetValue(obj) is IExcelBindableBase);
-                foreach (PropertyInfo prop_info in prop_infoes)
-                {
-                    var prop_val = prop_info.GetValue(obj) as IExcelBindableBase;
-                    if (prop_val is IList list_prop_val)
-                    {
-                        foreach (var elm in list_prop_val)
-                            if (elm is IExcelBindableBase exb_elm)
-                                this.RegisterObjectInObjectPropertyNameRegister(exb_elm, false);
-                    }
-                    else
-                        this.RegisterObjectInObjectPropertyNameRegister(prop_val, false);
-
-                }
-
-            }
-        }
+      
 
         /// <summary>
         /// Функция для получаения самого высоско вдевере регистрации объектов объекта
@@ -346,7 +193,8 @@ namespace ExellAddInsLib.MSG
         /// <param name="sender"></param>
         /// <param name="e"></param>
         public void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
-        { object lock_obj = new object();
+        {
+            object lock_obj = new object();
 
             if (sender is IExcelBindableBase bindable_object)
             {

@@ -1,12 +1,14 @@
 ﻿using Microsoft.Office.Interop.Excel;
+using Microsoft.Office.Tools.Excel;
 using System;
+using System.Data.Common;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class ExcelPropAddress
+    public class ExcelPropAddress:IObserver<PropertyChangeState>
     {
         public int Row { get; set; }
         public int Column { get; set; }
@@ -19,9 +21,9 @@ namespace ExellAddInsLib.MSG
             set { _isValid = value; }
         }
 
-        private IExcelBindableBase _owner;
+        private IObservable<PropertyChangeState> _owner;
 
-        public IExcelBindableBase Owner
+        public IObservable<PropertyChangeState> Owner
         {
             get { return _owner; }
             set { _owner = value; }
@@ -101,6 +103,50 @@ namespace ExellAddInsLib.MSG
             {
                 CellNumberFormat = $"@";
             }
+        }
+
+        public void OnNext(PropertyChangeState value)
+        {
+            var sender = value.Sender;
+            string[] prop_chain = this.ProprertyName.Split('.');
+            if (prop_chain[0] != value.PropertyName) return;
+
+            var prop_names = value.PropertyName.Split(new char[] { '.' });
+            Type prop_type = sender.GetType().GetProperty(prop_names[0]).PropertyType;
+           
+            foreach(string prop_name in prop_chain)
+            {
+                var prop_val = sender.GetType().GetProperty(prop_name).GetValue(sender, null);
+                if (prop_val is IExcelBindableBase exbb_val)
+                    sender = exbb_val;
+                else if(prop_val.GetType() == this.ValueType)
+                {
+                    this.Cell.Value = prop_val;
+                }
+
+            }
+            this.IsValid = value.PropertyIsValid;
+         }
+        private void  GetPropValue(IExcelBindableBase obj,string prop_name, bool first_itaration = true)
+        {
+
+
+        }
+
+        public void OnError(Exception error)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnCompleted()
+        {
+            //Row = 0;
+            //Column = 0;
+            //Worksheet = null;
+            //ProprertyName = null;
+            //ValidateValueCallBack = null;
+            //CoerceValueCallback = null;
+            //ValueType = null;
         }
 
         public ExcelPropAddress(int row, int column, Excel.Worksheet worksheet, Type val_type,

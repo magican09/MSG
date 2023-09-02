@@ -87,7 +87,7 @@ namespace ExellAddInsLib.MSG
             int first_row = section.GetTopRow();
             if (section.MSGWorks.Count > 0)
             {
-                Excel.Range msg_works_left_edge_range = section.MSGWorks.Worksheet.Range[section.MSGWorks[0].CellAddressesMap["Number"].Cell, section.MSGWorks[section.MSGWorks.Count - 1].CellAddressesMap["Number"].Cell];
+                Excel.Range msg_works_left_edge_range = section.MSGWorks.Worksheet.Range[section.MSGWorks[0]["Number"].Cell, section.MSGWorks[section.MSGWorks.Count - 1]["Number"].Cell];
                 msg_works_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
 
                 int msg_work_col = selectin_col + 1;

@@ -63,6 +63,9 @@
     <Compile Include="MSG\EventedDictationary\EventedDictationary.cs" />
     <Compile Include="MSG\Employer\Employer.cs" />
     <Compile Include="MSG\ExcelPropery\ExcelDependencyPropery.cs" />
+    <Compile Include="MSG\ExellCellAddressMapDictationary\ExellCellSubsciption.cs" />
+    <Compile Include="MSG\ExellCellAddressMapDictationary\PropertyChangeState.cs" />
+    <Compile Include="MSG\IObservableExcelBindableBase.cs" />
     <Compile Include="MSG\Machine\Machine.cs" />
     <Compile Include="MSG\MSGExellModel\ExellModelBase.cs" />
     <Compile Include="MSG\MSGWork\MachinesComposition\NeedsOfMachine\NeedsOfMachine.cs" />

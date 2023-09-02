@@ -12,7 +12,7 @@ namespace ExellAddInsLib.MSG
 {
     public delegate (bool, object) BeforePropertyChangeEventHandler(object sender, PropertyChangedEventArgs e, object new_val);
 
-    public abstract class ExcelBindableBase : INotifyPropertyChanged, IExcelBindableBase
+    public abstract class ExcelBindableBase : INotifyPropertyChanged, IObservableExcelBindableBase
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public event BeforePropertyChangeEventHandler BeforePropertyChange;
@@ -26,7 +26,8 @@ namespace ExellAddInsLib.MSG
             set
             {
                 _worksheet = value;
-                this.CellAddressesMap.SetWorksheet(_worksheet);
+                foreach (var observer in this._observers)
+                    observer.Worksheet = _worksheet;
 
             }
         }
@@ -91,14 +92,14 @@ namespace ExellAddInsLib.MSG
         {
             get
             {
-                if (this.CellAddressesMap.Where(cm => cm.Value.IsValid == false).Any())
+                if (this._observers.Where(cm => cm.IsValid == false).Any())
                     _isValid = false;
                 return _isValid;
             }
             set { _isValid = value; }
         }
 
-       public  bool IsChanged { get; set; } 
+        public bool IsChanged { get; set; }
         public Guid Id
         {
 
@@ -107,25 +108,12 @@ namespace ExellAddInsLib.MSG
         public void PropertyChange(object sender, string property_name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property_name));
+            foreach (var observer in _observers)
+                observer.OnNext(new PropertyChangeState(this, property_name));
         }
         public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "")
         {
-            var validate_out = BeforePropertyChange?.Invoke(this, new PropertyChangedEventArgs(property_name), new_val);
-
-
-            if (new_val is IExcelBindableBase excell_bindable_new_val/* && !excell_bindable_new_val.Owners.Contains(this)*/)
-            {
-                this.RegisterNewValInCellAddresMap(excell_bindable_new_val, property_name);
-            }
-            if (member is IExcelBindableBase excell_bindable_member /*&& excell_bindable_member.Owners.Contains(this)*/)
-            {
-                this.UnregisterMemberValInCellAddresMap(excell_bindable_member, property_name);
-            }
-            if (validate_out != null && validate_out.Value.Item1)
-                member = (T)validate_out.Value.Item2;
-            else
-                member =  new_val;
-
+            member = new_val;
             PropertyChange(this, property_name);
 
         }
@@ -139,12 +127,12 @@ namespace ExellAddInsLib.MSG
             return PropertyChanged != null;
         }
 
-        // public ObservableCollection<IExcelBindableBase> Owners { get; set; } = new ObservableCollection<IExcelBindableBase>();
-        private IExcelBindableBase _owner;
+        // public ObservableCollection<IObservableExcelBindableBase> Owners { get; set; } = new ObservableCollection<IObservableExcelBindableBase>();
+        private IObservableExcelBindableBase _owner;
 
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
-        public IExcelBindableBase Owner
+        public IObservableExcelBindableBase Owner
         {
             get { return _owner; }
             set
@@ -154,54 +142,46 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-        private void RegisterNewValInCellAddresMap(IExcelBindableBase excell_bindable_new_val, string property_name)
-        {
-            //    excell_bindable_new_val.Owners.Add(this);
-            var non_reg_in_upper_attribute = this.GetType().GetProperty(property_name).GetCustomAttribute(typeof(NonRegisterInUpCellAddresMapAttribute));
-            if (non_reg_in_upper_attribute == null)
-            {
-                //  excell_bindable_new_val.Owners.Add(this);
-                foreach (var kvp in excell_bindable_new_val.CellAddressesMap)
-                {
-                    string key_str = $"{excell_bindable_new_val.Id.ToString()}_{kvp.Value.ProprertyName}";
-                    if (!this.CellAddressesMap.ContainsKey(key_str))
-                        this.CellAddressesMap.Add(key_str, kvp.Value);
-                }
-                excell_bindable_new_val.CellAddressesMap.AddEvent += OnCellAdressAdd;
-            }
-        }
-        private void UnregisterMemberValInCellAddresMap(IExcelBindableBase excell_bindable_member, string property_name)
-        {
-            //     excell_bindable_member.Owners.Remove(this);
-            foreach (var kvp in excell_bindable_member.CellAddressesMap)
-            {
-                string key_str = $"{excell_bindable_member.Id.ToString()}_{kvp.Value.ProprertyName}";
-                if (this.CellAddressesMap.ContainsKey(key_str))
-                    this.CellAddressesMap.Remove(key_str);
-            }
+        //private void RegisterNewValInCellAddresMap(IObservableExcelBindableBase excell_bindable_new_val, string property_name)
+        //{
+        //    //    excell_bindable_new_val.Owners.Add(this);
+        //    var non_reg_in_upper_attribute = this.GetType().GetProperty(property_name).GetCustomAttribute(typeof(NonRegisterInUpCellAddresMapAttribute));
+        //    if (non_reg_in_upper_attribute == null)
+        //    {
+        //        //  excell_bindable_new_val.Owners.Add(this);
+        //        foreach (var kvp in excell_bindable_new_val._observers)
+        //        {
+        //            string key_str = $"{excell_bindable_new_val.Id.ToString()}_{observer.ProprertyName}";
+        //            if (!this._observers.ContainsKey(key_str))
+        //                this._observers.Add(key_str, observer);
+        //        }
+        //        excell_bindable_new_val._observers.AddEvent += OnCellAdressAdd;
+        //    }
+        //}
+        //private void UnregisterMemberValInCellAddresMap(IObservableExcelBindableBase excell_bindable_member, string property_name)
+        //{
+        //    //     excell_bindable_member.Owners.Remove(this);
+        //    foreach (var kvp in excell_bindable_member._observers)
+        //    {
+        //        string key_str = $"{excell_bindable_member.Id.ToString()}_{observer.ProprertyName}";
+        //        if (this._observers.ContainsKey(key_str))
+        //            this._observers.Remove(key_str);
+        //    }
 
-            excell_bindable_member.CellAddressesMap.AddEvent -= OnCellAdressAdd;
-        }
+        //    excell_bindable_member._observers.AddEvent -= OnCellAdressAdd;
+        //}
 
 
-        public ExellCellAddressMapDictationary CellAddressesMap { get; set; }
-        public ExcelBindableBase()
-        {
-            CellAddressesMap = new ExellCellAddressMapDictationary();
-            CellAddressesMap.Owner = this;
-            //  CellAddressesMap.AddEvent += OnCellAdressAdd;
-        }
+        //private void OnCellAdressAdd(IObservableExcelBindableBase sender, ExellCellAddressMapDictationary.AddEventArgs pAddEventArgs)
+        //{
+        //    if (pAddEventArgs != null)
+        //    {
+        //        Excel.Worksheet worksheet = pAddEventArgs.Value.Worksheet;
+        //        string key_str = $"{sender.Id.ToString()}_{pAddEventArgs.Value.ProprertyName}";
+        //        this._observers.Add(key_str, pAddEventArgs.Value);
+        //    }
 
-        private void OnCellAdressAdd(IExcelBindableBase sender, ExellCellAddressMapDictationary.AddEventArgs pAddEventArgs)
-        {
-            if (pAddEventArgs != null)
-            {
-                Excel.Worksheet worksheet = pAddEventArgs.Value.Worksheet;
-                string key_str = $"{sender.Id.ToString()}_{pAddEventArgs.Value.ProprertyName}";
-                this.CellAddressesMap.Add(key_str, pAddEventArgs.Value);
-            }
-
-        }
+        //}
 
 
         public virtual Excel.Range GetRange(int right_border, int low_border = 100000000, int left_border = 0, int up_border = 0)
@@ -227,11 +207,11 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Range range = null;
             Excel.Worksheet worksheet = this.Worksheet;
-            var cell_maps = this.CellAddressesMap.Where(cm => cm.Value.Worksheet.Name == worksheet.Name);
+            var cell_maps = this._observers.Where(cm => cm.Worksheet.Name == worksheet.Name);
             if (cell_maps.Any())
             {
-                var left_upper_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).First().Value.Cell;
-                var rigth_lower_cell = cell_maps.OrderBy(c => c.Value.Row).OrderBy(c => c.Value.Column).Last().Value.Cell;
+                var left_upper_cell = cell_maps.OrderBy(c => c.Row).OrderBy(c => c.Column).First().Cell;
+                var rigth_lower_cell = cell_maps.OrderBy(c => c.Row).OrderBy(c => c.Column).Last().Cell;
 
                 range = worksheet.Range[left_upper_cell, rigth_lower_cell];
             }
@@ -239,48 +219,54 @@ namespace ExellAddInsLib.MSG
         }
         public virtual void SetInvalidateCellsColor(XlRgbColor color)
         {
-            var invalide_cells = this.CellAddressesMap.Where(cm => cm.Value.IsValid == false);
-            foreach (var kvp in invalide_cells)
+            var invalide_cells = this._observers.Where(cm => cm.IsValid == false);
+            foreach (var observer in invalide_cells)
             {
-                kvp.Value.Cell.Interior.Color = color;
+                observer.Cell.Interior.Color = color;
             }
         }
         public virtual void ChangeTopRow(int row)
         {
-            int top_row = this.CellAddressesMap.Where(adr => !adr.Key.Contains("_")).OrderBy(kvp => kvp.Value.Row).First().Value.Row;
+            int top_row = this._observers.Where(observer => !observer.ProprertyName.Contains("_")).OrderBy(observer => observer.Row).First().Row;
             int row_delta = row - top_row;
             if (top_row + row_delta <= 0) row_delta = 0;
-            //  foreach(var kvp in this.CellAddressesMap.Where(k=>k.Key.Contains('_')))
-            foreach (var kvp in this.CellAddressesMap.Where(adr => !adr.Key.Contains("_")))
+            //  foreach(var kvp in this._observers.Where(k=>k.Key.Contains('_')))
+            foreach (var observer in this._observers.Where(observer => !observer.ProprertyName.Contains("_")))
             {
-                kvp.Value.Row += row_delta;
+                observer.Row += row_delta;
             }
         }
         public virtual int GetRowsCount()
         {
-            int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
-            int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
+            int top_row = this._observers.OrderBy(observer => observer.Row).First().Row;
+            int bottom_row = this._observers.OrderBy(observer => observer.Row).Last().Row;
             return bottom_row - top_row;
         }
         public virtual int GetBottomRow()
         {
-            int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
-            int bottom_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).Last().Value.Row;
+            int top_row = this._observers.OrderBy(observer => observer.Row).First().Row;
+            int bottom_row = this._observers.OrderBy(observer => observer.Row).Last().Row;
             return bottom_row;
         }
         public virtual int GetTopRow()
         {
-            int top_row = this.CellAddressesMap.OrderBy(kvp => kvp.Value.Row).First().Value.Row;
+            int top_row = this._observers.OrderBy(kvp => kvp.Row).First().Row;
             return top_row;
         }
-        private List<IExcelBindableBase> nambered_objects = new List<IExcelBindableBase>();
+        public virtual int GetLeftColumn()
+        {
+            int left_col = this._observers.OrderBy(kvp => kvp.Column).First().Column;
+            return left_col;
+        }
+        
+        private List<IObservableExcelBindableBase> nambered_objects = new List<IObservableExcelBindableBase>();
         public void SetNumberItem(int possition, string number, bool first_itaration = true)
         {
             if (this.Number == null) return;
 
             string[] str = this.Number.Split('.');
-            if(!this.Number.Contains("."))
-                str = new string[] { this.Number};
+            if (!this.Number.Contains("."))
+                str = new string[] { this.Number };
             str[possition] = number;
             string out_str = "";
             foreach (string s in str)
@@ -290,23 +276,23 @@ namespace ExellAddInsLib.MSG
             if (first_itaration) nambered_objects.Clear();
             var prop_infoes = this.GetType().GetRuntimeProperties().Where(pr => pr.GetIndexParameters().Length == 0
                                             && pr.GetCustomAttribute(typeof(NonGettinInReflectionAttribute)) == null
-                                            && pr.GetValue(this) is IExcelBindableBase);
+                                            && pr.GetValue(this) is IObservableExcelBindableBase);
             foreach (PropertyInfo prop_inf in prop_infoes)
             {
                 var prop_val = prop_inf.GetValue(this);
                 if (prop_val is WorkersComposition)
                     ;
-                if (prop_val is IExcelBindableBase)
+                if (prop_val is IObservableExcelBindableBase)
                     ;
                 if (prop_val is IExcelNotifyChangedCollection)
                     ;
 
-                if (prop_val is IExcelBindableBase exbb_prop_value)
+                if (prop_val is IObservableExcelBindableBase exbb_prop_value)
                 {
 
                     if (prop_val is IList exbb_list)
                     {
-                        foreach (IExcelBindableBase elm in exbb_list)
+                        foreach (IObservableExcelBindableBase elm in exbb_list)
                         {
                             if (!nambered_objects.Contains(elm))
                             {
@@ -343,26 +329,29 @@ namespace ExellAddInsLib.MSG
 
         /// <summary>
         /// Функция обновляет документальное представление объетка (рукурсивно проходит по всем объектам 
-        /// реализующим интерфейс IExcelBindableBase). 
+        /// реализующим интерфейс IObservableExcelBindableBase). 
         /// </summary>
-        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IExcelBindableBase </param>
+        /// <param name="obj">Связанный с докуметом Worksheet объект рализующий IObservableExcelBindableBase </param>
         internal void UpdateExellBindableObject()
         {
-            var obj = this;
-            var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
-            CellAddressesMap.SetCellNumberFormat();
-            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
+
+            var prop_infoes = this.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
+
+            foreach (var observer in _observers)
+                observer.SetCellNumberFormat();
+
+            foreach (var observer in this._observers.Where(obs => !obs.ProprertyName.Contains('_')))
             {
-                var val = this.GetPropertyValueByPath(obj, kvp.Value.ProprertyName);
+                var val = this.GetPropertyValueByPath(this, observer.ProprertyName);
                 if (val != null)
                 {
-                    kvp.Value.Cell.NumberFormat = kvp.Value.CellNumberFormat;
-                    kvp.Value.Cell.Value = val;
+                    observer.Cell.NumberFormat = observer.CellNumberFormat;
+                    observer.Cell.Value = val;
 
                 }
             }
         }
-        private object GetPropertyValueByPath(IExcelBindableBase obj, string full_prop_name)
+        private object GetPropertyValueByPath(IObservableExcelBindableBase obj, string full_prop_name)
         {
             string[] prop_names = full_prop_name.Split('.');
             foreach (string name in prop_names)
@@ -373,7 +362,7 @@ namespace ExellAddInsLib.MSG
                     return null;
                 var prop_value = obj.GetType().GetProperty(name).GetValue(obj);
 
-                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
+                if (prop_value is IObservableExcelBindableBase excel_bimdable_prop_value)
                 {
                     return this.GetPropertyValueByPath(excel_bimdable_prop_value, rest_prop_name_part);
                 }
@@ -391,22 +380,24 @@ namespace ExellAddInsLib.MSG
             }
             return null;
         }
-     
+
         internal void LoadExellBindableObjectFromField()
         {
             var obj = this;
             var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
-            CellAddressesMap.SetCellNumberFormat();
-            foreach (var kvp in obj.CellAddressesMap.Where(k => !k.Key.Contains('_')))
-            {
-                var val = kvp.Value.Cell.Value;
-                var owner = kvp.Value.Owner;
-               var prop_info =  GetPropertyInfoByPath(owner, kvp.Value.ProprertyName);
+            foreach (var observer in _observers)
+                observer.SetCellNumberFormat();
 
-                if (prop_info.CanWrite) prop_info.SetValue(owner, val,null);
+            foreach (var observer in obj._observers.Where(obs => !obs.ProprertyName.Contains('_')))
+            {
+                var val = observer.Cell.Value;
+                var owner = observer.Owner;
+                var prop_info = GetPropertyInfoByPath(owner as IObservableExcelBindableBase, observer.ProprertyName);
+
+                if (prop_info.CanWrite) prop_info.SetValue(owner, val, null);
             }
         }
-        private PropertyInfo GetPropertyInfoByPath(IExcelBindableBase obj, string full_prop_name)
+        private PropertyInfo GetPropertyInfoByPath(IObservableExcelBindableBase obj, string full_prop_name)
         {
             string[] prop_names = full_prop_name.Split('.');
             foreach (string name in prop_names)
@@ -418,7 +409,7 @@ namespace ExellAddInsLib.MSG
                 var prop_info = obj.GetType().GetProperty(name);
                 var prop_value = prop_info.GetValue(obj);
 
-                if (prop_value is IExcelBindableBase excel_bimdable_prop_value)
+                if (prop_value is IObservableExcelBindableBase excel_bimdable_prop_value)
                 {
                     return this.GetPropertyInfoByPath(excel_bimdable_prop_value, rest_prop_name_part);
                 }
@@ -432,7 +423,7 @@ namespace ExellAddInsLib.MSG
                     return prop_info;
                 }
                 else
-                    return  null;
+                    return null;
             }
             return null;
         }
@@ -448,14 +439,12 @@ namespace ExellAddInsLib.MSG
 
         public virtual object Clone()
         {
-            IExcelBindableBase new_obj = (IExcelBindableBase)Activator.CreateInstance(this.GetType());
-            new_obj.CellAddressesMap = new ExellCellAddressMapDictationary();
-            new_obj.CellAddressesMap.Owner = new_obj;
-            foreach (var kvp in this.CellAddressesMap.Where(k => !k.Key.Contains('_')))
+            IObservableExcelBindableBase new_obj = (IObservableExcelBindableBase)Activator.CreateInstance(this.GetType());
+            foreach (var observer in this._observers.Where(obs => !obs.ProprertyName.Contains('_')))
             {
-                var excell_address = new ExcelPropAddress(kvp.Value);
-                excell_address.CellNumberFormat = kvp.Value.CellNumberFormat;
-                new_obj.CellAddressesMap.Add(kvp.Key, excell_address);
+                var excell_address = new ExcelPropAddress(observer);
+                excell_address.CellNumberFormat = observer.CellNumberFormat;
+          //      new_obj._observers.Add(kvp.Key, excell_address);
             }
 
             var prop_infoes = new_obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
@@ -474,6 +463,37 @@ namespace ExellAddInsLib.MSG
             return new_obj;
 
         }
+        private List<ExcelPropAddress> _observers = new List<ExcelPropAddress>();
+        public IDisposable Subscribe(IObserver<PropertyChangeState> observer)
+        {
+            if (!_observers.Contains(observer as ExcelPropAddress))
+            {
+                _observers.Add(observer as ExcelPropAddress);
+                return new ExellCellSubsciption(observer as ExcelPropAddress, this);
+            }
 
+            return null;
+        }
+        public ExcelPropAddress this[string i]
+        {
+            get
+            {
+                return   this._observers.FirstOrDefault(obs => obs.ProprertyName == i); ;
+            }
+            
+        }
+        public void SetPropertyValidStatus(string prop_name,bool isValid)
+        {
+            foreach(var observer in this._observers)
+                observer.OnNext(new PropertyChangeState(this, prop_name, isValid));
+        }
+        public Excel.Range GetCell(string prop_name)
+        {
+          return this._observers.FirstOrDefault(obs => obs.ProprertyName == prop_name).Cell;
+        }
+        public ExcelPropAddress GetPropAddress(string prop_name)
+        {
+            return this._observers.FirstOrDefault(obs => obs.ProprertyName == prop_name);
+        }
     }
 }

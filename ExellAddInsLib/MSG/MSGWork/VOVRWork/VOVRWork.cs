@@ -17,20 +17,19 @@ namespace ExellAddInsLib.MSG
         public const int VOVR_LABOURNESS_COL = VOVR_NUMBER_COL + 5;
 
 
-        private Excel.Worksheet _worksheet;
+      //  private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
         public override Excel.Worksheet Worksheet
         {
-            get { return _worksheet; }
+            get { return base.Worksheet; }
             set
             {
-                _worksheet = value;
-                this.KSWorks.Worksheet = _worksheet;
-                this.WorkersComposition.Worksheet = _worksheet;
-                this.MachinesComposition.Worksheet = _worksheet;
-                this.CellAddressesMap.SetWorksheet(_worksheet);
+                this.KSWorks.Worksheet = value;
+                this.WorkersComposition.Worksheet = value;
+                this.MachinesComposition.Worksheet = value;
+                base.Worksheet= value;
 
             }
         }
@@ -91,8 +90,8 @@ namespace ExellAddInsLib.MSG
             int ks_work_col = vovr_work_col;
             if (vovr_work.KSWorks.Count > 0)
             {
-                Excel.Range _works_left_edge_range = vovr_work.KSWorks.Worksheet.Range[vovr_work.KSWorks[0].CellAddressesMap["Number"].Cell,
-                                                                            vovr_work.KSWorks[vovr_work.KSWorks.Count - 1].CellAddressesMap["Number"].Cell];
+                Excel.Range _works_left_edge_range = vovr_work.KSWorks.Worksheet.Range[vovr_work.KSWorks[0]["Number"].Cell,
+                                                                            vovr_work.KSWorks[vovr_work.KSWorks.Count - 1]["Number"].Cell];
                 _works_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
 
                 foreach (KSWork ks_work in vovr_work.KSWorks)
