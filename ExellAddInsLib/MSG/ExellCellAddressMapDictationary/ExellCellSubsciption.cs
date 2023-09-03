@@ -10,14 +10,18 @@ namespace ExellAddInsLib.MSG
     {
         public  IObserver<PropertyChangeState> Observer { get; private set; }
         public IObservable<PropertyChangeState> Observable { get; private set; }
-        public ExellCellSubsciption(IObserver<PropertyChangeState> observer,IObservable<PropertyChangeState> observable)
+        List<IObserver<PropertyChangeState>> _observers;
+        public ExellCellSubsciption(IObserver<PropertyChangeState> observer,IObservable<PropertyChangeState> observable,
+            List<IObserver<PropertyChangeState>> observers)
         {
             Observer = observer;
             Observable = observable;
+            _observers=observers;
         }
         public void Dispose()
         {
-           
+           if(_observers.Contains(Observer))
+                _observers.Remove(Observer);
         }
     }
 }

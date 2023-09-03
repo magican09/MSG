@@ -65,7 +65,6 @@ namespace ExellAddInsLib.MSG
                 return false;
         }
 
-       // ObservableCollection<IExcelBindableBase> unregistedObjects = new ObservableCollection<IExcelBindableBase>();
         /// <summary>
         /// Удаления регистрации объекта из системы отслеживания
         /// </summary>
@@ -73,10 +72,9 @@ namespace ExellAddInsLib.MSG
         /// <param name="first_iteration"></param>
         public void Unregister(IObservableExcelBindableBase notified_object, bool first_iteration = true)
         {
-           // var subscriptions = this.ExcelSubsriptions.Where(subs => (subs.Observable as IObservableExcelBindableBase).Id == notified_object.Id);
-            var subscriptions = from subs in this.ExcelSubsriptions 
-                                let 
-
+            var subscriptions = this.ExcelSubsriptions.Where(subs => (subs.Observable as IObservableExcelBindableBase).Id == notified_object.Id);
+           foreach(var subs in subscriptions)
+                 subs.Dispose();
         }
 
 

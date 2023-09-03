@@ -26,7 +26,7 @@ namespace ExellAddInsLib.MSG
             set
             {
                 _worksheet = value;
-                foreach (var observer in this._observers)
+                foreach (var observer in this._observers.Select(s=>s as ExcelPropAddress))
                     observer.Worksheet = _worksheet;
 
             }
@@ -92,7 +92,7 @@ namespace ExellAddInsLib.MSG
         {
             get
             {
-                if (this._observers.Where(cm => cm.IsValid == false).Any())
+                if (this._observers.Where(cm => (cm as ExcelPropAddress).IsValid == false).Any())
                     _isValid = false;
                 return _isValid;
             }
@@ -207,7 +207,7 @@ namespace ExellAddInsLib.MSG
         {
             Excel.Range range = null;
             Excel.Worksheet worksheet = this.Worksheet;
-            var cell_maps = this._observers.Where(cm => cm.Worksheet.Name == worksheet.Name);
+            var cell_maps = this._observers.Where(cm => (cm as ExcelPropAddress).Worksheet.Name == worksheet.Name).Select(s=>s as ExcelPropAddress);
             if (cell_maps.Any())
             {
                 var left_upper_cell = cell_maps.OrderBy(c => c.Row).OrderBy(c => c.Column).First().Cell;
@@ -219,7 +219,7 @@ namespace ExellAddInsLib.MSG
         }
         public virtual void SetInvalidateCellsColor(XlRgbColor color)
         {
-            var invalide_cells = this._observers.Where(cm => cm.IsValid == false);
+            var invalide_cells = this._observers.Select(s => s as ExcelPropAddress).Where(cm => (cm as ExcelPropAddress).IsValid == false);
             foreach (var observer in invalide_cells)
             {
                 observer.Cell.Interior.Color = color;
@@ -227,35 +227,35 @@ namespace ExellAddInsLib.MSG
         }
         public virtual void ChangeTopRow(int row)
         {
-            int top_row = this._observers.Where(observer => !observer.ProprertyName.Contains("_")).OrderBy(observer => observer.Row).First().Row;
+            int top_row = this._observers.Select(s=>s as ExcelPropAddress).Where(observer => !observer.ProprertyName.Contains("_")).OrderBy(observer => observer.Row).First().Row;
             int row_delta = row - top_row;
             if (top_row + row_delta <= 0) row_delta = 0;
             //  foreach(var kvp in this._observers.Where(k=>k.Key.Contains('_')))
-            foreach (var observer in this._observers.Where(observer => !observer.ProprertyName.Contains("_")))
+            foreach (var observer in this._observers.Select(s => s as ExcelPropAddress).Where(observer => !observer.ProprertyName.Contains("_")))
             {
                 observer.Row += row_delta;
             }
         }
         public virtual int GetRowsCount()
         {
-            int top_row = this._observers.OrderBy(observer => observer.Row).First().Row;
-            int bottom_row = this._observers.OrderBy(observer => observer.Row).Last().Row;
+            int top_row = this._observers.Select(s => s as ExcelPropAddress).OrderBy(observer => observer.Row).First().Row;
+            int bottom_row = this._observers.Select(s => s as ExcelPropAddress).OrderBy(observer => observer.Row).Last().Row;
             return bottom_row - top_row;
         }
         public virtual int GetBottomRow()
         {
-            int top_row = this._observers.OrderBy(observer => observer.Row).First().Row;
-            int bottom_row = this._observers.OrderBy(observer => observer.Row).Last().Row;
+            int top_row = this._observers.Select(s => s as ExcelPropAddress).OrderBy(observer => observer.Row).First().Row;
+            int bottom_row = this._observers.Select(s => s as ExcelPropAddress).OrderBy(observer => observer.Row).Last().Row;
             return bottom_row;
         }
         public virtual int GetTopRow()
         {
-            int top_row = this._observers.OrderBy(kvp => kvp.Row).First().Row;
+            int top_row = this._observers.Select(s => s as ExcelPropAddress).OrderBy(kvp => kvp.Row).First().Row;
             return top_row;
         }
         public virtual int GetLeftColumn()
         {
-            int left_col = this._observers.OrderBy(kvp => kvp.Column).First().Column;
+            int left_col = this._observers.Select(s => s as ExcelPropAddress).OrderBy(kvp => kvp.Column).First().Column;
             return left_col;
         }
         
@@ -330,10 +330,10 @@ namespace ExellAddInsLib.MSG
 
             var prop_infoes = this.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
 
-            foreach (var observer in _observers)
+            foreach (var observer in _observers.Select(s => s as ExcelPropAddress))
                 observer.SetCellNumberFormat();
 
-            foreach (var observer in this._observers.Where(obs => !obs.ProprertyName.Contains('_')))
+            foreach (var observer in this._observers.Select(s => s as ExcelPropAddress).Where(obs => !obs.ProprertyName.Contains('_')))
             {
                 var val = this.GetPropertyValueByPath(this, observer.ProprertyName);
                 if (val != null)
@@ -378,10 +378,10 @@ namespace ExellAddInsLib.MSG
         {
             var obj = this;
             var prop_infoes = obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0);
-            foreach (var observer in _observers)
+            foreach (var observer in _observers.Select(s => s as ExcelPropAddress))
                 observer.SetCellNumberFormat();
 
-            foreach (var observer in obj._observers.Where(obs => !obs.ProprertyName.Contains('_')))
+            foreach (var observer in obj._observers.Select(s => s as ExcelPropAddress).Where(obs => !obs.ProprertyName.Contains('_')))
             {
                 var val = observer.Cell.Value;
                 var owner = observer.Owner;
@@ -433,11 +433,12 @@ namespace ExellAddInsLib.MSG
         public virtual object Clone()
         {
             IObservableExcelBindableBase new_obj = (IObservableExcelBindableBase)Activator.CreateInstance(this.GetType());
-            foreach (var observer in this._observers.Where(obs => !obs.ProprertyName.Contains('_')))
+            foreach (var observer in this._observers.Select(s => s as ExcelPropAddress).Where(obs => !obs.ProprertyName.Contains('_')))
             {
                 var excell_address = new ExcelPropAddress(observer);
                 excell_address.CellNumberFormat = observer.CellNumberFormat;
-          //      new_obj._observers.Add(kvp.Key, excell_address);
+                //  new_obj._observers.Add(kvp.Key, excell_address);
+                new_obj.Subscribe(excell_address);
             }
 
             var prop_infoes = new_obj.GetType().GetProperties().Where(pr => pr.GetIndexParameters().Length == 0
@@ -456,13 +457,13 @@ namespace ExellAddInsLib.MSG
             return new_obj;
 
         }
-        private List<ExcelPropAddress> _observers = new List<ExcelPropAddress>();
+        private List<IObserver<PropertyChangeState>> _observers = new List<IObserver<PropertyChangeState>>();
         public IDisposable Subscribe(IObserver<PropertyChangeState> observer)
         {
             if (!_observers.Contains(observer as ExcelPropAddress))
             {
                 _observers.Add(observer as ExcelPropAddress);
-                return new ExellCellSubsciption(observer as ExcelPropAddress, this);
+                return new ExellCellSubsciption(observer as ExcelPropAddress, this, _observers);
             }
 
             return null;
@@ -471,7 +472,7 @@ namespace ExellAddInsLib.MSG
         {
             get
             {
-                return   this._observers.FirstOrDefault(obs => obs.ProprertyName == i); ;
+                return   this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == i); ;
             }
             
         }
@@ -482,11 +483,11 @@ namespace ExellAddInsLib.MSG
         }
         public Excel.Range GetCell(string prop_name)
         {
-          return this._observers.FirstOrDefault(obs => obs.ProprertyName == prop_name).Cell;
+          return this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == prop_name).Cell;
         }
         public ExcelPropAddress GetPropAddress(string prop_name)
         {
-            return this._observers.FirstOrDefault(obs => obs.ProprertyName == prop_name);
+            return this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == prop_name);
         }
     }
 }

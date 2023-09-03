@@ -1408,7 +1408,6 @@ namespace ExellAddInsLib.MSG
                 this.ClearAllSections();
                 this.LoadWorksSections();
                 this.LoadMSGWorks();
-                //      this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL] = this.WorksEndDate.ToString("d");
                 this.LoadVOVRWorks();
                 this.LoadKSWorks();
                 this.LoadRCWorks();
@@ -1434,12 +1433,10 @@ namespace ExellAddInsLib.MSG
                 this.LoadWorksReportCards();
                 this.AdjustRCWorksRecorCard();
                 this.AdjustObjectModel();
-                // this.SetFormulas();
-
+      
                 this.LoadWorkerConsumptions();
                 this.LoadMachineConsumptions();
-                //     this.ReadModelFilds();
-
+       
             }
         }
         public void ReadModelFilds()
