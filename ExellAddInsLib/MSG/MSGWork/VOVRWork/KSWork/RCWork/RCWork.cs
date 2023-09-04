@@ -14,7 +14,7 @@ namespace ExellAddInsLib.MSG
         public const int RC_LABOURNESS_COEFFICIENT_COL = RC_NUMBER_COL + 6;
         public const int RC_LABOURNESS_COL = RC_NUMBER_COL + 7;
 
-        private Excel.Worksheet _worksheet;
+
 
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
@@ -23,11 +23,11 @@ namespace ExellAddInsLib.MSG
             get { return base.Worksheet; }
             set
             {
-            
+
                 if (this.ReportCard != null) this.ReportCard.Worksheet = value;
                 this.WorkersComposition.Worksheet = value;
                 this.MachinesComposition.Worksheet = value;
-               base.Worksheet = value;
+                base.Worksheet = value;
             }
         }
         private string _code;
@@ -63,12 +63,12 @@ namespace ExellAddInsLib.MSG
             rc_work.ChangeTopRow(rc_row);
             ///Находимо работы с таким же номером и помещаем их ниже 
             int rc_work_cuont = 0;
-    
+
             if (rc_work.ReportCard != null)
             {
                 int rc_card_count = 0;
                 rc_work.ReportCard.AdjustExcelRepresentionTree(rc_row);
-               
+
                 if (rc_work_cuont > rc_card_count)
                     rc_row += rc_work_cuont;
                 else

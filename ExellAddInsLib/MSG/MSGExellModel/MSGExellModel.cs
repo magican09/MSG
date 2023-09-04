@@ -52,6 +52,7 @@ namespace ExellAddInsLib.MSG
         //    }
 
         //}
+        private DateTime _worksEndDate;
         /// <summary>
         /// Дата окончания работ в данной ведомости в соотвествии с планируемыми в  сроками отраженнным в части МСГ ведомости.
         /// (в части WorkSchedules работ MSGWork)
@@ -60,16 +61,20 @@ namespace ExellAddInsLib.MSG
         {
             get
             {
-                DateTime end_date = DateTime.MinValue;
+                DateTime end_date = _worksEndDate;
                 var last_ended_work = this.MSGWorks.OrderBy(w => w.WorkSchedules.EndDate).LastOrDefault();
                 if (last_ended_work != null)
                     end_date = last_ended_work.WorkSchedules.EndDate;
+
                 return end_date;
             }
-
+            set
+            {
+                _worksEndDate = value;
+            }
         }
 
-
+        private int _workedDaysNumber;
         /// <summary>
         /// Общее количество каленадрых дне с начала до окончания работ
         /// </summary>
@@ -77,9 +82,16 @@ namespace ExellAddInsLib.MSG
         {
             get
             {
+                //   if (this.WorksEndDate == DateTime.MinValue)
+                //     return _workedDaysNumber;
                 return (this.WorksEndDate - this.WorksStartDate).Days;
             }
 
+            set
+            {
+                this.WorksEndDate = this.WorksStartDate.AddDays(value);
+                _workedDaysNumber = value;
+            }
         }
 
 
@@ -367,14 +379,14 @@ namespace ExellAddInsLib.MSG
             this.Register(w_section, "Name", rowIndex, WorksSection.WSEC_NAME_COL, registerSheet);
 
             w_section.Number = number;
-           // if (this.WorksSections.FirstOrDefault(ws => ws.Number == w_section.Number) != null)
-             //   w_section.CellAddressesMap["Number"].IsValid = false;
+            // if (this.WorksSections.FirstOrDefault(ws => ws.Number == w_section.Number) != null)
+            //   w_section.CellAddressesMap["Number"].IsValid = false;
 
             var name = registerSheet.Cells[rowIndex, WorksSection.WSEC_NAME_COL].Value;
             if (name != null)
                 w_section.Name = name;
             else
-                w_section.SetPropertyValidStatus("Name",false);
+                w_section.SetPropertyValidStatus("Name", false);
 
             if (!this.WorksSections.Contains(w_section))
             {
@@ -408,51 +420,51 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            string number = registerSheet.Cells[rowIndex,MSGWork.MSG_NUMBER_COL].Value;
+            string number = registerSheet.Cells[rowIndex, MSGWork.MSG_NUMBER_COL].Value;
             if (number == null) return;
             MSGWork msg_work = this.MSGWorks.FirstOrDefault(w => w.Number == number);
             if (msg_work == null)
                 msg_work = new MSGWork();
 
             msg_work.Worksheet = registerSheet;
-            this.Register(msg_work, "Number", rowIndex,MSGWork.MSG_NUMBER_COL, this.RegisterSheet, (v) => Regex.IsMatch((string)v, @"^\d+\.\d+$"));
-            this.Register(msg_work, "Name", rowIndex,MSGWork.MSG_NAME_COL, this.RegisterSheet);
-            this.Register(msg_work, "ProjectQuantity", rowIndex,MSGWork.MSG_QUANTITY_COL, this.RegisterSheet, (v) => ((decimal)v) != 0);
-            this.Register(msg_work, "Quantity", rowIndex,MSGWork.MSG_QUANTITY_FACT_COL, this.RegisterSheet);
-            this.Register(msg_work, "Laboriousness", rowIndex,MSGWork.MSG_LABOURNESS_COL, this.RegisterSheet);
-            this.Register(msg_work, "UnitOfMeasurement.Name", rowIndex,MSGWork.MSG_MEASURE_COL, registerSheet);
+            this.Register(msg_work, "Number", rowIndex, MSGWork.MSG_NUMBER_COL, this.RegisterSheet, false, (v) => Regex.IsMatch((string)v, @"^\d+\.\d+$"));
+            this.Register(msg_work, "Name", rowIndex, MSGWork.MSG_NAME_COL, this.RegisterSheet);
+            this.Register(msg_work, "ProjectQuantity", rowIndex, MSGWork.MSG_QUANTITY_COL, this.RegisterSheet, false, (v) => ((decimal)v) != 0);
+            this.Register(msg_work, "Quantity", rowIndex, MSGWork.MSG_QUANTITY_FACT_COL, this.RegisterSheet, true);
+            this.Register(msg_work, "Laboriousness", rowIndex, MSGWork.MSG_LABOURNESS_COL, this.RegisterSheet);
+            this.Register(msg_work, "UnitOfMeasurement.Name", rowIndex, MSGWork.MSG_MEASURE_COL, registerSheet);
 
             msg_work.Number = number;
-          //  if (this.MSGWorks.FirstOrDefault(w => w.Number == msg_work.Number) != null && this.Owner == null)
-           //     msg_work.CellAddressesMap["Number"].IsValid = false;
+            //  if (this.MSGWorks.FirstOrDefault(w => w.Number == msg_work.Number) != null && this.Owner == null)
+            //     msg_work.CellAddressesMap["Number"].IsValid = false;
 
-            var name = registerSheet.Cells[rowIndex,MSGWork.MSG_NAME_COL].Value;
+            var name = registerSheet.Cells[rowIndex, MSGWork.MSG_NAME_COL].Value;
             if (name != null)
                 msg_work.Name = name;
             else
                 msg_work.SetPropertyValidStatus("Name", false); ;
 
-            var unit_of_measurement_name = registerSheet.Cells[rowIndex,MSGWork.MSG_MEASURE_COL].Value;
+            var unit_of_measurement_name = registerSheet.Cells[rowIndex, MSGWork.MSG_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 msg_work.UnitOfMeasurement = UnitOfMeasurements.FirstOrDefault(um => um.Name == unit_of_measurement_name.ToString());
             else
-                msg_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false); 
+                msg_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);
 
-            var pr_quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_QUANTITY_COL].Value;
+            var pr_quantity = registerSheet.Cells[rowIndex, MSGWork.MSG_QUANTITY_COL].Value;
             if (pr_quantity != null)
                 msg_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
                 msg_work.SetPropertyValidStatus("ProjectQuantity", false);
-         
-            var quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_QUANTITY_FACT_COL].Value;
+
+            var quantity = registerSheet.Cells[rowIndex, MSGWork.MSG_QUANTITY_FACT_COL].Value;
             if (quantity != null)
                 msg_work.Quantity = Decimal.Parse(quantity.ToString());
 
-            var labourness = registerSheet.Cells[rowIndex,MSGWork.MSG_LABOURNESS_COL].Value;
+            var labourness = registerSheet.Cells[rowIndex, MSGWork.MSG_LABOURNESS_COL].Value;
             if (labourness != null)
                 msg_work.Laboriousness = Decimal.Parse(labourness.ToString());
             else
-                msg_work.SetPropertyValidStatus("Laboriousness", false); 
+                msg_work.SetPropertyValidStatus("Laboriousness", false);
 
             this.LoadWorksSchedules(msg_work);
             this.LoadMSGWorkerCompositions(msg_work);
@@ -469,7 +481,7 @@ namespace ExellAddInsLib.MSG
                 ;
             int schedule_number = 0;
 
-            while (registerSheet.Cells[rowIndex,MSGWork.MSG_START_DATE_COL].Value != null)
+            while (registerSheet.Cells[rowIndex, MSGWork.MSG_START_DATE_COL].Value != null)
             {
                 schedule_number++;
                 int duration = 0;
@@ -478,16 +490,16 @@ namespace ExellAddInsLib.MSG
                 Excel.Range duration_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_DURATION_DATE_COL];
                 DateTime end_time;
 
-                if (duration_cell.Value != null && Int32.TryParse(duration_cell.Value.ToString(), out duration) && duration!=0)
+                if (duration_cell.Value != null && Int32.TryParse(duration_cell.Value.ToString(), out duration) && duration != 0)
                 {
-                    end_time = start_time.AddDays(duration-1);
+                    end_time = start_time.AddDays(duration - 1);
                     end_date_cell.Value = end_time.ToString("d");
                 }
                 else
                 {
                     end_time = DateTime.Parse(end_date_cell.Value.ToString());
                     duration_cell.NumberFormat = "0";
-                    duration_cell.Value = (end_time - start_time).Days+1;
+                    duration_cell.Value = (end_time - start_time).Days + 1;
                 }
 
                 WorkScheduleChunk work_sh_chunk = msg_work.WorkSchedules.FirstOrDefault(shd => shd.Number == $"{msg_work.Number}.{schedule_number}");
@@ -498,17 +510,17 @@ namespace ExellAddInsLib.MSG
                 work_sh_chunk.Number = $"{msg_work.Number}.{schedule_number.ToString()}";
                 work_sh_chunk.Duration = duration;
 
-                string is_snaday_vacation = registerSheet.Cells[rowIndex,MSGWork.MSG_SUNDAY_IS_VOCATION_COL].Value;
-                is_snaday_vacation = registerSheet.Cells[rowIndex,MSGWork.MSG_SUNDAY_IS_VOCATION_COL].Value;
+                string is_snaday_vacation = registerSheet.Cells[rowIndex, MSGWork.MSG_SUNDAY_IS_VOCATION_COL].Value;
+                is_snaday_vacation = registerSheet.Cells[rowIndex, MSGWork.MSG_SUNDAY_IS_VOCATION_COL].Value;
                 if (is_snaday_vacation != null && is_snaday_vacation.Contains("Нет"))
                     work_sh_chunk.IsSundayVacationDay = "Нет";
                 else
                     work_sh_chunk.IsSundayVacationDay = "Да";
 
-                this.Register(work_sh_chunk, "StartTime", rowIndex,MSGWork.MSG_START_DATE_COL, this.RegisterSheet);
-                this.Register(work_sh_chunk, "EndTime", rowIndex,MSGWork.MSG_END_DATE_COL, this.RegisterSheet);
+                this.Register(work_sh_chunk, "StartTime", rowIndex, MSGWork.MSG_START_DATE_COL, this.RegisterSheet);
+                this.Register(work_sh_chunk, "EndTime", rowIndex, MSGWork.MSG_END_DATE_COL, this.RegisterSheet);
                 this.Register(work_sh_chunk, "Duration", rowIndex, MSGWork.MSG_DURATION_DATE_COL, this.RegisterSheet);
-                this.Register(work_sh_chunk, "IsSundayVacationDay", rowIndex,MSGWork.MSG_SUNDAY_IS_VOCATION_COL, this.RegisterSheet);
+                this.Register(work_sh_chunk, "IsSundayVacationDay", rowIndex, MSGWork.MSG_SUNDAY_IS_VOCATION_COL, this.RegisterSheet);
 
                 if (!msg_work.WorkSchedules.Contains(work_sh_chunk))
                 {
@@ -525,11 +537,11 @@ namespace ExellAddInsLib.MSG
 
                 }
                 work_sh_chunk.Owner = msg_work;
-                if (registerSheet.Cells[rowIndex + 1,MSGWork.MSG_NUMBER_COL].Value != null) break;
+                if (registerSheet.Cells[rowIndex + 1, MSGWork.MSG_NUMBER_COL].Value != null) break;
                 rowIndex++;
 
             }
-            
+
         }
 
         /// <summary>
@@ -545,7 +557,7 @@ namespace ExellAddInsLib.MSG
 
             while (null_str_count < 100)
             {
-                var number = registerSheet.Cells[rowIndex,MSGWork.MSG_NUMBER_COL].Value;
+                var number = registerSheet.Cells[rowIndex, MSGWork.MSG_NUMBER_COL].Value;
                 if (number == null) null_str_count++;
                 else
                 {
@@ -564,7 +576,7 @@ namespace ExellAddInsLib.MSG
 
             int rowIndex = msg_work.GetTopRow();
             int need_number = 0;
-            while (registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL].Value != null)
+            while (registerSheet.Cells[rowIndex, MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL].Value != null)
             {
                 need_number++;
                 NeedsOfWorker msg_needs_of_workers = msg_work.WorkersComposition.FirstOrDefault(n_w => n_w.Number == $"{msg_work.Number}.{need_number}");// n_w.NumberSuffix == msg_work.Number);
@@ -574,17 +586,17 @@ namespace ExellAddInsLib.MSG
 
                 msg_needs_of_workers.Worksheet = registerSheet;
                 //   this.Register(msg_needs_of_workers, "Number", rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NUMBER_COL, this.RegisterSheet);
-                this.Register(msg_needs_of_workers, "Name", rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL, this.RegisterSheet);
-                this.Register(msg_needs_of_workers, "Quantity", rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_QUANTITY_COL, this.RegisterSheet);
+                this.Register(msg_needs_of_workers, "Name", rowIndex, MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL, this.RegisterSheet);
+                this.Register(msg_needs_of_workers, "Quantity", rowIndex, MSGWork.MSG_NEEDS_OF_WORKERS_QUANTITY_COL, this.RegisterSheet, true);
 
                 msg_needs_of_workers.Number = $"{msg_work.Number}.{need_number.ToString()}";
-                msg_needs_of_workers.Name = registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL].Value;
+                msg_needs_of_workers.Name = registerSheet.Cells[rowIndex, MSGWork.MSG_NEEDS_OF_WORKERS_NAME_COL].Value;
 
-                var quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value;
+                var quantity = registerSheet.Cells[rowIndex, MSGWork.MSG_NEEDS_OF_WORKERS_QUANTITY_COL].Value;
                 if (quantity != null)
                     msg_needs_of_workers.Quantity = Decimal.Parse(quantity.ToString());
                 else
-                    msg_needs_of_workers.SetPropertyValidStatus("Quantity",false); 
+                    msg_needs_of_workers.SetPropertyValidStatus("Quantity", false);
 
                 if (!msg_work.WorkersComposition.Contains(msg_needs_of_workers))
                     msg_work.WorkersComposition.Add(msg_needs_of_workers);
@@ -648,7 +660,7 @@ namespace ExellAddInsLib.MSG
 
             int rowIndex = msg_work.GetTopRow();
             int need_number = 0;
-            while (registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL].Value != null)
+            while (registerSheet.Cells[rowIndex, MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL].Value != null)
             {
 
                 need_number++;
@@ -660,17 +672,17 @@ namespace ExellAddInsLib.MSG
 
                 msg_needs_of_machines.Worksheet = registerSheet;
                 //    this.Register(msg_needs_of_machines, "Number", rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NUMBER_COL, this.RegisterSheet);
-                this.Register(msg_needs_of_machines, "Name", rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL, this.RegisterSheet);
-                this.Register(msg_needs_of_machines, "Quantity", rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL, this.RegisterSheet);
+                this.Register(msg_needs_of_machines, "Name", rowIndex, MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL, this.RegisterSheet);
+                this.Register(msg_needs_of_machines, "Quantity", rowIndex, MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL, this.RegisterSheet, false);
 
                 msg_needs_of_machines.Number = $"{msg_work.Number}.{need_number.ToString()}";
-                msg_needs_of_machines.Name = registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL].Value;
+                msg_needs_of_machines.Name = registerSheet.Cells[rowIndex, MSGWork.MSG_NEEDS_OF_MACHINE_NAME_COL].Value;
 
-                var quantity = registerSheet.Cells[rowIndex,MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL].Value;
+                var quantity = registerSheet.Cells[rowIndex, MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL].Value;
                 if (quantity != null)
                     msg_needs_of_machines.Quantity = decimal.Parse(quantity.ToString());
                 else
-                    msg_needs_of_machines.SetPropertyValidStatus("Quantity", false);   
+                    msg_needs_of_machines.SetPropertyValidStatus("Quantity", false);
 
                 if (!msg_work.MachinesComposition.Contains(msg_needs_of_machines))
                     msg_work.MachinesComposition.Add(msg_needs_of_machines);
@@ -725,53 +737,53 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            string number = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_NUMBER_COL].Value;
+            string number = registerSheet.Cells[rowIndex, VOVRWork.VOVR_NUMBER_COL].Value;
             if (number == null) return;
             VOVRWork vovr_work = this.VOVRWorks.FirstOrDefault(w => w.Number == number);
             if (vovr_work == null)
                 vovr_work = new VOVRWork();
 
             vovr_work.Worksheet = registerSheet;
-            this.Register(vovr_work, "Number", rowIndex,  VOVRWork.VOVR_NUMBER_COL, this.RegisterSheet, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+$"));
-            this.Register(vovr_work, "Name", rowIndex,  VOVRWork.VOVR_NAME_COL, this.RegisterSheet);
-            this.Register(vovr_work, "ProjectQuantity", rowIndex,  VOVRWork.VOVR_QUANTITY_COL, this.RegisterSheet, (v) => ((decimal)v) != 0);
-            this.Register(vovr_work, "Quantity", rowIndex,  VOVRWork.VOVR_QUANTITY_FACT_COL, this.RegisterSheet);
-            this.Register(vovr_work, "Laboriousness", rowIndex,  VOVRWork.VOVR_LABOURNESS_COL, this.RegisterSheet);
-            this.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex,  VOVRWork.VOVR_MEASURE_COL, this.RegisterSheet);
+            this.Register(vovr_work, "Number", rowIndex, VOVRWork.VOVR_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+$"));
+            this.Register(vovr_work, "Name", rowIndex, VOVRWork.VOVR_NAME_COL, this.RegisterSheet);
+            this.Register(vovr_work, "ProjectQuantity", rowIndex, VOVRWork.VOVR_QUANTITY_COL, this.RegisterSheet, false, (v) => ((decimal)v) != 0);
+            this.Register(vovr_work, "Quantity", rowIndex, VOVRWork.VOVR_QUANTITY_FACT_COL, this.RegisterSheet, false);
+            this.Register(vovr_work, "Laboriousness", rowIndex, VOVRWork.VOVR_LABOURNESS_COL, this.RegisterSheet);
+            this.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, VOVRWork.VOVR_MEASURE_COL, this.RegisterSheet);
 
             vovr_work.Number = number;
 
-          //  if (this.VOVRWorks.FirstOrDefault(w => w.Number == vovr_work.Number) != null && this.Owner == null)
-             //   vovr_work.CellAddressesMap["Number"].IsValid = false;
+            //  if (this.VOVRWorks.FirstOrDefault(w => w.Number == vovr_work.Number) != null && this.Owner == null)
+            //   vovr_work.CellAddressesMap["Number"].IsValid = false;
 
-            var name = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_NAME_COL].Value;
+            var name = registerSheet.Cells[rowIndex, VOVRWork.VOVR_NAME_COL].Value;
             if (name != null)
                 vovr_work.Name = name.ToString();
             else
-                vovr_work.SetPropertyValidStatus("Name", false);   
-            var unit_of_measurement_name = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_MEASURE_COL].Value;
+                vovr_work.SetPropertyValidStatus("Name", false);
+            var unit_of_measurement_name = registerSheet.Cells[rowIndex, VOVRWork.VOVR_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 vovr_work.UnitOfMeasurement = new UnitOfMeasurement(unit_of_measurement_name);
             else
-                vovr_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);  
+                vovr_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);
 
-            var pr_quantity = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_QUANTITY_COL].Value;
+            var pr_quantity = registerSheet.Cells[rowIndex, VOVRWork.VOVR_QUANTITY_COL].Value;
             if (pr_quantity != null)
                 vovr_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
-                vovr_work.SetPropertyValidStatus("ProjectQuantity", false);   
+                vovr_work.SetPropertyValidStatus("ProjectQuantity", false);
 
-            var quantity = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_QUANTITY_FACT_COL].Value;
+            var quantity = registerSheet.Cells[rowIndex, VOVRWork.VOVR_QUANTITY_FACT_COL].Value;
             if (quantity != null)
                 vovr_work.Quantity = Decimal.Parse(quantity.ToString());
 
 
 
-            var labouriosness = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_LABOURNESS_COL].Value;
+            var labouriosness = registerSheet.Cells[rowIndex, VOVRWork.VOVR_LABOURNESS_COL].Value;
             if (labouriosness != null)
                 vovr_work.Laboriousness = Decimal.Parse(labouriosness.ToString());
             else
-                vovr_work.SetPropertyValidStatus("Laboriousness", false);  
+                vovr_work.SetPropertyValidStatus("Laboriousness", false);
 
             if (!this.VOVRWorks.Contains(vovr_work))
                 this.VOVRWorks.Add(vovr_work);
@@ -789,7 +801,7 @@ namespace ExellAddInsLib.MSG
             null_str_count = 0;
             while (null_str_count < 100)
             {
-                var number = registerSheet.Cells[rowIndex,  VOVRWork.VOVR_NUMBER_COL].Value;
+                var number = registerSheet.Cells[rowIndex, VOVRWork.VOVR_NUMBER_COL].Value;
                 if (number == null) null_str_count++;
                 else
                 {
@@ -804,56 +816,56 @@ namespace ExellAddInsLib.MSG
         {
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
-            string number = registerSheet.Cells[rowIndex,KSWork.KS_NUMBER_COL].Value;
+            string number = registerSheet.Cells[rowIndex, KSWork.KS_NUMBER_COL].Value;
             if (number == null) return;
             KSWork ks_work = this.KSWorks.FirstOrDefault(w => w.Number == number);
             if (ks_work == null)
                 ks_work = new KSWork();
 
             ks_work.Worksheet = registerSheet;
-            this.Register(ks_work, "Number", rowIndex,KSWork.KS_NUMBER_COL, this.RegisterSheet, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+\.\d+$"));
-            this.Register(ks_work, "Code", rowIndex,KSWork.KS_CODE_COL, this.RegisterSheet);
-            this.Register(ks_work, "Name", rowIndex,KSWork.KS_NAME_COL, this.RegisterSheet);
-            this.Register(ks_work, "ProjectQuantity", rowIndex,KSWork.KS_QUANTITY_COL, this.RegisterSheet);
-            this.Register(ks_work, "Quantity", rowIndex,KSWork.KS_QUANTITY_FACT_COL, this.RegisterSheet);
-            this.Register(ks_work, "Laboriousness", rowIndex,KSWork.KS_LABOURNESS_COL, this.RegisterSheet);
-            this.Register(ks_work, "UnitOfMeasurement.Name", rowIndex,KSWork.KS_MEASURE_COL, this.RegisterSheet);
+            this.Register(ks_work, "Number", rowIndex, KSWork.KS_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+\.\d+$"));
+            this.Register(ks_work, "Code", rowIndex, KSWork.KS_CODE_COL, this.RegisterSheet);
+            this.Register(ks_work, "Name", rowIndex, KSWork.KS_NAME_COL, this.RegisterSheet);
+            this.Register(ks_work, "ProjectQuantity", rowIndex, KSWork.KS_QUANTITY_COL, this.RegisterSheet);
+            this.Register(ks_work, "Quantity", rowIndex, KSWork.KS_QUANTITY_FACT_COL, this.RegisterSheet, false);
+            this.Register(ks_work, "Laboriousness", rowIndex, KSWork.KS_LABOURNESS_COL, this.RegisterSheet);
+            this.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, KSWork.KS_MEASURE_COL, this.RegisterSheet);
 
             ks_work.Number = number;
 
-            var code = registerSheet.Cells[rowIndex,KSWork.KS_CODE_COL].Value;
+            var code = registerSheet.Cells[rowIndex, KSWork.KS_CODE_COL].Value;
             if (code != null)
                 ks_work.Code = code.ToString();
             else
-                ks_work.SetPropertyValidStatus("Code", false); 
+                ks_work.SetPropertyValidStatus("Code", false);
 
-            var name = registerSheet.Cells[rowIndex,KSWork.KS_NAME_COL].Value;
+            var name = registerSheet.Cells[rowIndex, KSWork.KS_NAME_COL].Value;
             if (name != null)
                 ks_work.Name = name.ToString();
             else
-                ks_work.SetPropertyValidStatus("Name", false);   
+                ks_work.SetPropertyValidStatus("Name", false);
 
-            var unit_of_measurement_name = registerSheet.Cells[rowIndex,KSWork.KS_MEASURE_COL].Value;
+            var unit_of_measurement_name = registerSheet.Cells[rowIndex, KSWork.KS_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 ks_work.UnitOfMeasurement = new UnitOfMeasurement(unit_of_measurement_name);
             else
-                ks_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);  
+                ks_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);
 
-            var pr_quantity = registerSheet.Cells[rowIndex,KSWork.KS_QUANTITY_COL].Value;
+            var pr_quantity = registerSheet.Cells[rowIndex, KSWork.KS_QUANTITY_COL].Value;
             if (pr_quantity != null && pr_quantity != 0)
                 ks_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
-                ks_work.SetPropertyValidStatus("ProjectQuantity", false);   
+                ks_work.SetPropertyValidStatus("ProjectQuantity", false);
 
-            var quantity = registerSheet.Cells[rowIndex,KSWork.KS_QUANTITY_FACT_COL].Value;
+            var quantity = registerSheet.Cells[rowIndex, KSWork.KS_QUANTITY_FACT_COL].Value;
             if (quantity != null)
                 ks_work.Quantity = Decimal.Parse(quantity.ToString());
 
-            var laboriousness = registerSheet.Cells[rowIndex,KSWork.KS_LABOURNESS_COL].Value;
+            var laboriousness = registerSheet.Cells[rowIndex, KSWork.KS_LABOURNESS_COL].Value;
             if (laboriousness != null && laboriousness != 0)
                 ks_work.Laboriousness = Decimal.Parse(laboriousness.ToString());
             else
-                ks_work.SetPropertyValidStatus("Laboriousness", false);   
+                ks_work.SetPropertyValidStatus("Laboriousness", false);
 
 
             if (!this.KSWorks.Contains(ks_work))
@@ -870,7 +882,7 @@ namespace ExellAddInsLib.MSG
             null_str_count = 0;
             while (null_str_count < 100)
             {
-                var number = registerSheet.Cells[rowIndex,KSWork.KS_NUMBER_COL].Value;
+                var number = registerSheet.Cells[rowIndex, KSWork.KS_NUMBER_COL].Value;
                 if (number == null) null_str_count++;
                 else
                 {
@@ -887,7 +899,7 @@ namespace ExellAddInsLib.MSG
             Excel.Worksheet registerSheet = this.RegisterSheet;
             int rowIndex = row;
 
-            var number = registerSheet.Cells[rowIndex,RCWork.RC_NUMBER_COL].Value;
+            var number = registerSheet.Cells[rowIndex, RCWork.RC_NUMBER_COL].Value;
             if (number == null) return;
 
             RCWork rc_work = this.RCWorks.FirstOrDefault(w => w.Number == number);
@@ -895,56 +907,56 @@ namespace ExellAddInsLib.MSG
                 rc_work = new RCWork();
 
             rc_work.Worksheet = registerSheet;
-            this.Register(rc_work, "Number", rowIndex,RCWork.RC_NUMBER_COL, this.RegisterSheet, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+\.\d+\.\d+$"));
-            this.Register(rc_work, "Code", rowIndex,RCWork.RC_CODE_COL, this.RegisterSheet);
-            this.Register(rc_work, "Name", rowIndex,RCWork.RC_NAME_COL, this.RegisterSheet);
-            this.Register(rc_work, "ProjectQuantity", rowIndex,RCWork.RC_QUANTITY_COL, this.RegisterSheet);
-            this.Register(rc_work, "Quantity", rowIndex,RCWork.RC_QUANTITY_FACT_COL, this.RegisterSheet);
-            this.Register(rc_work, "LabournessCoefficient", rowIndex,RCWork.RC_LABOURNESS_COEFFICIENT_COL, this.RegisterSheet);
-            this.Register(rc_work, "Laboriousness", rowIndex,RCWork.RC_LABOURNESS_COL, this.RegisterSheet);
-            this.Register(rc_work, "UnitOfMeasurement.Name", rowIndex,RCWork.RC_MEASURE_COL, this.RegisterSheet);
+            this.Register(rc_work, "Number", rowIndex, RCWork.RC_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+\.\d+\.\d+$"));
+            this.Register(rc_work, "Code", rowIndex, RCWork.RC_CODE_COL, this.RegisterSheet);
+            this.Register(rc_work, "Name", rowIndex, RCWork.RC_NAME_COL, this.RegisterSheet);
+            this.Register(rc_work, "ProjectQuantity", rowIndex, RCWork.RC_QUANTITY_COL, this.RegisterSheet);
+            this.Register(rc_work, "Quantity", rowIndex, RCWork.RC_QUANTITY_FACT_COL, this.RegisterSheet, false);
+            this.Register(rc_work, "LabournessCoefficient", rowIndex, RCWork.RC_LABOURNESS_COEFFICIENT_COL, this.RegisterSheet);
+            this.Register(rc_work, "Laboriousness", rowIndex, RCWork.RC_LABOURNESS_COL, this.RegisterSheet);
+            this.Register(rc_work, "UnitOfMeasurement.Name", rowIndex, RCWork.RC_MEASURE_COL, this.RegisterSheet);
 
 
             rc_work.Number = number;
-            var code = registerSheet.Cells[rowIndex,RCWork.RC_CODE_COL].Value;
+            var code = registerSheet.Cells[rowIndex, RCWork.RC_CODE_COL].Value;
             if (code != null)
                 rc_work.Code = code;
             else
-                rc_work.SetPropertyValidStatus("Code", false);  
+                rc_work.SetPropertyValidStatus("Code", false);
 
-            var name = registerSheet.Cells[rowIndex,RCWork.RC_NAME_COL].Value;
+            var name = registerSheet.Cells[rowIndex, RCWork.RC_NAME_COL].Value;
             if (name != null)
                 rc_work.Name = name;
             else
-                rc_work.SetPropertyValidStatus("Name", false);   
+                rc_work.SetPropertyValidStatus("Name", false);
 
-            var unit_of_measurement_name = registerSheet.Cells[rowIndex,RCWork.RC_MEASURE_COL].Value;
+            var unit_of_measurement_name = registerSheet.Cells[rowIndex, RCWork.RC_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
                 rc_work.UnitOfMeasurement = new UnitOfMeasurement(unit_of_measurement_name);
             else
-                rc_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);  
+                rc_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);
 
-            var pr_quantity = registerSheet.Cells[rowIndex,RCWork.RC_QUANTITY_COL].Value;
+            var pr_quantity = registerSheet.Cells[rowIndex, RCWork.RC_QUANTITY_COL].Value;
             if (pr_quantity != null && pr_quantity != 0)
                 rc_work.ProjectQuantity = Decimal.Parse(pr_quantity.ToString());
             else
-                rc_work.SetPropertyValidStatus("ProjectQuantity", false);   
+                rc_work.SetPropertyValidStatus("ProjectQuantity", false);
 
-            var quantity = registerSheet.Cells[rowIndex,RCWork.RC_QUANTITY_FACT_COL].Value;
+            var quantity = registerSheet.Cells[rowIndex, RCWork.RC_QUANTITY_FACT_COL].Value;
             if (quantity != null)
                 rc_work.Quantity = Decimal.Parse(quantity.ToString());
 
-            var laboriosness_coef = registerSheet.Cells[rowIndex,RCWork.RC_LABOURNESS_COEFFICIENT_COL].Value;
+            var laboriosness_coef = registerSheet.Cells[rowIndex, RCWork.RC_LABOURNESS_COEFFICIENT_COL].Value;
             if (laboriosness_coef != null)
                 rc_work.LabournessCoefficient = Decimal.Parse(laboriosness_coef.ToString());
             else
-                rc_work.SetPropertyValidStatus("LabournessCoefficient", false);   
+                rc_work.SetPropertyValidStatus("LabournessCoefficient", false);
 
-            var laboriousness = registerSheet.Cells[rowIndex,RCWork.RC_LABOURNESS_COL].Value;
+            var laboriousness = registerSheet.Cells[rowIndex, RCWork.RC_LABOURNESS_COL].Value;
             if (laboriousness != null && laboriousness != 0)
                 rc_work.Laboriousness = Decimal.Parse(laboriousness.ToString());
             else
-                rc_work.SetPropertyValidStatus("Laboriousness", false);  
+                rc_work.SetPropertyValidStatus("Laboriousness", false);
 
             if (!this.RCWorks.Contains(rc_work))
                 this.RCWorks.Add(rc_work);
@@ -962,7 +974,7 @@ namespace ExellAddInsLib.MSG
             null_str_count = 0;
             while (null_str_count < 100)
             {
-                var number = registerSheet.Cells[rowIndex,RCWork.RC_NUMBER_COL].Value;
+                var number = registerSheet.Cells[rowIndex, RCWork.RC_NUMBER_COL].Value;
                 if (number == null) null_str_count++;
                 else
                 {
@@ -979,17 +991,18 @@ namespace ExellAddInsLib.MSG
             int rowIndex = row;
             Excel.Worksheet registerSheet = this.RegisterSheet;
             string rc_number = registerSheet.Cells[rowIndex, WorkReportCard.WRC_NUMBER_COL].Value.ToString(); ;
-          
-            WorkReportCard report_card = this.WorkReportCards.FirstOrDefault(rc=>rc.Number== rc_number);
+
+            WorkReportCard report_card = this.WorkReportCards.FirstOrDefault(rc => rc.Number == rc_number);
             if (report_card == null)
                 report_card = new WorkReportCard();
-
+            else
+                report_card.Clear();
 
             report_card.Worksheet = registerSheet;
             DateTime end_date = this.WorksEndDate;
             report_card.Number = rc_number;
             this.Register(report_card, "Number", rowIndex, WorkReportCard.WRC_NUMBER_COL, this.RegisterSheet);
-            this.Register(report_card, "PreviousComplatedQuantity", rowIndex, WorkReportCard.WRC_PC_QUANTITY_COL, this.RegisterSheet);
+            this.Register(report_card, "PreviousComplatedQuantity", rowIndex, WorkReportCard.WRC_PC_QUANTITY_COL, this.RegisterSheet, false);
 
             var previus_comp_quantity = registerSheet.Cells[rowIndex, WorkReportCard.WRC_PC_QUANTITY_COL].Value;
             if (previus_comp_quantity != null)
@@ -1155,7 +1168,7 @@ namespace ExellAddInsLib.MSG
                 this.Unregister(section);
             this.WorksSections.Clear();
         }
-        internal void ClearAllMSGWorks()
+        public void ClearAllMSGWorks()
         {
             this.ClearAllVOVRWorks();
             foreach (var work in this.MSGWorks)
@@ -1176,7 +1189,7 @@ namespace ExellAddInsLib.MSG
             this.WorkersComposition.Clear();
             this.MachinesComposition.Clear();
         }
-        internal void ClearAllVOVRWorks()
+        public void ClearAllVOVRWorks()
         {
             this.ClearAllKSWorks();
             foreach (var work in this.VOVRWorks)
@@ -1186,7 +1199,7 @@ namespace ExellAddInsLib.MSG
                 w.VOVRWorks.Clear();
 
         }
-        internal void ClearAllKSWorks()
+        public void ClearAllKSWorks()
         {
             this.ClearAllRCWorks();
             foreach (var work in this.KSWorks)
@@ -1195,7 +1208,7 @@ namespace ExellAddInsLib.MSG
             foreach (var w in this.VOVRWorks)
                 w.KSWorks.Clear();
         }
-        internal void ClearAllRCWorks()
+        public void ClearAllRCWorks()
         {
             foreach (var work in this.RCWorks)
                 this.Unregister(work);
@@ -1203,7 +1216,7 @@ namespace ExellAddInsLib.MSG
             foreach (var w in this.KSWorks)
                 w.RCWorks.Clear();
         }
-        internal void ClearAllRecordCards()
+        public void ClearAllRecordCards()
         {
             List<WorkReportCard> all_rcards = new List<WorkReportCard>(this.WorkReportCards);
             foreach (var rc in all_rcards)
@@ -1220,11 +1233,11 @@ namespace ExellAddInsLib.MSG
                 var sections = this.WorksSections.Where(s => s.Number == section.Number && !InvalidObjects.Contains(s)).ToList();
                 if (sections.Count > 1)
                 {
-                    sections[0].SetPropertyValidStatus("Number", false);   
+                    sections[0].SetPropertyValidStatus("Number", false);
                     sections.Remove(sections[0]);
                     foreach (WorksSection s in sections)
                     {
-                        s.SetPropertyValidStatus("Number", false);  
+                        s.SetPropertyValidStatus("Number", false);
                         InvalidObjects.Add(s);
                         this.WorksSections.Remove(s);
                     }
@@ -1235,11 +1248,11 @@ namespace ExellAddInsLib.MSG
                 var works = this.MSGWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
-                    works[0].SetPropertyValidStatus("Number", false);   
+                    works[0].SetPropertyValidStatus("Number", false);
                     works.Remove(works[0]);
                     foreach (MSGWork w in works)
                     {
-                        w.SetPropertyValidStatus("Number", false);  
+                        w.SetPropertyValidStatus("Number", false);
                         InvalidObjects.Add(w);
                         this.MSGWorks.Remove(w);
                     }
@@ -1250,11 +1263,11 @@ namespace ExellAddInsLib.MSG
                 var works = this.VOVRWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
-                    works[0].SetPropertyValidStatus("Number", false);  
+                    works[0].SetPropertyValidStatus("Number", false);
                     works.Remove(works[0]);
                     foreach (VOVRWork w in works)
                     {
-                        w.SetPropertyValidStatus("Number", false);   
+                        w.SetPropertyValidStatus("Number", false);
                         InvalidObjects.Add(w);
                         this.VOVRWorks.Remove(w);
                     }
@@ -1265,11 +1278,11 @@ namespace ExellAddInsLib.MSG
                 var works = this.KSWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
-                    works[0].SetPropertyValidStatus("Number", false);   
+                    works[0].SetPropertyValidStatus("Number", false);
                     works.Remove(works[0]);
                     foreach (KSWork w in works)
                     {
-                        w.SetPropertyValidStatus("Number", false);   
+                        w.SetPropertyValidStatus("Number", false);
                         InvalidObjects.Add(w);
                         this.KSWorks.Remove(w);
                     }
@@ -1280,11 +1293,11 @@ namespace ExellAddInsLib.MSG
                 var works = this.RCWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
-                    works[0].SetPropertyValidStatus("Number", false);   
+                    works[0].SetPropertyValidStatus("Number", false);
                     works.Remove(works[0]);
                     foreach (RCWork w in works)
                     {
-                        w.SetPropertyValidStatus("Number", false);  
+                        w.SetPropertyValidStatus("Number", false);
                         InvalidObjects.Add(w);
                         this.RCWorks.Remove(w);
                     }
@@ -1295,11 +1308,11 @@ namespace ExellAddInsLib.MSG
                 var rcards = this.WorkReportCards.Where(w => w.Number == rcard.Number && !InvalidObjects.Contains(w)).ToList();
                 if (rcards.Count > 1)
                 {
-                    rcards[0].SetPropertyValidStatus("Number", false);  
+                    rcards[0].SetPropertyValidStatus("Number", false);
                     rcards.Remove(rcards[0]);
                     foreach (WorkReportCard rc in rcards)
                     {
-                        rc.SetPropertyValidStatus("Number", false);  
+                        rc.SetPropertyValidStatus("Number", false);
                         InvalidObjects.Add(rc);
                         this.WorkReportCards.Remove(rc);
                     }
@@ -1349,8 +1362,8 @@ namespace ExellAddInsLib.MSG
                             {
                                 ks_work.RCWorks.Owner = ks_work;
                                 //   rc_work.Owner = ks_work;
-                                if(!ks_work.RCWorks.Contains(rc_work))
-                                     ks_work.RCWorks.Add(rc_work);
+                                if (!ks_work.RCWorks.Contains(rc_work))
+                                    ks_work.RCWorks.Add(rc_work);
 
                             }
 
@@ -1401,43 +1414,21 @@ namespace ExellAddInsLib.MSG
 
             this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
             this.InvalidObjects.Clear();
-            if (this.Owner == null)
-            {
-                if (IsHasEnabled)
-                    this.SetHashFormulas();
-                this.ClearAllSections();
-                this.LoadWorksSections();
-                this.LoadMSGWorks();
-                this.LoadVOVRWorks();
-                this.LoadKSWorks();
-                this.LoadRCWorks();
-                this.LoadWorksReportCards();
-                this.AdjustObjectModel();
 
-                this.LoadWorkerConsumptions();
-                this.LoadMachineConsumptions();
+            if (IsHasEnabled)
+                this.SetHashFormulas();
+            // this.ClearAllSections();
+            this.LoadWorksSections();
+            this.LoadMSGWorks();
+            this.LoadVOVRWorks();
+            this.LoadKSWorks();
+            this.LoadRCWorks();
+            this.LoadWorksReportCards();
+            this.AdjustObjectModel();
 
-          //      foreach (MSGExellModel model in Children)
-           //         model.ReloadSheetModel();
-            }
-            else
-            {
-                this.SetFormulas();
-                this.LoadWorksSections();
-                this.LoadMSGWorks();
-                this.LoadVOVRWorks();
-                this.LoadKSWorks();
-                this.LoadRCWorks();
-                this.ClearAllRecordCards();
+            this.LoadWorkerConsumptions();
+            this.LoadMachineConsumptions();
 
-                this.LoadWorksReportCards();
-                this.AdjustRCWorksRecorCard();
-                this.AdjustObjectModel();
-      
-                this.LoadWorkerConsumptions();
-                this.LoadMachineConsumptions();
-       
-            }
         }
         public void ReadModelFilds()
         {
@@ -1478,7 +1469,7 @@ namespace ExellAddInsLib.MSG
                 var number = registerSheet.Cells[rowIndex, WorkReportCard.WRC_NUMBER_COL].Value;
                 Excel.Range row_hash_range = registerSheet.Cells[rowIndex, HASH_FUNCTION_COL];
                 Excel.Range first_cell = registerSheet.Cells[rowIndex, WorksSection.WSEC_NUMBER_COL];
-                Excel.Range last_cell = registerSheet.Cells[rowIndex,RCWork.RC_LABOURNESS_COL];
+                Excel.Range last_cell = registerSheet.Cells[rowIndex, RCWork.RC_LABOURNESS_COL];
                 row_hash_range.NumberFormat = "0";
                 row_hash_range.Formula = $"= EasyHash(CONCAT({first_cell.RangeAddress()}:{last_cell.RangeAddress()}))";//= EasyHash(СЦЕП(B8: AK8))
                 var row_hash_val = registerSheet.Cells[rowIndex, HASH_FUNCTION_COL].Value;
@@ -1497,8 +1488,8 @@ namespace ExellAddInsLib.MSG
                 }
                 rowIndex++;
             }
-          
-            for (int colIndex = WorksSection.WSEC_NUMBER_COL; colIndex <=RCWork.RC_LABOURNESS_COL; colIndex++)
+
+            for (int colIndex = WorksSection.WSEC_NUMBER_COL; colIndex <= RCWork.RC_LABOURNESS_COL; colIndex++)
             {
                 Excel.Range col_hash_range = registerSheet.Cells[HASH_FUNCTION_ROW, colIndex];
                 Excel.Range first_cell = registerSheet.Cells[FIRST_ROW_INDEX, colIndex];
@@ -1531,7 +1522,7 @@ namespace ExellAddInsLib.MSG
             ObservableCollection<Tuple<int, int>> changed_objects_corredinates = new ObservableCollection<Tuple<int, int>>();
             List<int> current_hash_columns = new List<int>();
 
-            for (int colIndex = WorksSection.WSEC_NUMBER_COL; colIndex <=RCWork.RC_LABOURNESS_COL; colIndex++)
+            for (int colIndex = WorksSection.WSEC_NUMBER_COL; colIndex <= RCWork.RC_LABOURNESS_COL; colIndex++)
             {
                 var col_hash_val = registerSheet.Cells[HASH_FUNCTION_ROW, colIndex].Value;
                 if (col_hash_val != null)
@@ -1592,7 +1583,7 @@ namespace ExellAddInsLib.MSG
                         this.LoadWorksSection(row);
             }
 
-            if (_columns_with_changes.Where(c => c >=MSGWork.MSG_NUMBER_COL && c <=MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL).Any())
+            if (_columns_with_changes.Where(c => c >= MSGWork.MSG_NUMBER_COL && c <= MSGWork.MSG_NEEDS_OF_MACHINE_QUANTITY_COL).Any())
             {
                 if (top_row == 0 || bottom_row == 0)
                     this.LoadMSGWorks();
@@ -1601,7 +1592,7 @@ namespace ExellAddInsLib.MSG
                         this.LoadMSGWork(row);
             }
 
-            if (_columns_with_changes.Where(c => c >=  VOVRWork.VOVR_NUMBER_COL && c <=  VOVRWork.VOVR_LABOURNESS_COL).Any())
+            if (_columns_with_changes.Where(c => c >= VOVRWork.VOVR_NUMBER_COL && c <= VOVRWork.VOVR_LABOURNESS_COL).Any())
             {
                 if (top_row == 0 || bottom_row == 0)
                     this.LoadKSWorks();
@@ -1610,7 +1601,7 @@ namespace ExellAddInsLib.MSG
                         this.LoadVOVRWork(row);
             }
 
-            if (_columns_with_changes.Where(c => c >=KSWork.KS_NUMBER_COL && c <=KSWork.KS_LABOURNESS_COL).Any())
+            if (_columns_with_changes.Where(c => c >= KSWork.KS_NUMBER_COL && c <= KSWork.KS_LABOURNESS_COL).Any())
             {
                 if (top_row == 0 || bottom_row == 0)
                     this.LoadKSWorks();
@@ -1619,20 +1610,20 @@ namespace ExellAddInsLib.MSG
                         this.LoadKSWork(row);
             }
 
-            if (_columns_with_changes.Where(c => c >=RCWork.RC_NUMBER_COL && c <=RCWork.RC_LABOURNESS_COL).Any())
+            if (_columns_with_changes.Where(c => c >= RCWork.RC_NUMBER_COL && c <= RCWork.RC_LABOURNESS_COL).Any())
             {
                 if (top_row == 0 || bottom_row == 0)
                     this.LoadRCWorks();
-               else
+                else
                     for (int row = top_row; row <= bottom_row; row++)
-                    this.LoadRCWork(row);
+                        this.LoadRCWork(row);
             }
 
 
             this.SetHashFormulas();
             this.AdjustObjectModel();
         }
-        
+
 
         //private void ReloadLoadExbbObject(IObservableExcelBindableBase obj)
         //{
@@ -1657,9 +1648,9 @@ namespace ExellAddInsLib.MSG
             int selectin_col = col;
             if (this.WorksSections.Count > 0)
             {
-              //  Excel.Range _sections_left_edge_range = this.WorksSections.Worksheet.Range[this.WorksSections[0].CellAddressesMap["Number"].Cell,
-          //                                                            this.WorksSections[this.WorksSections.Count - 1].CellAddressesMap["Number"].Cell];
-      //          _sections_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
+                //  Excel.Range _sections_left_edge_range = this.WorksSections.Worksheet.Range[this.WorksSections[0].CellAddressesMap["Number"].Cell,
+                //                                                            this.WorksSections[this.WorksSections.Count - 1].CellAddressesMap["Number"].Cell];
+                //          _sections_left_edge_range.SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
 
             }
 
@@ -1705,8 +1696,8 @@ namespace ExellAddInsLib.MSG
                     XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
             }
 
-            Excel.Range vovr_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[ VOVRWork.VOVR_NUMBER_COL], this.RegisterSheet.Columns[ VOVRWork.VOVR_LABOURNESS_COL]];
-            Excel.Range ks_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[ VOVRWork.VOVR_NUMBER_COL], this.RegisterSheet.Columns[KSWork.KS_LABOURNESS_COL]];
+            Excel.Range vovr_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[VOVRWork.VOVR_NUMBER_COL], this.RegisterSheet.Columns[VOVRWork.VOVR_LABOURNESS_COL]];
+            Excel.Range ks_colomns = this.RegisterSheet.Range[this.RegisterSheet.Columns[VOVRWork.VOVR_NUMBER_COL], this.RegisterSheet.Columns[KSWork.KS_LABOURNESS_COL]];
             try
             {
                 ks_colomns.Group();
@@ -1963,7 +1954,14 @@ namespace ExellAddInsLib.MSG
             {
                 foreach (MSGWork msg_work in section.MSGWorks)
                 {
-
+                    if (msg_work.ReportCard == null)
+                    {
+                        msg_work.ReportCard = new WorkReportCard();
+                        msg_work.ReportCard.Number = msg_work.Number;
+                    }
+                    else
+                        msg_work.ReportCard.Clear();
+                   
                     var msg_work_all_rcWorks = this.RCWorks.Where(w => w.Number.StartsWith(msg_work.Number + "."));
                     decimal pr_works_loboriosness_summ = 0;
                     foreach (RCWork rc_work in msg_work_all_rcWorks)
@@ -1973,11 +1971,7 @@ namespace ExellAddInsLib.MSG
                             foreach (WorkDay rc_w_day in rc_work.ReportCard)
                             {
                                 rc_w_day.LaborСosts = rc_w_day.Quantity * rc_work.Laboriousness;
-                                if (msg_work.ReportCard == null)
-                                {
-                                    msg_work.ReportCard = new WorkReportCard();
-                                    msg_work.ReportCard.Number = msg_work.Number;
-                                }
+                                
                                 WorkDay msg_w_day = msg_work.ReportCard.FirstOrDefault(wd => wd.Date == rc_w_day.Date);
                                 if (msg_w_day == null)
                                 {
@@ -2054,7 +2048,7 @@ namespace ExellAddInsLib.MSG
                                     //    int curent_w_consumption_row = worker_consumption.WorkersConsumptionReportCard.GetPropAddress("WorkersConsumptionReportCard").Row;
 
                                     //    this.Register(curent_w_day,map_item.Key, new ExcelPropAddress(curent_w_consumption_row, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index, this.WorkerConsumptionsSheet, typeof(DateTime)));
-                                       
+
                                     //    curent_w_day.Quantity = curent_w_day.Quantity;
                                     //    //          this.WorkerConsumptionsSheet.Cells[curent_w_consumption_row, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + date_index] =
                                     //    //      curent_w_day.Quantity.ToString();
@@ -2078,6 +2072,33 @@ namespace ExellAddInsLib.MSG
             this.CalcLabourness();
             this.CalcQuantity();
         }
+        public void UpdateExcelReportCardsRepresetation(IEnumerable<Tuple<string, int>> numbers_rows = null)
+        {
+            if (numbers_rows != null)
+            {
+
+                foreach (Tuple<string, int> tuple in numbers_rows)
+                {
+                    var report_card = this.WorkReportCards.FirstOrDefault(rc => rc.Number == tuple.Item1);
+                    if (report_card != null)
+                    {
+                        report_card.AdjustExcelRepresentionTree(tuple.Item2);
+                        report_card.UpdateExcelRepresetation();
+                    }
+                }
+                return;
+            }
+            foreach (RCWork rc_work in this.RCWorks)
+            {
+                var report_card = rc_work.ReportCard;
+                if (report_card != null)
+                {
+                    report_card.AdjustExcelRepresentionTree(rc_work.GetTopRow());
+                    report_card.UpdateExcelRepresetation();
+                }
+            }
+        }
+
 
         /// <summary>
         /// 
@@ -2085,12 +2106,12 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public override void UpdateExcelRepresetation()
         {
-            this.WorksSections.Worksheet = this.RegisterSheet;
-            if(this.Owner!=null)
-            {
+            //this.WorksSections.Worksheet = this.RegisterSheet;
+            //if(this.Owner!=null)
+            //{
 
-            }
-            this.ClearWorksheetCommonPart();
+            //}
+            //  this.ClearWorksheetCommonPart();
 
 
             int last_row = FIRST_ROW_INDEX - _SECTIONS_GAP;
@@ -2130,7 +2151,7 @@ namespace ExellAddInsLib.MSG
             if (this.Owner != null)
             {
                 this.WorksStartDate = this.Owner.WorksStartDate;
-            
+
                 this.Unregister(this.WorksSections);
 
                 this.WorksSections = (ExcelNotifyChangedCollection<WorksSection>)this.Owner.WorksSections.Clone();
@@ -2138,8 +2159,8 @@ namespace ExellAddInsLib.MSG
                 this.SetCommonModelCollections();
 
 
-            //    foreach (var section in this.WorksSections)
-              //      this.RegisterObjectInObjectPropertyNameRegister(section);
+                //    foreach (var section in this.WorksSections)
+                //      this.RegisterObjectInObjectPropertyNameRegister(section);
             }
 
         }
@@ -2193,7 +2214,7 @@ namespace ExellAddInsLib.MSG
         public void UpdateCellAddressMapsWorkSheets_bk()
         {
 
-            this.WorksSections.Worksheet=this.RegisterSheet;
+            this.WorksSections.Worksheet = this.RegisterSheet;
             foreach (WorksSection w_section in this.WorksSections)
             {
                 w_section.Worksheet = this.RegisterSheet;
@@ -2281,13 +2302,7 @@ namespace ExellAddInsLib.MSG
                 common_area_range.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
                 common_area_range.Interior.ColorIndex = 0;
 
-                Excel.Range record_cards_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX,RCWork.RC_NUMBER_COL],
-                      this.RegisterSheet.Cells[last_cell.Row, last_cell.Column]];
-                record_cards_area_range.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
-                record_cards_area_range.Interior.ColorIndex = 0;
-
                 common_area_range.ClearContents();
-                record_cards_area_range.ClearContents();
 
             }
             catch (Exception exp)
@@ -2297,6 +2312,34 @@ namespace ExellAddInsLib.MSG
 
             this.RemoveGroups(this.RegisterSheet);
 
+        }
+
+        public void ClearWorksheetRecorCardPart()
+        {
+            try
+            {
+                Excel.Range last_cell = this.RegisterSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+
+                Excel.Range record_cards_area_range = this.RegisterSheet.Range[this.RegisterSheet.Cells[FIRST_ROW_INDEX, WorkReportCard.WRC_NUMBER_COL],
+                    this.RegisterSheet.Cells[last_cell.Row, last_cell.Column]];
+                record_cards_area_range.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone;
+                record_cards_area_range.Interior.ColorIndex = 0;
+
+                record_cards_area_range.ClearContents();
+            }
+            catch (Exception exp)
+            {
+                throw new Exception($"Ошибка при очистке листа.Ошибка:{exp.Message}");
+            }
+
+            this.RemoveGroups(this.RegisterSheet);
+
+        }
+
+        public void ClearWorksheetAll()
+        {
+            this.ClearWorksheetCommonPart();
+            this.ClearWorksheetRecorCardPart();
         }
         /// <summary>
         /// Удалфет все групы в сторках и столбцах
@@ -2337,7 +2380,7 @@ namespace ExellAddInsLib.MSG
             int bottom_row = selection.Rows[selection.Rows.Count].Row;
             List<IObservableExcelBindableBase> uniq_objcts = new List<IObservableExcelBindableBase>();
 
-            foreach (var subscr_obj in this.ExcelSubsriptions.Where(rr => rr.Observable is IObservableExcelBindableBase obj 
+            foreach (var subscr_obj in this.ExcelSubsriptions.Where(rr => rr.Observable is IObservableExcelBindableBase obj
                                                            && (obj.GetType() == object_type || obj.GetType().GetInterface(object_type.Name) != null)
                                                                && obj.Owner != null
                                                                && obj.GetTopRow() >= top_row

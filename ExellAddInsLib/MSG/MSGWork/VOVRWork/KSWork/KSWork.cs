@@ -16,7 +16,7 @@ namespace ExellAddInsLib.MSG
         public const int KS_QUANTITY_COL = KS_NUMBER_COL + 4;
         public const int KS_QUANTITY_FACT_COL = KS_NUMBER_COL + 5;
         public const int KS_LABOURNESS_COL = KS_NUMBER_COL + 6;
-        private Excel.Worksheet _worksheet;
+    
 
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]

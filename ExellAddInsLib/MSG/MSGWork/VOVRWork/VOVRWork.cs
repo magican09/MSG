@@ -17,8 +17,6 @@ namespace ExellAddInsLib.MSG
         public const int VOVR_LABOURNESS_COL = VOVR_NUMBER_COL + 5;
 
 
-      //  private Excel.Worksheet _worksheet;
-
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
         public override Excel.Worksheet Worksheet

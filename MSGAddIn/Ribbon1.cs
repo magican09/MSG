@@ -451,6 +451,8 @@ namespace MSGAddIn
                     empl_model = MSGExellModels.FirstOrDefault(m => m.Employer.Name == SelectedEmloeyer.Name);
                     //  empl_model.ClearWorksheetDaysPart();
                 }
+               
+
                 CurrentMSGExellModel = empl_model;
                 //   CurrentMSGExellModel.ReloadSheetModel();
                 //   CurrentMSGExellModel.SetStyleFormats();
@@ -619,6 +621,9 @@ namespace MSGAddIn
                     model.Employer = employer;
                     model.Owner = CommonMSGExellModel;
                     CommonMSGExellModel.Children.Add(model);
+                   // model.WorksStartDate = CommonMSGExellModel.WorksStartDate;
+                   // model.WorksDas = CommonMSGExellModel.WorksEndDate;
+
                     MSGExellModels.Add(model);
                 }
             }
@@ -665,17 +670,28 @@ namespace MSGAddIn
             {
                 if (CurrentMSGExellModel.Owner != null)
                 {
-                    CurrentMSGExellModel.ClearAllSections();
-                    CurrentMSGExellModel.CopyOwnerObjectModels();
+                    CurrentMSGExellModel.WorkedDaysNumber = CurrentMSGExellModel.Owner.WorkedDaysNumber;
+                    CurrentMSGExellModel.ClearAllRecordCards();
                     CurrentMSGExellModel.LoadWorksReportCards();
-                    CurrentMSGExellModel.AdjustObjectModel();
-                    CurrentMSGExellModel.UpdateExcelRepresetation();
-                    CurrentMSGExellModel.LoadMSGWorks();
+                 
+                    CurrentMSGExellModel.ClearWorksheetCommonPart();
+                    CurrentMSGExellModel.Owner.WorksSections.Worksheet = CurrentMSGExellModel.RegisterSheet;
+                    CurrentMSGExellModel.Owner.UpdateExcelRepresetation();
+                    CurrentMSGExellModel.ClearWorksheetRecorCardPart(); ;
+
+                    CurrentMSGExellModel.Owner.WorksSections.Worksheet = CurrentMSGExellModel.Owner.RegisterSheet;
+                    CurrentMSGExellModel.UpdateExcelReportCardsRepresetation(CurrentMSGExellModel.Owner.RCWorks.Select(s=>new Tuple<string, int>(s.Number,s.GetTopRow())));
+
+                    CurrentMSGExellModel.ReloadSheetModel();
                     CurrentMSGExellModel.SetFormulas();
+                    CurrentMSGExellModel.LoadMSGWorks();
                     CurrentMSGExellModel.SetStyleFormats();
-                }
+                 }
                  else
                 {
+                    CurrentMSGExellModel.ClearWorksheetCommonPart();
+                    CurrentMSGExellModel.ClearWorksheetRecorCardPart();
+
                     CurrentMSGExellModel.UpdateExcelRepresetation();
                     CurrentMSGExellModel.SetFormulas();
                     CurrentMSGExellModel.SetStyleFormats();
@@ -1451,14 +1467,11 @@ namespace MSGAddIn
                                     {
                                         CurrentMSGExellModel.WorksSections.Add(section);
                                         section.SetNumberItem(0, cell_val.ToString());
-
+                                        CurrentMSGExellModel.Register(section);
                                         cell_val++;
                                     }
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
-
-                                   // foreach (WorksSection section in CopyedObjectsList)
-                                      //  CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(section);
-
+                                    CurrentMSGExellModel.ClearWorksheetAll();
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
                                     CurrentMSGExellModel.SetStyleFormats();
                                     commands_group_label = "";
@@ -1497,12 +1510,12 @@ namespace MSGAddIn
                                     foreach (MSGWork msg_work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
                                     {
                                         selected_section.MSGWorks.Insert(selected_work_index, msg_work);
+                                        CurrentMSGExellModel.Register(msg_work);
                                         selected_work_index++;
                                     }
+                                    CurrentMSGExellModel.ClearWorksheetAll();
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
-                                 //   foreach (MSGWork msg_work in CopyedObjectsList)
-                                  //      CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
-
+                         
                                     CurrentMSGExellModel.SetStyleFormats();
                                     commands_group_label = "";
                                 }
@@ -1537,8 +1550,11 @@ namespace MSGAddIn
                                     foreach (VOVRWork _work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
                                     {
                                         selected_msg_work.VOVRWorks.Insert(selected_work_index, _work);
+                                        CurrentMSGExellModel.Register(_work);
                                         selected_work_index++;
                                     }
+
+                                    CurrentMSGExellModel.ClearWorksheetAll();
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
                                //     foreach (VOVRWork msg_work in CopyedObjectsList)
                                 //        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
@@ -1577,8 +1593,10 @@ namespace MSGAddIn
                                     foreach (KSWork _work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
                                     {
                                         selected_vovr_work.KSWorks.Insert(selected_work_index, _work);
+                                        CurrentMSGExellModel.Register(_work);
                                         selected_work_index++;
                                     }
+                                    CurrentMSGExellModel.ClearWorksheetAll();
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
                                  //   foreach (KSWork msg_work in CopyedObjectsList)
                                  //       CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
@@ -1617,8 +1635,10 @@ namespace MSGAddIn
                                     foreach (RCWork _work in CopyedObjectsList.OrderBy(ob => Int32.Parse(ob.NumberSuffix)))
                                     {
                                         selected_KS_work.RCWorks.Insert(selected_work_index, _work);
+                                        CurrentMSGExellModel.Register(_work);
                                         selected_work_index++;
                                     }
+                                    CurrentMSGExellModel.ClearWorksheetAll();
                                     CurrentMSGExellModel.UpdateExcelRepresetation();
                                //     foreach (RCWork msg_work in CopyedObjectsList)
                                 //        CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
@@ -1644,9 +1664,10 @@ namespace MSGAddIn
                                             msg_n_w.Quantity = n_w.Quantity;
                                         else
                                             msg_work.WorkersComposition.Add(n_w.Clone() as NeedsOfWorker);
+                                        CurrentMSGExellModel.Register(n_w);
                                     }
                                 }
-
+                                CurrentMSGExellModel.ClearWorksheetAll();
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
                            //     foreach (MSGWork msg_work in sected_object)
                            //         CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);
@@ -1668,8 +1689,10 @@ namespace MSGAddIn
                                             msg_n_w.Quantity = n_w.Quantity;
                                         else
                                             msg_work.MachinesComposition.Add(n_w.Clone() as NeedsOfMachine);
+                                        CurrentMSGExellModel.Register(n_w);
                                     }
                                 }
+                                CurrentMSGExellModel.ClearWorksheetAll();
                                 CurrentMSGExellModel.UpdateExcelRepresetation();
                               //  foreach (MSGWork msg_work in sected_object)
                              //       CurrentMSGExellModel.RegisterObjectInObjectPropertyNameRegister(msg_work);

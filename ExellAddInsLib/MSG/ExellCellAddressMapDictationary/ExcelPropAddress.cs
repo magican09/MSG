@@ -20,7 +20,12 @@ namespace ExellAddInsLib.MSG
             get { return _isValid; }
             set { _isValid = value; }
         }
-
+        private bool _isReadOnly;
+        public bool IsReadOnly
+        {
+            get { return _isReadOnly; }
+            set { _isReadOnly = value; }
+        }
         private IObservable<PropertyChangeState> _owner;
 
         public IObservable<PropertyChangeState> Owner
@@ -119,7 +124,7 @@ namespace ExellAddInsLib.MSG
                 var prop_val = sender.GetType().GetProperty(prop_name).GetValue(sender, null);
                 if (prop_val is IExcelBindableBase exbb_val)
                     sender = exbb_val;
-                else if(prop_val.GetType() == this.ValueType)
+                else if(prop_val.GetType() == this.ValueType && IsReadOnly==false)
                 {
                     this.Cell.Value = prop_val;
                 }
@@ -150,7 +155,7 @@ namespace ExellAddInsLib.MSG
         }
 
         public ExcelPropAddress(int row, int column, Excel.Worksheet worksheet, Type val_type,
-            string prop_name = "",
+            string prop_name = "",bool read_only=false,
             Func<object, bool> validate_value_call_back = null,
                Func<object, object> coerce_value_call_back = null)
         {
@@ -162,6 +167,7 @@ namespace ExellAddInsLib.MSG
             ValidateValueCallBack = validate_value_call_back;
             CoerceValueCallback = coerce_value_call_back;
             ValueType = val_type;
+            IsReadOnly = read_only;
             this.SetCellNumberFormat();
 
         }

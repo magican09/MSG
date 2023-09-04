@@ -452,18 +452,21 @@ namespace ExellAddInsLib.MSG
                 if (prop_info.CanWrite)
                     prop_info.SetValue(new_obj, this_obj_prop_value);
             }
-
+            new_obj.Worksheet = this.Worksheet;
 
             return new_obj;
 
         }
         private List<IObserver<PropertyChangeState>> _observers = new List<IObserver<PropertyChangeState>>();
+        public List<IDisposable> Subscribers { get; private set; } = new List<IDisposable>();
         public IDisposable Subscribe(IObserver<PropertyChangeState> observer)
         {
             if (!_observers.Contains(observer as ExcelPropAddress))
             {
                 _observers.Add(observer as ExcelPropAddress);
-                return new ExellCellSubsciption(observer as ExcelPropAddress, this, _observers);
+                IDisposable subscriber = new ExellCellSubsciption(observer as ExcelPropAddress, this, _observers);
+                Subscribers.Add(subscriber);
+                return subscriber;
             }
 
             return null;

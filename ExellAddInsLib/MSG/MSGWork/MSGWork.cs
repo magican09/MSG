@@ -27,7 +27,6 @@ namespace ExellAddInsLib.MSG
         public const int MSG_NEEDS_OF_MACHINE_QUANTITY_COL = MSG_NEEDS_OF_MACHINE_NAME_COL + 1;
 
         public const int _MSG_WORKS_GAP = 1;
-        private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]

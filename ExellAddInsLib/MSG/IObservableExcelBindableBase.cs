@@ -12,5 +12,6 @@ namespace ExellAddInsLib.MSG
          void SetPropertyValidStatus(string prop_name, bool isValid);
          Excel.Range GetCell(string prop_name);
         ExcelPropAddress GetPropAddress(string prop_name);
+        List<IDisposable> Subscribers { get;  }
     }
 }

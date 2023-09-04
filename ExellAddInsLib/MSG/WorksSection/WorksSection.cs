@@ -14,17 +14,16 @@ namespace ExellAddInsLib.MSG
 
         public const int _SECTIONS_GAP = 2;
         public const int _MSG_WORKS_GAP = 1;
-        private Excel.Worksheet _worksheet;
-
+       
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
         public override Excel.Worksheet Worksheet
         {
-            get { return _worksheet; }
+            get { return base.Worksheet; }
             set
             {
-                _worksheet = value;
-                this.MSGWorks.Worksheet = _worksheet;
+                this.MSGWorks.Worksheet = value;
+                base.Worksheet = value;
             }
         }
 

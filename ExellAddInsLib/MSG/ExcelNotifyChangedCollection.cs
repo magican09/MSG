@@ -18,7 +18,7 @@ namespace ExellAddInsLib.MSG
         public event BeforePropertyChangeEventHandler BeforePropertyChange;
 
         private bool _isValid = true;
-       public  bool IsChanged { get; set; }
+        public bool IsChanged { get; set; }
         private Excel.Worksheet _worksheet;
 
         [NonGettinInReflection]
@@ -30,11 +30,11 @@ namespace ExellAddInsLib.MSG
             {
                 _worksheet = value;
                 foreach (var observer in this._observers.Select(s => s as ExcelPropAddress))
-                    observer.Worksheet = _worksheet;
+                    observer.Worksheet = value;
                 foreach (T itm in this)
-                    itm.Worksheet = _worksheet;
-                    
-               
+                    itm.Worksheet = value;
+
+
             }
         }
 
@@ -127,7 +127,7 @@ namespace ExellAddInsLib.MSG
         public void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "")
         {
             //var validate_out = BeforePropertyChange?.Invoke(this, new PropertyChangedEventArgs(property_name),  new_val);
-       
+
             //if (new_val is IObservableExcelBindableBase excell_bindable_new_val/* && !excell_bindable_new_val.Owners.Contains(this)*/)
             //{
             //    this.RegisterNewValInCellAddresMap(excell_bindable_new_val, property_name);
@@ -136,12 +136,12 @@ namespace ExellAddInsLib.MSG
             //{
             //    this.UnregisterMemberValInCellAddresMap(excell_bindable_member, property_name);
             //}
-             
+
             //if (validate_out != null && validate_out.Value.Item1)
             //    member = (T)validate_out.Value.Item2;
             //else
 
-                member = new_val;
+            member = new_val;
             PropertyChange(this, property_name);
 
         }
@@ -160,7 +160,7 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-       
+
 
         public ExcelNotifyChangedCollection()
         {
@@ -194,18 +194,18 @@ namespace ExellAddInsLib.MSG
         }
         protected override void InsertItem(int index, T item)
         {
-      //      if (item is IObservableExcelBindableBase excel_bindable_element/* && !excel_bindable_element.Owners.Contains(this)*/)
-      //      {
-      ////          excel_bindable_element.Owner = this.Owner;
+            //      if (item is IObservableExcelBindableBase excel_bindable_element/* && !excel_bindable_element.Owners.Contains(this)*/)
+            //      {
+            ////          excel_bindable_element.Owner = this.Owner;
 
-      //          foreach (var kvp in excel_bindable_element._observers)
-      //          {
-      //              string key_str = $"{excel_bindable_element.Id}_{kvp.Value.ProprertyName}";
-      //              if (!this._observers.ContainsKey(key_str))
-      //                  this._observers.Add(key_str, kvp.Value);
-      //          }
-      //          excel_bindable_element._observers.AddEvent += OnCellAdressAdd;
-      //      }
+            //          foreach (var kvp in excel_bindable_element._observers)
+            //          {
+            //              string key_str = $"{excel_bindable_element.Id}_{kvp.Value.ProprertyName}";
+            //              if (!this._observers.ContainsKey(key_str))
+            //                  this._observers.Add(key_str, kvp.Value);
+            //          }
+            //          excel_bindable_element._observers.AddEvent += OnCellAdressAdd;
+            //      }
 
             base.InsertItem(index, item);
 
@@ -491,8 +491,8 @@ namespace ExellAddInsLib.MSG
             foreach (var item in this)
                 new_collecion.Add(item.Clone() as IObservableExcelBindableBase);
 
-           // new_collecion._observers = new ExellCellAddressMapDictationary();
-          //  new_collecion._observers.Owner = new_collecion;
+            // new_collecion._observers = new ExellCellAddressMapDictationary();
+            //  new_collecion._observers.Owner = new_collecion;
             Dictionary<Guid, T> map_objects = new Dictionary<Guid, T>();
             foreach (var kvp in this._observers.Select(s => s as ExcelPropAddress).Where(k => k.ProprertyName.Contains('_')))
             {
@@ -523,23 +523,27 @@ namespace ExellAddInsLib.MSG
                 }
             }
 
-         //   foreach (var kvp in this._observers.Where(k => !k.ProprertyName.Contains('_')))
-         //       new_collecion._observers.Add(kvp.Key, new ExcelPropAddress(kvp.Value));
-
+            //   foreach (var kvp in this._observers.Where(k => !k.ProprertyName.Contains('_')))
+            //       new_collecion._observers.Add(kvp.Key, new ExcelPropAddress(kvp.Value));
+            new_collecion.Worksheet = this.Worksheet;
             return new_collecion;
         }
 
         private List<IObserver<PropertyChangeState>> _observers = new List<IObserver<PropertyChangeState>>();
+        public List<IDisposable> Subscribers { get; private set; } = new List<IDisposable>();
         public IDisposable Subscribe(IObserver<PropertyChangeState> observer)
         {
             if (!_observers.Contains(observer as ExcelPropAddress))
             {
                 _observers.Add(observer as ExcelPropAddress);
-                return new ExellCellSubsciption(observer as ExcelPropAddress,this, _observers);
+                IDisposable subscriber = new ExellCellSubsciption(observer as ExcelPropAddress, this, _observers);
+                Subscribers.Add(subscriber);
+                return subscriber;
             }
 
             return null;
         }
+
         public void SetPropertyValidStatus(string prop_name, bool isValid)
         {
             foreach (var observer in this._observers)
@@ -549,7 +553,7 @@ namespace ExellAddInsLib.MSG
         {
             return this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == prop_name).Cell;
         }
-               public ExcelPropAddress GetPropAddress(string prop_name)
+        public ExcelPropAddress GetPropAddress(string prop_name)
         {
             return this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == prop_name);
         }
