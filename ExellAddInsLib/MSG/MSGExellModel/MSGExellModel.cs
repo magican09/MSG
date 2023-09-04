@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -505,6 +503,11 @@ namespace ExellAddInsLib.MSG
                 WorkScheduleChunk work_sh_chunk = msg_work.WorkSchedules.FirstOrDefault(shd => shd.Number == $"{msg_work.Number}.{schedule_number}");
                 if (work_sh_chunk == null)
                     work_sh_chunk = new WorkScheduleChunk(start_time, end_time);
+                else
+                {
+                    work_sh_chunk.StartTime = start_time;
+                    work_sh_chunk.EndTime = end_time;
+                }
 
                 work_sh_chunk.Worksheet = registerSheet;
                 work_sh_chunk.Number = $"{msg_work.Number}.{schedule_number.ToString()}";
@@ -524,7 +527,7 @@ namespace ExellAddInsLib.MSG
 
                 if (!msg_work.WorkSchedules.Contains(work_sh_chunk))
                 {
-                    if (msg_work.WorkSchedules.IsIntersections(work_sh_chunk))
+                    if (msg_work.WorkSchedules.IsIntersections(work_sh_chunk) || start_time > end_time)
                     {
                         work_sh_chunk.IsValid = false;
                         work_sh_chunk.SetPropertyValidStatus("StartTime", false);
@@ -1961,7 +1964,7 @@ namespace ExellAddInsLib.MSG
                     }
                     else
                         msg_work.ReportCard.Clear();
-                   
+
                     var msg_work_all_rcWorks = this.RCWorks.Where(w => w.Number.StartsWith(msg_work.Number + "."));
                     decimal pr_works_loboriosness_summ = 0;
                     foreach (RCWork rc_work in msg_work_all_rcWorks)
@@ -1971,7 +1974,7 @@ namespace ExellAddInsLib.MSG
                             foreach (WorkDay rc_w_day in rc_work.ReportCard)
                             {
                                 rc_w_day.LaborСosts = rc_w_day.Quantity * rc_work.Laboriousness;
-                                
+
                                 WorkDay msg_w_day = msg_work.ReportCard.FirstOrDefault(wd => wd.Date == rc_w_day.Date);
                                 if (msg_w_day == null)
                                 {

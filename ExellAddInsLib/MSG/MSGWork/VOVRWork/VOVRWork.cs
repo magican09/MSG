@@ -27,7 +27,7 @@ namespace ExellAddInsLib.MSG
                 this.KSWorks.Worksheet = value;
                 this.WorkersComposition.Worksheet = value;
                 this.MachinesComposition.Worksheet = value;
-                base.Worksheet= value;
+                base.Worksheet = value;
 
             }
         }

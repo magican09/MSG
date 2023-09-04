@@ -1,11 +1,10 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
-using System.Collections.Generic;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class WorkReportCard : ExcelNotifyChangedCollection<WorkDay>,IObservable<PropertyChangeState>
+    public class WorkReportCard : ExcelNotifyChangedCollection<WorkDay>, IObservable<PropertyChangeState>
     {
         public const int WRC_DATE_ROW = 6;
 
@@ -67,7 +66,7 @@ namespace ExellAddInsLib.MSG
 
                 Excel.Range days_row_range = this.Worksheet.Range[
                        this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1],
-                       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1+ max_day_number]];
+                       this.Worksheet.Cells[cr_range.Row, WRC_PC_QUANTITY_COL + 1 + max_day_number]];
                 days_row_range.Interior.ColorIndex = col;
                 days_row_range.Borders.LineStyle = Excel.XlLineStyle.xlDashDotDot;
 
@@ -76,11 +75,11 @@ namespace ExellAddInsLib.MSG
 
             }
 
-            
+
 
         }
-       
-        
-      
+
+
+
     }
 }

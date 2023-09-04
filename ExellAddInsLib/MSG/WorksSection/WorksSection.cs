@@ -1,6 +1,5 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -14,7 +13,7 @@ namespace ExellAddInsLib.MSG
 
         public const int _SECTIONS_GAP = 2;
         public const int _MSG_WORKS_GAP = 1;
-       
+
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
         public override Excel.Worksheet Worksheet
@@ -103,7 +102,7 @@ namespace ExellAddInsLib.MSG
                 Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _SECTIONS_GAP]];
                 range.Group();
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
                 throw new Exception($"Ошибка при группировки раздела.{section.ToString()}:{section.Number}.Ошибка:{exp.Message}");
             }

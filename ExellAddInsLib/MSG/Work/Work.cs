@@ -17,11 +17,11 @@ namespace ExellAddInsLib.MSG
             get { return base.Worksheet; }
             set
             {
-                
+
                 this.WorkersComposition.Worksheet = value;
                 this.MachinesComposition.Worksheet = value;
-              if(this.ReportCard!=null)  this.ReportCard.Worksheet = value;
-                base.Worksheet= value;
+                if (this.ReportCard != null) this.ReportCard.Worksheet = value;
+                base.Worksheet = value;
             }
         }
 

@@ -1,14 +1,7 @@
-﻿using Microsoft.Office.Interop.Excel;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Data.Common;
 using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -27,7 +20,7 @@ namespace ExellAddInsLib.MSG
 
         public ObservableCollection<Excel.Worksheet> AllWorksheets = new ObservableCollection<Excel.Worksheet>();
 
-    
+
         public List<ExellCellSubsciption> ExcelSubsriptions = new List<ExellCellSubsciption>();
         /// <summary>
         /// Функция для регистрации объекта реализующего интрефейс INotifyPropertyChanged 
@@ -36,19 +29,19 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         /// <param name="work"></param>
         public void Register(IObservable<PropertyChangeState> notified_object, string prop_name, int row, int column,
-            Excel.Worksheet worksheet,bool read_only=false, Func<object, bool> validate_value_call_back = null,
+            Excel.Worksheet worksheet, bool read_only = false, Func<object, bool> validate_value_call_back = null,
                Func<object, object> coerce_value_call_back = null, RelateRecord register = null)
         {
 
             //  try
             {
-                if(!this.ExcelSubsriptions.Where(subs =>(subs.Observable as IObservableExcelBindableBase).Id == (notified_object as IObservableExcelBindableBase).Id 
-                                                        && (subs.Observer as ExcelPropAddress).ProprertyName== prop_name).Any())
+                if (!this.ExcelSubsriptions.Where(subs => (subs.Observable as IObservableExcelBindableBase).Id == (notified_object as IObservableExcelBindableBase).Id
+                                                        && (subs.Observer as ExcelPropAddress).ProprertyName == prop_name).Any())
                 {
                     var prop_names_chain = prop_name.Split(new char[] { '.' });
                     Type prop_type = notified_object.GetType().GetProperty(prop_names_chain[prop_names_chain.Length - 1]).PropertyType;
 
-                    var address = new ExcelPropAddress(row, column, worksheet, prop_type, prop_name,read_only,validate_value_call_back, coerce_value_call_back);
+                    var address = new ExcelPropAddress(row, column, worksheet, prop_type, prop_name, read_only, validate_value_call_back, coerce_value_call_back);
                     address.Owner = notified_object;
                     ExcelSubsriptions.Add(notified_object.Subscribe(address) as ExellCellSubsciption);
                 }
@@ -86,8 +79,8 @@ namespace ExellAddInsLib.MSG
             foreach (var subs in subscriptions)
             {
                 subs.Dispose();
-          
-                if(notified_object.Subscribers.Contains(subs)) 
+
+                if (notified_object.Subscribers.Contains(subs))
                     notified_object.Subscribers.Remove(subs);
             }
         }

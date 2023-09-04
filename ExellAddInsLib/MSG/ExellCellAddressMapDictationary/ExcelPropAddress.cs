@@ -1,14 +1,10 @@
 ﻿using Microsoft.Office.Interop.Excel;
-using Microsoft.Office.Tools.Excel;
 using System;
-using System.Data.Common;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
 {
-    public class ExcelPropAddress:IObserver<PropertyChangeState>
+    public class ExcelPropAddress : IObserver<PropertyChangeState>
     {
         public int Row { get; set; }
         public int Column { get; set; }
@@ -89,12 +85,12 @@ namespace ExellAddInsLib.MSG
         public void SetCellNumberFormat()
         {
             if (_valueType == null) return;
-            if ( _valueType == typeof(double) || _valueType == typeof(decimal))
+            if (_valueType == typeof(double) || _valueType == typeof(decimal))
             {
                 Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
                 CellNumberFormat = $"0.00";
             }
-            if (_valueType == typeof(int) )
+            if (_valueType == typeof(int))
             {
                 Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
                 CellNumberFormat = $"0";
@@ -118,21 +114,21 @@ namespace ExellAddInsLib.MSG
 
             var prop_names = value.PropertyName.Split(new char[] { '.' });
             Type prop_type = sender.GetType().GetProperty(prop_names[0]).PropertyType;
-           
-            foreach(string prop_name in prop_chain)
+
+            foreach (string prop_name in prop_chain)
             {
                 var prop_val = sender.GetType().GetProperty(prop_name).GetValue(sender, null);
                 if (prop_val is IExcelBindableBase exbb_val)
                     sender = exbb_val;
-                else if(prop_val.GetType() == this.ValueType && IsReadOnly==false)
+                else if (prop_val.GetType() == this.ValueType && IsReadOnly == false)
                 {
                     this.Cell.Value = prop_val;
                 }
 
             }
             this.IsValid = value.PropertyIsValid;
-         }
-        private void  GetPropValue(IExcelBindableBase obj,string prop_name, bool first_itaration = true)
+        }
+        private void GetPropValue(IExcelBindableBase obj, string prop_name, bool first_itaration = true)
         {
 
 
@@ -155,7 +151,7 @@ namespace ExellAddInsLib.MSG
         }
 
         public ExcelPropAddress(int row, int column, Excel.Worksheet worksheet, Type val_type,
-            string prop_name = "",bool read_only=false,
+            string prop_name = "", bool read_only = false,
             Func<object, bool> validate_value_call_back = null,
                Func<object, object> coerce_value_call_back = null)
         {

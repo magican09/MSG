@@ -24,7 +24,7 @@ namespace ExellAddInsLib.MSG
             get { return _endTime; }
             set { SetProperty(ref _endTime, value); }
         }//Дата окончания
-       
+
         private int _duration;
 
         public int Duration

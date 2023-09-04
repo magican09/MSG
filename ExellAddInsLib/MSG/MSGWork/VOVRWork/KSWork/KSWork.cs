@@ -8,7 +8,7 @@ namespace ExellAddInsLib.MSG
 {
     public class KSWork : Work
     {
-      
+
         public const int KS_NUMBER_COL = VOVRWork.VOVR_LABOURNESS_COL + 1;
         public const int KS_CODE_COL = KS_NUMBER_COL + 1;
         public const int KS_NAME_COL = KS_NUMBER_COL + 2;
@@ -16,7 +16,7 @@ namespace ExellAddInsLib.MSG
         public const int KS_QUANTITY_COL = KS_NUMBER_COL + 4;
         public const int KS_QUANTITY_FACT_COL = KS_NUMBER_COL + 5;
         public const int KS_LABOURNESS_COL = KS_NUMBER_COL + 6;
-    
+
 
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
@@ -25,7 +25,7 @@ namespace ExellAddInsLib.MSG
             get { return base.Worksheet; }
             set
             {
-               
+
                 this.RCWorks.Worksheet = value;
                 this.WorkersComposition.Worksheet = value;
                 this.MachinesComposition.Worksheet = value;

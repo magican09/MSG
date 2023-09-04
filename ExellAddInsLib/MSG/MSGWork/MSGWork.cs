@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -16,7 +15,7 @@ namespace ExellAddInsLib.MSG
         public const int MSG_QUANTITY_FACT_COL = MSG_NUMBER_COL + 4;
         public const int MSG_LABOURNESS_COL = MSG_NUMBER_COL + 5;
         public const int MSG_START_DATE_COL = MSG_NUMBER_COL + 6;
-        public const int MSG_END_DATE_COL = MSG_NUMBER_COL +7;
+        public const int MSG_END_DATE_COL = MSG_NUMBER_COL + 7;
         public const int MSG_DURATION_DATE_COL = MSG_NUMBER_COL + 8;
         public const int MSG_SUNDAY_IS_VOCATION_COL = MSG_NUMBER_COL + 9;
 
@@ -69,7 +68,7 @@ namespace ExellAddInsLib.MSG
             set { _vOVRWorks = value; }
         }
 
-      
+
 
 
         public MSGWork() : base()
@@ -96,9 +95,9 @@ namespace ExellAddInsLib.MSG
             MSGWork msg_work = this;
             int msg_row = row;
             int msg_lowest_row = 0;
-       
+
             msg_work.ChangeTopRow(msg_row);
-            
+
             int sh_ch_row_iterator = 0;
             foreach (WorkScheduleChunk w_ch in msg_work.WorkSchedules)
             {
@@ -117,8 +116,8 @@ namespace ExellAddInsLib.MSG
                 n_m.AdjustExcelRepresentionTree(msg_row + nm_row_iterator);
                 nm_row_iterator++;
             }
-            
-         
+
+
             if (msg_row + sh_ch_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + sh_ch_row_iterator;
             if (msg_row + nw_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + nw_row_iterator;
             if (msg_row + nm_row_iterator > msg_lowest_row) msg_lowest_row = msg_row + nm_row_iterator;
@@ -128,7 +127,7 @@ namespace ExellAddInsLib.MSG
                 vovr_row = vovr_work.AdjustExcelRepresentionTree(vovr_row);
                 if (vovr_row == 30)
                     ;
-                if(vovr_row == 29)
+                if (vovr_row == 29)
                     ;
             }
 
@@ -194,7 +193,7 @@ namespace ExellAddInsLib.MSG
                 Excel.Range range = Worksheet.Range[Worksheet.Rows[msg_work_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _MSG_WORKS_GAP]];
                 range.Group();
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
                 throw new Exception($"Ошибка при группировки МСГ работы.{msg_work.ToString()}:{msg_work.Number}.Ошибка:{exp.Message}.Ошибка:{exp.Message}");
             }

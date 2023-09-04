@@ -1,7 +1,6 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Excel = Microsoft.Office.Interop.Excel;
 namespace ExellAddInsLib.MSG
 {
@@ -9,10 +8,10 @@ namespace ExellAddInsLib.MSG
     {
         Excel.Worksheet Worksheet { get; set; }
         event PropertyChangedEventHandler PropertyChanged;
-          event BeforePropertyChangeEventHandler BeforePropertyChange;
+        event BeforePropertyChangeEventHandler BeforePropertyChange;
         void PropertyChange(object sender, string property_name);
-   //     void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
-       // ExellCellAddressMapDictationary CellAddressesMap { get; set; }
+        //     void SetProperty<T>(ref T member, T new_val, [CallerMemberName] string property_name = "");
+        // ExellCellAddressMapDictationary CellAddressesMap { get; set; }
         Guid Id { get; }
         string Number { get; set; }
         string NumberPrefix { get; }
