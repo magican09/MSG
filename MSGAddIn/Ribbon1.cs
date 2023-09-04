@@ -675,6 +675,7 @@ namespace MSGAddIn
                     CurrentMSGExellModel.ClearWorksheetCommonPart();
                     CurrentMSGExellModel.Owner.WorksSections.Worksheet = CurrentMSGExellModel.RegisterSheet;
                     CurrentMSGExellModel.Owner.UpdateExcelRepresetation();
+                  
                     CurrentMSGExellModel.ClearWorksheetRecorCardPart(); ;
 
                     CurrentMSGExellModel.Owner.WorksSections.Worksheet = CurrentMSGExellModel.Owner.RegisterSheet;

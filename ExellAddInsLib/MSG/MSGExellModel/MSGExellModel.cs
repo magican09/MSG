@@ -34,10 +34,21 @@ namespace ExellAddInsLib.MSG
 
 
         private int null_str_count = 0;
+        private DateTime _worksStartDate;
         /// <summary>
         /// Дата начала ведомости 
         /// </summary>
-        public DateTime WorksStartDate { get; set; }
+        public DateTime WorksStartDate
+        {
+            get
+            {
+                return _worksStartDate;
+            }
+            set
+            {
+                SetProperty(ref _worksStartDate, value);
+            }
+        }
         //public DateTime WorksStartDate
         //{
         //    get
@@ -487,6 +498,8 @@ namespace ExellAddInsLib.MSG
                 Excel.Range end_date_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_END_DATE_COL];
                 Excel.Range duration_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_DURATION_DATE_COL];
                 DateTime end_time;
+
+                if (start_time < this.WorksStartDate) this.WorksStartDate = start_time;
 
                 if (duration_cell.Value != null && Int32.TryParse(duration_cell.Value.ToString(), out duration) && duration != 0)
                 {
@@ -1406,6 +1419,8 @@ namespace ExellAddInsLib.MSG
         {
 
             this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
+            this.Register(this, "WorksStartDate", WORKS_START_DATE_ROW, WORKS_END_DATE_COL, this.RegisterSheet);
+
             this.ContractCode = this.CommonSheet.Cells[CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ConstructionSubObjectCode = this.CommonSheet.Cells[CONSTRUCTION_SUBOBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
@@ -1421,12 +1436,13 @@ namespace ExellAddInsLib.MSG
             if (IsHasEnabled)
                 this.SetHashFormulas();
             // this.ClearAllSections();
+            this.LoadWorksReportCards();
+
             this.LoadWorksSections();
             this.LoadMSGWorks();
             this.LoadVOVRWorks();
             this.LoadKSWorks();
             this.LoadRCWorks();
-            this.LoadWorksReportCards();
             this.AdjustObjectModel();
 
             this.LoadWorkerConsumptions();
@@ -1910,7 +1926,8 @@ namespace ExellAddInsLib.MSG
                             }
                             common_vovr_laboueness += vovr_work.ProjectQuantity * vovr_work.Laboriousness;
                         }
-                        msg_work.Laboriousness = common_vovr_laboueness / msg_work.ProjectQuantity;
+                        if (common_vovr_laboueness != 0)
+                            msg_work.Laboriousness = common_vovr_laboueness / msg_work.ProjectQuantity;
                     }
                 }
             }
