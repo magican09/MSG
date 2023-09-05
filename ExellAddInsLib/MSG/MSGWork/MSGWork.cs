@@ -208,7 +208,7 @@ namespace ExellAddInsLib.MSG
             Excel.Range range = Worksheet.Application.Union(new List<Excel.Range>() { base_range, vovr_works_range, w_schedules_works_range });
             return range;
         }
-
+         
         public override object Clone()
         {
             MSGWork new_obj = (MSGWork)base.Clone();
