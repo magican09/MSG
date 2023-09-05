@@ -56,7 +56,8 @@ namespace ExellAddInsLib.MSG
             var cr_range = this.GetRange();
             if (cr_range != null)
             {
-                cr_range.Interior.ColorIndex = col;
+               if(this.IsValid)
+                    cr_range.Interior.ColorIndex = col;
                 cr_range.SetBordersLine(XlLineStyle.xlDashDotDot, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous, XlLineStyle.xlContinuous);
 
                 int max_day_number = WRC_PC_QUANTITY_COL + 30 + this.Count;

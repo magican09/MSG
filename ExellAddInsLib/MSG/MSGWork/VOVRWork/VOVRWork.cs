@@ -82,7 +82,8 @@ namespace ExellAddInsLib.MSG
             VOVRWork vovr_work = this;
             int vovr_work_col = col;
             var vovr_work_range = vovr_work.GetRange();
-            vovr_work_range.Interior.ColorIndex = vovr_work_col;
+            if (vovr_work.IsValid)
+                vovr_work_range.Interior.ColorIndex = vovr_work_col;
             vovr_work_range.SetBordersLine();
             vovr_work.KSWorks.GetRange().SetBordersLine(XlLineStyle.xlLineStyleNone, XlLineStyle.xlDashDot, XlLineStyle.xlLineStyleNone, XlLineStyle.xlLineStyleNone);
             int ks_work_col = vovr_work_col;
@@ -109,8 +110,8 @@ namespace ExellAddInsLib.MSG
         public override Range GetRange()
         {
             Excel.Range range = base.GetRange();
-            Excel.Range ks_works_range = this.KSWorks.GetRange();
-            range = Worksheet.Application.Union(new List<Excel.Range>() { range, ks_works_range });
+          //  Excel.Range ks_works_range = this.KSWorks.GetRange();
+         //   range = Worksheet.Application.Union(new List<Excel.Range>() { range, ks_works_range });
             return range;
         }
 
@@ -120,6 +121,27 @@ namespace ExellAddInsLib.MSG
             new_work.KSWorks = (AdjustableCollection<KSWork>)this.KSWorks.Clone();
             new_work.KSWorks.Owner = new_work;
             return new_work;
+        }
+        public override void Validate()
+        {
+            decimal ks_laboriosness_sum = 0;
+            foreach (var rc_work in this.KSWorks)
+            {
+                ks_laboriosness_sum += rc_work.Laboriousness * rc_work.ProjectQuantity;
+
+            }
+            var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
+            if (Math.Round(ks_laboriosness_sum, 4) != Math.Round(curent_work_laboriousness, 4))
+            {
+                foreach (var ks_work in this.KSWorks)
+                {
+                    ks_work.SetPropertyValidStatus("Laboriousness", false);
+                    ks_work.SetPropertyValidStatus("ProjectQuantity", false);
+                    ks_work.IsValid = false;
+                }
+            }
+            this.KSWorks.Validate();
+            base.Validate();
         }
     }
 }

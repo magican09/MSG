@@ -103,11 +103,13 @@ namespace ExellAddInsLib.MSG
             KSWork ks_work = this;
             int ks_work_col = row;
             var ks_work_range = ks_work.GetRange(KS_LABOURNESS_COL);
-            ks_work_range.Interior.ColorIndex = ks_work_col;
+            if (ks_work.IsValid)
+                ks_work_range.Interior.ColorIndex = ks_work_col;
 
             Excel.Range rc_works_range = ks_work.RCWorks.GetRange();
             rc_works_range.SetBordersLine(XlLineStyle.xlDouble);
-            rc_works_range.Interior.ColorIndex = ks_work_col;
+            if(ks_work.RCWorks.IsValid)
+                rc_works_range.Interior.ColorIndex = ks_work_col;
             if (ks_work.RCWorks.Count > 0)
             {
                 foreach (RCWork rc_work in ks_work.RCWorks)
@@ -134,6 +136,28 @@ namespace ExellAddInsLib.MSG
             new_work.RCWorks = (AdjustableCollection<RCWork>)this.RCWorks.Clone();
             new_work.RCWorks.Owner = new_work;
             return new_work;
+        }
+
+        public override void Validate()
+        {
+            decimal rc_laboriosness_sum=0;
+            foreach (var ks_work in this.RCWorks)
+            {
+                rc_laboriosness_sum += ks_work.Laboriousness * ks_work.ProjectQuantity;
+             
+            }
+            var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
+            if (Math.Round(rc_laboriosness_sum, 4) != Math.Round(curent_work_laboriousness, 4))
+            {
+                foreach (var ks_work in this.RCWorks)
+                {
+                    ks_work.SetPropertyValidStatus("Laboriousness", false);
+                    ks_work.SetPropertyValidStatus("ProjectQuantity", false);
+                    ks_work.IsValid = false;
+                }
+            }
+            this.RCWorks.Validate();
+            base.Validate();
         }
     }
 }

@@ -14,7 +14,12 @@ namespace ExellAddInsLib.MSG
         public bool IsValid
         {
             get { return _isValid; }
-            set { _isValid = value; }
+            set { 
+                
+                _isValid = value;
+                if (_isValid == false)
+                    this.Cell.Interior.Color = XlRgbColor.rgbRed;
+            }
         }
         private bool _isReadOnly;
         public bool IsReadOnly

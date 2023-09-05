@@ -492,5 +492,10 @@ namespace ExellAddInsLib.MSG
         {
             return this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == prop_name);
         }
+
+        public virtual void Validate()
+        {
+
+        }
     }
 }

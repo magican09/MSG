@@ -756,7 +756,7 @@ namespace MSGAddIn
                         this.FillMSG_OUT_File(CurrentMSGExellModel, (w) => { return true; });
 
                     string construction_subobject_code = CurrentMSGExellModel.ConstructionSubObjectCode;
-                    if (construction_subobject_code.Length > 30) construction_subobject_code = construction_subobject_code.Substring(0, 100);
+                    if (construction_subobject_code.Length > 30) construction_subobject_code = construction_subobject_code.Substring(0, 70);
                     string file_name = $"График. {CurrentMSGExellModel.ContractCode}. {CurrentMSGExellModel.ContructionObjectCode}. {construction_subobject_code}. ООО НИПТ. {DateTime.Now.ToString("d")}.xlsx";
                     file_name = file_name.RemoveInvalidChars();
                     MSGTemplateWorkbook.SaveAs($"{MSGTemplateWorkbook.Path}\\{file_name}");
@@ -856,7 +856,8 @@ namespace MSGAddIn
             int date_col_index = 0;
             int in_worksheet_number = 18;
             int worked_days_number = (curren_model.WorksEndDate - curren_model.WorksStartDate).Days;
-            int last_day_col_index = Convert.ToInt32(Math.Round(WORKDAY_DATE_FIRST_COL + worked_days_number * (1 + 1 / 7.0) + 5));
+
+            int last_day_col_index = Convert.ToInt32(Math.Round(WORKDAY_DATE_FIRST_COL + (curren_model.WorksEndDate - curren_model.RecordCardStartDate).Days * (1 + 1 / 7.0) + 5));
 
 
 
@@ -1424,6 +1425,7 @@ namespace MSGAddIn
                     CurrentMSGExellModel.Register(rc_work, "LabournessCoefficient", rowIndex, RCWork.RC_LABOURNESS_COEFFICIENT_COL, CurrentMSGExellModel.RegisterSheet);
                     CurrentMSGExellModel.Register(rc_work, "Laboriousness", rowIndex, RCWork.RC_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
                     CurrentMSGExellModel.Register(rc_work, "UnitOfMeasurement.Name", rowIndex, RCWork.RC_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
+
 
                     msg_work.VOVRWorks.Add(vovr_work);
                     vovr_work.KSWorks.Add(ks_work);

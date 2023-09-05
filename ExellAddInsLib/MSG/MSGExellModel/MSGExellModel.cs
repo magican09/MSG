@@ -61,6 +61,14 @@ namespace ExellAddInsLib.MSG
         //    }
 
         //}
+        private DateTime _recordCardStartDate;
+
+        public DateTime RecordCardStartDate
+        {
+            get { return _recordCardStartDate; }
+            set { _recordCardStartDate = value; }
+        }
+
         private DateTime _worksEndDate;
         /// <summary>
         /// Дата окончания работ в данной ведомости в соотвествии с планируемыми в  сроками отраженнным в части МСГ ведомости.
@@ -498,7 +506,7 @@ namespace ExellAddInsLib.MSG
                 Excel.Range end_date_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_END_DATE_COL];
                 Excel.Range duration_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_DURATION_DATE_COL];
                 DateTime end_time;
-
+            
                 if (start_time < this.WorksStartDate) this.WorksStartDate = start_time;
 
                 if (duration_cell.Value != null && Int32.TryParse(duration_cell.Value.ToString(), out duration) && duration != 0)
@@ -569,7 +577,8 @@ namespace ExellAddInsLib.MSG
 
             int rowIndex = FIRST_ROW_INDEX;
             null_str_count = 0;
-
+            this.WorkersComposition.Clear();
+            this.MachinesComposition.Clear();
 
             while (null_str_count < 100)
             {
@@ -622,10 +631,13 @@ namespace ExellAddInsLib.MSG
                 {
                     for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1))
                     {
-                        NeedsOfWorkersDay needsOfWorkersDay = new NeedsOfWorkersDay();
-                        needsOfWorkersDay.Date = date;
-                        needsOfWorkersDay.Quantity = msg_needs_of_workers.Quantity;
-                        msg_needs_of_workers.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
+                        if (!(msg_work.IsSundayVocation && date.DayOfWeek == DayOfWeek.Sunday))
+                        {
+                            NeedsOfWorkersDay needsOfWorkersDay = new NeedsOfWorkersDay();
+                            needsOfWorkersDay.Date = date;
+                            needsOfWorkersDay.Quantity = msg_needs_of_workers.Quantity;
+                            msg_needs_of_workers.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
+                        }
                     }
                 }
 
@@ -639,8 +651,7 @@ namespace ExellAddInsLib.MSG
                     foreach (NeedsOfWorkersDay needsOfWorkersDay in msg_needs_of_workers.NeedsOfWorkersReportCard)
                         global_needs_of_worker.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
 
-                    if (!this.WorkersComposition.Contains(global_needs_of_worker))
-                        this.WorkersComposition.Add(global_needs_of_worker);
+                  
                 }
                 else
                 {
@@ -658,10 +669,10 @@ namespace ExellAddInsLib.MSG
                             global_needs_of_worker.NeedsOfWorkersReportCard.Add(new_nw_day);
                         }
                     }
-
-                    if (!this.WorkersComposition.Contains(msg_needs_of_workers))
-                        this.WorkersComposition.Add(msg_needs_of_workers);
+                
                 }
+                if (!this.WorkersComposition.Contains(global_needs_of_worker))
+                    this.WorkersComposition.Add(global_needs_of_worker);
 
                 rowIndex++;
             }
@@ -708,10 +719,13 @@ namespace ExellAddInsLib.MSG
                 {
                     for (DateTime date = chunk.StartTime; date <= chunk.EndTime; date = date.AddDays(1))
                     {
-                        NeedsOfMachineDay needsOfMachinesDay = new NeedsOfMachineDay();
-                        needsOfMachinesDay.Date = date;
-                        needsOfMachinesDay.Quantity = msg_needs_of_machines.Quantity;
-                        msg_needs_of_machines.NeedsOfMachinesReportCard.Add(needsOfMachinesDay);
+                        if (!(msg_work.IsSundayVocation && date.DayOfWeek == DayOfWeek.Sunday))
+                        {
+                            NeedsOfMachineDay needsOfMachinesDay = new NeedsOfMachineDay();
+                            needsOfMachinesDay.Date = date;
+                            needsOfMachinesDay.Quantity = msg_needs_of_machines.Quantity;
+                            msg_needs_of_machines.NeedsOfMachinesReportCard.Add(needsOfMachinesDay);
+                        }
                     }
                 }
 
@@ -763,7 +777,7 @@ namespace ExellAddInsLib.MSG
             this.Register(vovr_work, "Number", rowIndex, VOVRWork.VOVR_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+$"));
             this.Register(vovr_work, "Name", rowIndex, VOVRWork.VOVR_NAME_COL, this.RegisterSheet);
             this.Register(vovr_work, "ProjectQuantity", rowIndex, VOVRWork.VOVR_QUANTITY_COL, this.RegisterSheet, false, (v) => ((decimal)v) != 0);
-            this.Register(vovr_work, "Quantity", rowIndex, VOVRWork.VOVR_QUANTITY_FACT_COL, this.RegisterSheet, false);
+            this.Register(vovr_work, "Quantity", rowIndex, VOVRWork.VOVR_QUANTITY_FACT_COL, this.RegisterSheet, true);
             this.Register(vovr_work, "Laboriousness", rowIndex, VOVRWork.VOVR_LABOURNESS_COL, this.RegisterSheet);
             this.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, VOVRWork.VOVR_MEASURE_COL, this.RegisterSheet);
 
@@ -843,7 +857,7 @@ namespace ExellAddInsLib.MSG
             this.Register(ks_work, "Code", rowIndex, KSWork.KS_CODE_COL, this.RegisterSheet);
             this.Register(ks_work, "Name", rowIndex, KSWork.KS_NAME_COL, this.RegisterSheet);
             this.Register(ks_work, "ProjectQuantity", rowIndex, KSWork.KS_QUANTITY_COL, this.RegisterSheet);
-            this.Register(ks_work, "Quantity", rowIndex, KSWork.KS_QUANTITY_FACT_COL, this.RegisterSheet, false);
+            this.Register(ks_work, "Quantity", rowIndex, KSWork.KS_QUANTITY_FACT_COL, this.RegisterSheet, true);
             this.Register(ks_work, "Laboriousness", rowIndex, KSWork.KS_LABOURNESS_COL, this.RegisterSheet);
             this.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, KSWork.KS_MEASURE_COL, this.RegisterSheet);
 
@@ -927,7 +941,7 @@ namespace ExellAddInsLib.MSG
             this.Register(rc_work, "Code", rowIndex, RCWork.RC_CODE_COL, this.RegisterSheet);
             this.Register(rc_work, "Name", rowIndex, RCWork.RC_NAME_COL, this.RegisterSheet);
             this.Register(rc_work, "ProjectQuantity", rowIndex, RCWork.RC_QUANTITY_COL, this.RegisterSheet);
-            this.Register(rc_work, "Quantity", rowIndex, RCWork.RC_QUANTITY_FACT_COL, this.RegisterSheet, false);
+            this.Register(rc_work, "Quantity", rowIndex, RCWork.RC_QUANTITY_FACT_COL, this.RegisterSheet, true);
             this.Register(rc_work, "LabournessCoefficient", rowIndex, RCWork.RC_LABOURNESS_COEFFICIENT_COL, this.RegisterSheet);
             this.Register(rc_work, "Laboriousness", rowIndex, RCWork.RC_LABOURNESS_COL, this.RegisterSheet);
             this.Register(rc_work, "UnitOfMeasurement.Name", rowIndex, RCWork.RC_MEASURE_COL, this.RegisterSheet);
@@ -1018,7 +1032,7 @@ namespace ExellAddInsLib.MSG
             DateTime end_date = this.WorksEndDate;
             report_card.Number = rc_number;
             this.Register(report_card, "Number", rowIndex, WorkReportCard.WRC_NUMBER_COL, this.RegisterSheet);
-            this.Register(report_card, "PreviousComplatedQuantity", rowIndex, WorkReportCard.WRC_PC_QUANTITY_COL, this.RegisterSheet, false);
+            this.Register(report_card, "PreviousComplatedQuantity", rowIndex, WorkReportCard.WRC_PC_QUANTITY_COL, this.RegisterSheet, true);
 
             var previus_comp_quantity = registerSheet.Cells[rowIndex, WorkReportCard.WRC_PC_QUANTITY_COL].Value;
             if (previus_comp_quantity != null)
@@ -1090,8 +1104,7 @@ namespace ExellAddInsLib.MSG
                     this.Register(worker_consumption, "Name", rowIndex, WorkerConsumption.W_CONSUMPTIONS_NAME_COL, consumtionsSheet);
 
                     worker_consumption.Number = number.ToString();
-                    var name = consumtionsSheet.Cells[rowIndex, WorkerConsumption.W_CONSUMPTIONS_NAME_COL].Value;
-                    worker_consumption.Name = name;
+                    worker_consumption.Name = consumtionsSheet.Cells[rowIndex, WorkerConsumption.W_CONSUMPTIONS_NAME_COL].Value; ;
                     worker_consumption.WorkersConsumptionReportCard.Clear();
 
                     int date_index = 0;
@@ -1418,8 +1431,9 @@ namespace ExellAddInsLib.MSG
         public void ReloadSheetModel()
         {
 
-            this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
-            this.Register(this, "WorksStartDate", WORKS_START_DATE_ROW, WORKS_END_DATE_COL, this.RegisterSheet);
+          //  this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
+        //   this.Register(this, "WorksStartDate", WORKS_START_DATE_ROW, WORKS_END_DATE_COL, this.RegisterSheet);
+            this.RecordCardStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
 
             this.ContractCode = this.CommonSheet.Cells[CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
@@ -1448,6 +1462,7 @@ namespace ExellAddInsLib.MSG
             this.LoadWorkerConsumptions();
             this.LoadMachineConsumptions();
 
+            this.WorksSections.Validate();
         }
         public void ReadModelFilds()
         {
@@ -1692,7 +1707,7 @@ namespace ExellAddInsLib.MSG
             foreach (WorkerConsumption consumption in this.WorkerConsumptions)
             {
                 // consumption.GetRange(this.WorkerConsumptionsSheet).Interior.ColorIndex = w_consumption_col++;
-                int days_namber = (this.WorksEndDate - this.WorksStartDate).Days;
+                int days_namber = (this.WorksEndDate - this.RecordCardStartDate).Days;
                 Excel.Range cons_range = this.WorkerConsumptionsSheet.Range[
                     this.WorkerConsumptionsSheet.Cells[consumption.GetTopRow(), WorkerConsumption.W_CONSUMPTIONS_NUMBER_COL],
                     this.WorkerConsumptionsSheet.Cells[consumption.GetTopRow(), days_namber]];
@@ -1705,7 +1720,7 @@ namespace ExellAddInsLib.MSG
             foreach (MachineConsumption consumption in this.MachineConsumptions)
             {
                 // consumption.GetRange(this.WorkerConsumptionsSheet).Interior.ColorIndex = w_consumption_col++;
-                int days_namber = (this.WorksEndDate - this.WorksStartDate).Days;
+                int days_namber = (this.WorksEndDate - this.RecordCardStartDate).Days;
                 Excel.Range cons_range = this.MachineConsumptionsSheet.Range[
                     this.MachineConsumptionsSheet.Cells[consumption.GetTopRow(), MachineConsumption.MCH_CONSUMPTIONS_NUMBER_COL],
                     this.MachineConsumptionsSheet.Cells[consumption.GetTopRow(), days_namber]];
@@ -1734,7 +1749,7 @@ namespace ExellAddInsLib.MSG
         /// </summary>
         public void SetFormulas()
         {
-            int days_number = (this.WorksEndDate - this.WorksStartDate).Days;
+            int days_number = (this.WorksEndDate - this.RecordCardStartDate).Days;
 
             Excel.Range tmp_first_rc_card_days_row = null;
             if (this.Owner == null && this.WorksSections.Count > 0
@@ -1847,7 +1862,7 @@ namespace ExellAddInsLib.MSG
             foreach (WorkerConsumption consumption in this.WorkerConsumptions)
             {
                 int col_iterator = WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL;
-                while (col_iterator <= (this.WorksEndDate - this.WorksStartDate).Days)
+                while (col_iterator <= (this.WorksEndDate - this.RecordCardStartDate).Days)
                 {
                     var cons_day_range = this.WorkerConsumptionsSheet.Cells[consumption["Number"].Row, col_iterator];
                     string cons_quantity_formula = "";
@@ -1872,7 +1887,7 @@ namespace ExellAddInsLib.MSG
             foreach (MachineConsumption consumption in this.MachineConsumptions)
             {
                 int col_iterator = MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL;
-                while (col_iterator <= (this.WorksEndDate - this.WorksStartDate).Days)
+                while (col_iterator <= (this.WorksEndDate - this.RecordCardStartDate).Days)
                 {
                     var cons_day_range = this.MachineConsumptionsSheet.Cells[consumption["Number"].Row, col_iterator];
                     string cons_quantity_formula = "";

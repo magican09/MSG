@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Windows.Markup;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -45,7 +46,8 @@ namespace ExellAddInsLib.MSG
 
             get
             {
-                if (this._observers.Select(s => s as ExcelPropAddress).Where(obs => obs.IsValid == false).Any())
+                if (this._observers.Select(s => s as ExcelPropAddress).Where(obs => !obs.IsValid).Any() 
+                    || this.Where(itm=>!itm.IsValid).Any())
                     _isValid = false;
                 return _isValid;
             }
@@ -556,6 +558,11 @@ namespace ExellAddInsLib.MSG
         public ExcelPropAddress GetPropAddress(string prop_name)
         {
             return this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == prop_name);
+        }
+        public virtual void Validate()
+        {
+            foreach (var item in this)
+                item.Validate();
         }
     }
 }

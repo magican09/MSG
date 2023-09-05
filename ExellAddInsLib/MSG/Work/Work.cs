@@ -217,5 +217,6 @@ namespace ExellAddInsLib.MSG
             this.Laboriousness = 0;
             this.Quantity = 0;
         }
+        
     }
 }

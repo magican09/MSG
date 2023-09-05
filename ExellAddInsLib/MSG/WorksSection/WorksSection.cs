@@ -80,7 +80,8 @@ namespace ExellAddInsLib.MSG
             WorksSection section = this;
             int selectin_col = col;
             var section_range = section.GetRange(WSEC_NAME_COL);
-            section_range.Interior.ColorIndex = selectin_col;
+          if(section.IsValid) 
+                section_range.Interior.ColorIndex = selectin_col;
             section_range.SetBordersLine();
             int first_row = section.GetTopRow();
             if (section.MSGWorks.Count > 0)
@@ -118,8 +119,8 @@ namespace ExellAddInsLib.MSG
         public override Range GetRange()
         {
             Excel.Range range = base.GetRange();
-            Excel.Range msg_works_range = this.MSGWorks.GetRange();
-            range = Worksheet.Application.Union(new List<Excel.Range>() { range, msg_works_range });
+          //  Excel.Range msg_works_range = this.MSGWorks.GetRange();
+           // range = Worksheet.Application.Union(new List<Excel.Range>() { range, msg_works_range });
 
             return range;
         }
@@ -130,6 +131,10 @@ namespace ExellAddInsLib.MSG
             new_obj.MSGWorks.Owner = new_obj;
             return new_obj;
         }
-
+        public override void Validate()
+        {
+            this.MSGWorks.Validate();
+            base.Validate();
+        }
     }
 }

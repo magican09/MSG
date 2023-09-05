@@ -144,7 +144,8 @@ namespace ExellAddInsLib.MSG
             MSGWork msg_work = this;
             int msg_work_col = col;
             var msg_work_range = msg_work.GetRange(MSG_LABOURNESS_COL);
-            msg_work_range.Interior.ColorIndex = msg_work_col;
+            if (msg_work.IsValid)
+                msg_work_range.Interior.ColorIndex = msg_work_col;
             msg_work_range.SetBordersLine();
             int first_row = msg_work.GetTopRow();
             int last_row = msg_work.GetTopRow();
@@ -216,6 +217,27 @@ namespace ExellAddInsLib.MSG
             new_obj.WorkSchedules.Owner = new_obj;
             new_obj.VOVRWorks.Owner = new_obj;
             return new_obj;
+        }
+        public override void Validate()
+        {
+            decimal vovr_laboriosness_sum = 0;
+            foreach (var vovr_work in this.VOVRWorks)
+            {
+                vovr_laboriosness_sum += vovr_work.Laboriousness * vovr_work.ProjectQuantity;
+
+            }
+            var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
+            if (Math.Round(vovr_laboriosness_sum, 4) != Math.Round(curent_work_laboriousness, 4))
+            {
+                foreach (var vovr_work in this.VOVRWorks)
+                {
+                    vovr_work.SetPropertyValidStatus("Laboriousness", false);
+                    vovr_work.SetPropertyValidStatus("ProjectQuantity", false);
+                    vovr_work.IsValid = false;
+                }
+            }
+            this.VOVRWorks.Validate();
+            base.Validate();
         }
     }
 }
