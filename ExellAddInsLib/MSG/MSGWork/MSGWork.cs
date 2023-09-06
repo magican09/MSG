@@ -227,15 +227,15 @@ namespace ExellAddInsLib.MSG
 
             }
             var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
-            if (Math.Round(vovr_laboriosness_sum, 4) != Math.Round(curent_work_laboriousness, 4))
-            {
+            bool is_valid = Math.Round(vovr_laboriosness_sum, 3) == Math.Round(curent_work_laboriousness, 3);
                 foreach (var vovr_work in this.VOVRWorks)
                 {
-                    vovr_work.SetPropertyValidStatus("Laboriousness", false);
-                    vovr_work.SetPropertyValidStatus("ProjectQuantity", false);
-                    vovr_work.IsValid = false;
+                    vovr_work.SetPropertyValidStatus("Laboriousness", is_valid);
+                    vovr_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
+                    vovr_work.IsValid = is_valid;
                 }
-            }
+           
+            
             this.VOVRWorks.Validate();
             base.Validate();
         }

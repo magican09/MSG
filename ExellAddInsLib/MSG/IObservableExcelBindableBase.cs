@@ -11,5 +11,6 @@ namespace ExellAddInsLib.MSG
         ExcelPropAddress GetPropAddress(string prop_name);
         List<IDisposable> Subscribers { get; }
         void Validate();
+        Guid LoadSessionId { get; set; }
     }
 }

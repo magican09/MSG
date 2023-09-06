@@ -17,7 +17,7 @@ namespace ExellAddInsLib.MSG
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public event BeforePropertyChangeEventHandler BeforePropertyChange;
-
+        public  Guid LoadSessionId { get; set; }
         private bool _isValid = true;
         public bool IsChanged { get; set; }
         private Excel.Worksheet _worksheet;
@@ -415,7 +415,7 @@ namespace ExellAddInsLib.MSG
             foreach (T itm in this)
                 itm.UpdateExcelRepresetation();
         }
-        public int AdjustExcelRepresentionTree(int row)
+        public virtual int AdjustExcelRepresentionTree(int row)
         {
             this.ChangeTopRow(row);
 

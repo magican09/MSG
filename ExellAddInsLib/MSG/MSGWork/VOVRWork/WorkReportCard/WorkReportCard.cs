@@ -80,7 +80,15 @@ namespace ExellAddInsLib.MSG
 
         }
 
+        public override int AdjustExcelRepresentionTree(int row)
+        {
+            base.ChangeTopRow(row);
 
+            foreach (var w_day in this)
+                w_day.ChangeTopRow(row);
+
+            return row;
+        }
 
     }
 }

@@ -17,7 +17,7 @@ namespace ExellAddInsLib.MSG
         public event PropertyChangedEventHandler PropertyChanged;
         public event BeforePropertyChangeEventHandler BeforePropertyChange;
         private Excel.Worksheet _worksheet;
-
+        public Guid LoadSessionId { get; set; }
         [NonGettinInReflection]
         [NonRegisterInUpCellAddresMap]
         public virtual Excel.Worksheet Worksheet

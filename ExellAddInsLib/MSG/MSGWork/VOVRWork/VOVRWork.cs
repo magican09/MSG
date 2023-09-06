@@ -133,13 +133,18 @@ namespace ExellAddInsLib.MSG
             var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
             if (Math.Round(ks_laboriosness_sum, 4) != Math.Round(curent_work_laboriousness, 4))
             {
-                foreach (var ks_work in this.KSWorks)
-                {
-                    ks_work.SetPropertyValidStatus("Laboriousness", false);
-                    ks_work.SetPropertyValidStatus("ProjectQuantity", false);
-                    ks_work.IsValid = false;
-                }
+               
             }
+       
+            bool is_valid = Math.Round(ks_laboriosness_sum, 3) == Math.Round(curent_work_laboriousness, 3);
+            foreach (var ks_work in this.KSWorks)
+            {
+                ks_work.SetPropertyValidStatus("Laboriousness", is_valid);
+                ks_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
+                ks_work.IsValid = is_valid;
+            }
+
+
             this.KSWorks.Validate();
             base.Validate();
         }

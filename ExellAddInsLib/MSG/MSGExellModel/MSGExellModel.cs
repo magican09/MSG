@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static System.Collections.Specialized.BitVector32;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace ExellAddInsLib.MSG
@@ -32,8 +33,10 @@ namespace ExellAddInsLib.MSG
         public const int W_SECTION_COLOR = 33;
 
 
+        //public Guid LaodSessionId { get; set; }
 
         private int null_str_count = 0;
+
         private DateTime _worksStartDate;
         /// <summary>
         /// Дата начала ведомости 
@@ -391,6 +394,8 @@ namespace ExellAddInsLib.MSG
             WorksSection w_section = this.WorksSections.FirstOrDefault(w => w.Number == number);
             if (w_section == null)
                 w_section = new WorksSection();
+
+            w_section.LoadSessionId = this.LoadSessionId;
             w_section.Worksheet = registerSheet;
             this.Register(w_section, "Number", rowIndex, WorksSection.WSEC_NUMBER_COL, registerSheet);
             this.Register(w_section, "Name", rowIndex, WorksSection.WSEC_NAME_COL, registerSheet);
@@ -442,6 +447,8 @@ namespace ExellAddInsLib.MSG
             MSGWork msg_work = this.MSGWorks.FirstOrDefault(w => w.Number == number);
             if (msg_work == null)
                 msg_work = new MSGWork();
+
+            msg_work.LoadSessionId = this.LoadSessionId;
 
             msg_work.Worksheet = registerSheet;
             this.Register(msg_work, "Number", rowIndex, MSGWork.MSG_NUMBER_COL, this.RegisterSheet, false, (v) => Regex.IsMatch((string)v, @"^\d+\.\d+$"));
@@ -773,6 +780,7 @@ namespace ExellAddInsLib.MSG
             if (vovr_work == null)
                 vovr_work = new VOVRWork();
 
+            vovr_work.LoadSessionId = this.LoadSessionId;
             vovr_work.Worksheet = registerSheet;
             this.Register(vovr_work, "Number", rowIndex, VOVRWork.VOVR_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+$"));
             this.Register(vovr_work, "Name", rowIndex, VOVRWork.VOVR_NAME_COL, this.RegisterSheet);
@@ -852,6 +860,7 @@ namespace ExellAddInsLib.MSG
             if (ks_work == null)
                 ks_work = new KSWork();
 
+            ks_work.LoadSessionId = this.LoadSessionId;
             ks_work.Worksheet = registerSheet;
             this.Register(ks_work, "Number", rowIndex, KSWork.KS_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+\.\d+$"));
             this.Register(ks_work, "Code", rowIndex, KSWork.KS_CODE_COL, this.RegisterSheet);
@@ -936,6 +945,7 @@ namespace ExellAddInsLib.MSG
             if (rc_work == null)
                 rc_work = new RCWork();
 
+            rc_work.LoadSessionId = this.LoadSessionId;
             rc_work.Worksheet = registerSheet;
             this.Register(rc_work, "Number", rowIndex, RCWork.RC_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+\.\d+\.\d+$"));
             this.Register(rc_work, "Code", rowIndex, RCWork.RC_CODE_COL, this.RegisterSheet);
@@ -980,14 +990,20 @@ namespace ExellAddInsLib.MSG
             if (laboriosness_coef != null)
                 rc_work.LabournessCoefficient = Decimal.Parse(laboriosness_coef.ToString());
             else
+            {
+                rc_work.LabournessCoefficient = 0;
                 rc_work.SetPropertyValidStatus("LabournessCoefficient", false);
 
+            }
             var laboriousness = registerSheet.Cells[rowIndex, RCWork.RC_LABOURNESS_COL].Value;
             if (laboriousness != null && laboriousness != 0)
                 rc_work.Laboriousness = Decimal.Parse(laboriousness.ToString());
             else
+            {
+                rc_work.Laboriousness = 0;
                 rc_work.SetPropertyValidStatus("Laboriousness", false);
 
+            }
             if (!this.RCWorks.Contains(rc_work))
                 this.RCWorks.Add(rc_work);
 
@@ -1028,6 +1044,7 @@ namespace ExellAddInsLib.MSG
             else
                 report_card.Clear();
 
+            report_card.LoadSessionId = this.LoadSessionId;
             report_card.Worksheet = registerSheet;
             DateTime end_date = this.WorksEndDate;
             report_card.Number = rc_number;
@@ -1259,6 +1276,14 @@ namespace ExellAddInsLib.MSG
         {
             foreach (WorksSection section in this.WorksSections.ToList())
             {
+                if (section.LoadSessionId != this.LoadSessionId)
+                {
+                    this.Unregister(section);
+                    if (section.Owner != null && section.Owner is MSGExellModel model)
+                        model.WorksSections.Remove(section);
+                
+                    this.WorksSections.Remove(section);
+                }
                 var sections = this.WorksSections.Where(s => s.Number == section.Number && !InvalidObjects.Contains(s)).ToList();
                 if (sections.Count > 1)
                 {
@@ -1274,6 +1299,14 @@ namespace ExellAddInsLib.MSG
             }
             foreach (MSGWork work in this.MSGWorks.ToList())
             {
+                if (work.LoadSessionId != this.LoadSessionId)
+                {
+                    this.Unregister(work);
+                    if (work.Owner != null && work.Owner is WorksSection  section)
+                        section.MSGWorks.Remove(work);
+                    this.MSGWorks.Remove(work);
+                }
+                
                 var works = this.MSGWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
@@ -1289,6 +1322,14 @@ namespace ExellAddInsLib.MSG
             }
             foreach (VOVRWork work in this.VOVRWorks.ToList())
             {
+                if (work.LoadSessionId != this.LoadSessionId)
+                {
+                    this.Unregister(work);
+                    if (work.Owner != null && work.Owner is MSGWork msg_work)
+                        msg_work.VOVRWorks.Remove(work);
+                    this.VOVRWorks.Remove(work);
+                }
+
                 var works = this.VOVRWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
@@ -1304,6 +1345,13 @@ namespace ExellAddInsLib.MSG
             }
             foreach (KSWork work in this.KSWorks.ToList())
             {
+                if (work.LoadSessionId != this.LoadSessionId)
+                {
+                    this.Unregister(work);
+                    if (work.Owner != null && work.Owner is VOVRWork vovr_work)
+                        vovr_work.KSWorks.Remove(work);
+                    this.KSWorks.Remove(work);
+                }
                 var works = this.KSWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
@@ -1319,6 +1367,14 @@ namespace ExellAddInsLib.MSG
             }
             foreach (RCWork work in this.RCWorks.ToList())
             {
+                if (work.LoadSessionId != this.LoadSessionId)
+                {
+                    this.Unregister(work);
+                    if(work.Owner!=null && work.Owner is KSWork ks_work)
+                            ks_work.RCWorks.Remove(work);
+
+                    this.RCWorks.Remove(work);
+                }
                 var works = this.RCWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
@@ -1334,6 +1390,12 @@ namespace ExellAddInsLib.MSG
             }
             foreach (WorkReportCard rcard in this.WorkReportCards.ToList())
             {
+                if (rcard.LoadSessionId != this.LoadSessionId)
+                {
+                    this.Unregister(rcard);
+                    this.WorkReportCards.Remove(rcard);
+                }
+
                 var rcards = this.WorkReportCards.Where(w => w.Number == rcard.Number && !InvalidObjects.Contains(w)).ToList();
                 if (rcards.Count > 1)
                 {
@@ -1449,7 +1511,9 @@ namespace ExellAddInsLib.MSG
 
             if (IsHasEnabled)
                 this.SetHashFormulas();
-            // this.ClearAllSections();
+            //this.ClearAllSections();
+            this.LoadSessionId = Guid.NewGuid();
+
             this.LoadWorksReportCards();
 
             this.LoadWorksSections();
@@ -1461,7 +1525,7 @@ namespace ExellAddInsLib.MSG
 
             this.LoadWorkerConsumptions();
             this.LoadMachineConsumptions();
-
+            this.CalcLabourness();
             this.WorksSections.Validate();
         }
         public void ReadModelFilds()
@@ -1921,6 +1985,8 @@ namespace ExellAddInsLib.MSG
             {
                 foreach (MSGWork msg_work in section.MSGWorks)
                 {
+                    if (msg_work.Number == "1.13")
+                        ;
                     //  if (msg_work.Laboriousness == 0)
                     {
                         decimal common_vovr_laboueness = 0;

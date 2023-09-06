@@ -147,15 +147,14 @@ namespace ExellAddInsLib.MSG
              
             }
             var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
-            if (Math.Round(rc_laboriosness_sum, 4) != Math.Round(curent_work_laboriousness, 4))
-            {
+            bool is_valid = Math.Round(rc_laboriosness_sum, 3) == Math.Round(curent_work_laboriousness, 3);
                 foreach (var ks_work in this.RCWorks)
                 {
-                    ks_work.SetPropertyValidStatus("Laboriousness", false);
-                    ks_work.SetPropertyValidStatus("ProjectQuantity", false);
-                    ks_work.IsValid = false;
+                    ks_work.SetPropertyValidStatus("Laboriousness", is_valid);
+                    ks_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
+                    ks_work.IsValid = is_valid;
                 }
-            }
+             
             this.RCWorks.Validate();
             base.Validate();
         }
