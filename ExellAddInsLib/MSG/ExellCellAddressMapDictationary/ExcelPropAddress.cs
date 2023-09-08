@@ -93,7 +93,7 @@ namespace ExellAddInsLib.MSG
             if (_valueType == typeof(double) || _valueType == typeof(decimal))
             {
                 Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
-                CellNumberFormat = $"0.00";
+                CellNumberFormat =  $"0.00";
             }
             if (_valueType == typeof(int))
             {
@@ -110,7 +110,24 @@ namespace ExellAddInsLib.MSG
                 CellNumberFormat = $"@";
             }
         }
-
+        private string GetNumberFormat(decimal val)
+        {
+            int int_num_part = (int)val;
+            var fractional_num_part = val - int_num_part;
+            string str  =fractional_num_part.ToString();
+            string out_str = "0.";
+            int ii = 2;
+           
+            while (str.Length>=2 && str[ii]=='0')
+            {
+                out_str = $"{out_str}0";
+                ii++;
+            }
+            if (ii == 2)
+                return "#0.00";
+            return out_str+'0';
+        }
+        
         public void OnNext(PropertyChangeState value)
         {
             var sender = value.Sender;
@@ -127,12 +144,17 @@ namespace ExellAddInsLib.MSG
                     sender = exbb_val;
                 else if (prop_val.GetType() == this.ValueType && IsReadOnly == false)
                 {
+                    if(prop_val is decimal dec_val)
+                    {
+                        this.Cell.NumberFormat= GetNumberFormat(dec_val);//
+                    }
                     this.Cell.Value = prop_val;
                 }
 
             }
             this.IsValid = value.PropertyIsValid;
         }
+      
         private void GetPropValue(IExcelBindableBase obj, string prop_name, bool first_itaration = true)
         {
 

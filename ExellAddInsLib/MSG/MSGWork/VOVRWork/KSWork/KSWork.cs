@@ -10,12 +10,13 @@ namespace ExellAddInsLib.MSG
     {
 
         public const int KS_NUMBER_COL = VOVRWork.VOVR_LABOURNESS_COL + 1;
-        public const int KS_CODE_COL = KS_NUMBER_COL + 1;
-        public const int KS_NAME_COL = KS_NUMBER_COL + 2;
-        public const int KS_MEASURE_COL = KS_NUMBER_COL + 3;
-        public const int KS_QUANTITY_COL = KS_NUMBER_COL + 4;
-        public const int KS_QUANTITY_FACT_COL = KS_NUMBER_COL + 5;
-        public const int KS_LABOURNESS_COL = KS_NUMBER_COL + 6;
+        public const int KS_ESTIMATE_NUMBER_COL = KS_NUMBER_COL + 1;
+        public const int KS_CODE_COL = KS_NUMBER_COL + 2;
+        public const int KS_NAME_COL = KS_NUMBER_COL + 3;
+        public const int KS_MEASURE_COL = KS_NUMBER_COL + 4;
+        public const int KS_QUANTITY_COL = KS_NUMBER_COL + 5;
+        public const int KS_QUANTITY_FACT_COL = KS_NUMBER_COL + 6;
+        public const int KS_LABOURNESS_COL = KS_NUMBER_COL + 7;
 
 
         [NonGettinInReflection]
@@ -32,7 +33,13 @@ namespace ExellAddInsLib.MSG
                 base.Worksheet = value;
             }
         }
+        private string _estimateNumber;
 
+        public string EstimateNumber
+        {
+            get { return _estimateNumber; }
+            set { SetProperty(ref _estimateNumber, value); }
+        }
         private string _code;
 
         public string Code
@@ -40,6 +47,7 @@ namespace ExellAddInsLib.MSG
             get { return _code; }
             set { SetProperty(ref _code, value); }
         }
+
         private AdjustableCollection<RCWork> _rCWorks = new AdjustableCollection<RCWork>();
 
         [NonRegisterInUpCellAddresMap]

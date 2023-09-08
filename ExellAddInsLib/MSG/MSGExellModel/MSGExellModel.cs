@@ -12,6 +12,10 @@ namespace ExellAddInsLib.MSG
 {
     public partial class MSGExellModel : ExellModelBase
     {
+        public const int SECTIONS_NULL_COUNTER = 500;
+        public const int WORKS_NULL_COUNTER = 100;
+
+
         public const int COMMON_PARAMETRS_VALUE_COL = 3; //Номер стобца с общим параметрами проекта
 
         public const int CONTRACT_CODE_ROW = 2; //Код объекта или договора
@@ -425,7 +429,7 @@ namespace ExellAddInsLib.MSG
             int rowIndex = FIRST_ROW_INDEX;
             null_str_count = 0;
 
-            while (null_str_count < 100)
+            while (null_str_count < SECTIONS_NULL_COUNTER)
             {
                 var number = registerSheet.Cells[rowIndex, WorksSection.WSEC_NUMBER_COL].Value;
                 if (number == null) null_str_count++;
@@ -862,7 +866,9 @@ namespace ExellAddInsLib.MSG
 
             ks_work.LoadSessionId = this.LoadSessionId;
             ks_work.Worksheet = registerSheet;
+        
             this.Register(ks_work, "Number", rowIndex, KSWork.KS_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+\.\d+$"));
+            this.Register(ks_work, "EstimateNumber", rowIndex, KSWork.KS_ESTIMATE_NUMBER_COL, this.RegisterSheet);
             this.Register(ks_work, "Code", rowIndex, KSWork.KS_CODE_COL, this.RegisterSheet);
             this.Register(ks_work, "Name", rowIndex, KSWork.KS_NAME_COL, this.RegisterSheet);
             this.Register(ks_work, "ProjectQuantity", rowIndex, KSWork.KS_QUANTITY_COL, this.RegisterSheet);
@@ -871,8 +877,12 @@ namespace ExellAddInsLib.MSG
             this.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, KSWork.KS_MEASURE_COL, this.RegisterSheet);
 
             ks_work.Number = number;
+            var estimate_namber = registerSheet.Cells[rowIndex, KSWork.KS_ESTIMATE_NUMBER_COL].Value;
+            if (estimate_namber != null)
+                ks_work.EstimateNumber = estimate_namber.ToString();
+           
 
-            var code = registerSheet.Cells[rowIndex, KSWork.KS_CODE_COL].Value;
+                var code = registerSheet.Cells[rowIndex, KSWork.KS_CODE_COL].Value;
             if (code != null)
                 ks_work.Code = code.ToString();
             else

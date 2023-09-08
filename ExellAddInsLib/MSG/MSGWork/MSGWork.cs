@@ -8,7 +8,7 @@ namespace ExellAddInsLib.MSG
 {
     public class MSGWork : Work
     {
-        public const int MSG_NUMBER_COL = 4;
+        public const int MSG_NUMBER_COL = WorksSection.WSEC_NAME_COL + 1;
         public const int MSG_NAME_COL = MSG_NUMBER_COL + 1;
         public const int MSG_QUANTITY_COL = MSG_NUMBER_COL + 2;
         public const int MSG_MEASURE_COL = MSG_NUMBER_COL + 3;
@@ -228,14 +228,14 @@ namespace ExellAddInsLib.MSG
             }
             var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
             bool is_valid = Math.Round(vovr_laboriosness_sum, 3) == Math.Round(curent_work_laboriousness, 3);
-                foreach (var vovr_work in this.VOVRWorks)
-                {
-                    vovr_work.SetPropertyValidStatus("Laboriousness", is_valid);
-                    vovr_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
-                    vovr_work.IsValid = is_valid;
-                }
-           
-            
+            foreach (var vovr_work in this.VOVRWorks)
+            {
+                vovr_work.SetPropertyValidStatus("Laboriousness", is_valid);
+                vovr_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
+                vovr_work.IsValid = is_valid;
+            }
+
+
             this.VOVRWorks.Validate();
             base.Validate();
         }
