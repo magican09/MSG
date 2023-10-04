@@ -110,8 +110,8 @@ namespace ExellAddInsLib.MSG
         public override Range GetRange()
         {
             Excel.Range range = base.GetRange();
-          //  Excel.Range ks_works_range = this.KSWorks.GetRange();
-         //   range = Worksheet.Application.Union(new List<Excel.Range>() { range, ks_works_range });
+            //  Excel.Range ks_works_range = this.KSWorks.GetRange();
+            //   range = Worksheet.Application.Union(new List<Excel.Range>() { range, ks_works_range });
             return range;
         }
 
@@ -142,9 +142,9 @@ namespace ExellAddInsLib.MSG
             var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
             if (Math.Round(ks_laboriosness_sum, 4) != Math.Round(curent_work_laboriousness, 4))
             {
-               
+
             }
-       
+
             bool is_valid = Math.Round(ks_laboriosness_sum, 3) == Math.Round(curent_work_laboriousness, 3);
             foreach (var ks_work in this.KSWorks)
             {
@@ -152,8 +152,8 @@ namespace ExellAddInsLib.MSG
                 ks_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
                 ks_work.IsValid = is_valid;
             }
-         
-                this.KSWorks.Validate();
+
+            this.KSWorks.Validate();
             base.Validate();
         }
         public void AddDeafaultChildWork(MSGExellModel model)
@@ -171,7 +171,7 @@ namespace ExellAddInsLib.MSG
                 model.Register(ks_work, "Quantity", rowIndex, KSWork.KS_QUANTITY_FACT_COL, model.RegisterSheet);
                 model.Register(ks_work, "Laboriousness", rowIndex, KSWork.KS_LABOURNESS_COL, model.RegisterSheet);
                 model.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, KSWork.KS_MEASURE_COL, model.RegisterSheet);
-            
+
                 ks_work.Number = $"{vovr_work.Number}.1";
                 ks_work.Code = "-";
                 ks_work.Name = vovr_work.Name;
