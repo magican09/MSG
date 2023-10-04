@@ -101,7 +101,7 @@ namespace ExellAddInsLib.MSG
                 rc_row = rc_work.AdjustExcelRepresentionTree(rc_row);
                 rc_row++;
             }
-
+            if (ks_work.RCWorks.Count==0) rc_row++;
             ks_row = rc_row;
             return ks_row;
         }
@@ -116,7 +116,7 @@ namespace ExellAddInsLib.MSG
 
             Excel.Range rc_works_range = ks_work.RCWorks.GetRange();
             rc_works_range.SetBordersLine(XlLineStyle.xlDouble);
-            if(ks_work.RCWorks.IsValid)
+            if(rc_works_range!=null && ks_work.RCWorks.IsValid)
                 rc_works_range.Interior.ColorIndex = ks_work_col;
             if (ks_work.RCWorks.Count > 0)
             {

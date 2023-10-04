@@ -117,12 +117,19 @@ namespace ExellAddInsLib.MSG
             string str  =fractional_num_part.ToString();
             string out_str = "0.";
             int ii = 2;
-           
-            while (str.Length>=2 && str[ii]=='0')
+            try
             {
-                out_str = $"{out_str}0";
-                ii++;
+                while (str.Length >= 2 && ii< str.Length && str[ii] == '0')
+                {
+                    out_str = $"{out_str}0";
+                    ii++;
+                }
             }
+            catch
+            {
+
+            }
+
             if (ii == 2)
                 return "#0.00";
             return out_str+'0';
