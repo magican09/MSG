@@ -101,7 +101,7 @@ namespace ExellAddInsLib.MSG
                 rc_row = rc_work.AdjustExcelRepresentionTree(rc_row);
                 rc_row++;
             }
-            if (ks_work.RCWorks.Count==0) rc_row++;
+            if (ks_work.RCWorks.Count == 0) rc_row++;
             ks_row = rc_row;
             return ks_row;
         }
@@ -116,7 +116,7 @@ namespace ExellAddInsLib.MSG
 
             Excel.Range rc_works_range = ks_work.RCWorks.GetRange();
             rc_works_range.SetBordersLine(XlLineStyle.xlDouble);
-            if(rc_works_range!=null && ks_work.RCWorks.IsValid)
+            if (rc_works_range != null && ks_work.RCWorks.IsValid)
                 rc_works_range.Interior.ColorIndex = ks_work_col;
             if (ks_work.RCWorks.Count > 0)
             {
@@ -136,7 +136,25 @@ namespace ExellAddInsLib.MSG
             return range;
 
         }
+        //public override Excel.Range RowsRange()
+        //{
+        //    Excel.Range w_range = this.GetRange();
+        //    Excel.Range vovr_works_range = this.RCWorks.RowsRange();
+        //    Excel.Range range = Worksheet.Application.Union(new List<Excel.Range>() { w_range, vovr_works_range });
+        //    var top_row = range.GetRangeWithUpperEdge().Row;
+        //    var bottom_row = range.GetRangeWithLowestEdge().Row;
+        //    return Worksheet.Range[Worksheet.Rows[top_row], Worksheet.Rows[bottom_row]]; ;
 
+        //}
+        public override int GetLastRow()
+        {
+            int top_row = this.GetTopRow();
+            int bottom_row = base.GetLastRow();
+            int last_row = this.RCWorks.GetLastRow();
+            if (last_row < bottom_row) last_row = bottom_row;
+
+            return last_row;
+        }
         public override object Clone()
         {
             KSWork new_work = (KSWork)base.Clone();
@@ -148,23 +166,51 @@ namespace ExellAddInsLib.MSG
 
         public override void Validate()
         {
-            decimal rc_laboriosness_sum=0;
+            decimal rc_laboriosness_sum = 0;
             foreach (var ks_work in this.RCWorks)
             {
                 rc_laboriosness_sum += ks_work.Laboriousness * ks_work.ProjectQuantity;
-             
+
             }
             var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
             bool is_valid = Math.Round(rc_laboriosness_sum, 3) == Math.Round(curent_work_laboriousness, 3);
-                foreach (var ks_work in this.RCWorks)
-                {
-                    ks_work.SetPropertyValidStatus("Laboriousness", is_valid);
-                    ks_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
-                    ks_work.IsValid = is_valid;
-                }
-             
+            foreach (var ks_work in this.RCWorks)
+            {
+                ks_work.SetPropertyValidStatus("Laboriousness", is_valid);
+                ks_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
+                ks_work.IsValid = is_valid;
+            }
+
             this.RCWorks.Validate();
             base.Validate();
+        }
+        public void AddDeafaultChildWork(MSGExellModel model)
+        {
+            if (this.RCWorks.Count == 0)
+            {
+                var ks_work = this;
+                RCWork rc_work = new RCWork();
+                    int rowIndex = ks_work["Number"].Row;
+                model.Register(rc_work, "Number", rowIndex, RCWork.RC_NUMBER_COL, model.RegisterSheet);
+                model.Register(rc_work, "Code", rowIndex, RCWork.RC_CODE_COL, model.RegisterSheet);
+                model.Register(rc_work, "Name", rowIndex, RCWork.RC_NAME_COL, model.RegisterSheet);
+                model.Register(rc_work, "ProjectQuantity", rowIndex, RCWork.RC_QUANTITY_COL, model.RegisterSheet);
+                model.Register(rc_work, "Quantity", rowIndex, RCWork.RC_QUANTITY_FACT_COL, model.RegisterSheet);
+                model.Register(rc_work, "LabournessCoefficient", rowIndex, RCWork.RC_LABOURNESS_COEFFICIENT_COL, model.RegisterSheet);
+                model.Register(rc_work, "Laboriousness", rowIndex, RCWork.RC_LABOURNESS_COL, model.RegisterSheet);
+                model.Register(rc_work, "UnitOfMeasurement.Name", rowIndex, RCWork.RC_MEASURE_COL, model.RegisterSheet);
+            
+                rc_work.Worksheet = model.RegisterSheet;
+                rc_work.Number = $"{ks_work.Number}.1";
+                rc_work.Code = ks_work.Code;
+                rc_work.Name = ks_work.Name;
+                rc_work.UnitOfMeasurement = ks_work.UnitOfMeasurement;
+                rc_work.ProjectQuantity = ks_work.ProjectQuantity;
+                rc_work.Laboriousness = ks_work.Laboriousness;
+            
+                this.RCWorks.Add(rc_work);
+            }
+
         }
     }
 }

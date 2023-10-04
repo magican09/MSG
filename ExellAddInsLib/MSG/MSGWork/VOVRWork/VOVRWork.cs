@@ -115,6 +115,15 @@ namespace ExellAddInsLib.MSG
             return range;
         }
 
+        public override int GetLastRow()
+        {
+            int top_row = this.GetTopRow();
+            int bottom_row = base.GetLastRow();
+            int last_row = this.KSWorks.GetLastRow();
+            if (last_row < bottom_row) last_row = bottom_row;
+
+            return last_row;
+        }
         public override object Clone()
         {
             VOVRWork new_work = (VOVRWork)base.Clone();
@@ -143,10 +152,37 @@ namespace ExellAddInsLib.MSG
                 ks_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
                 ks_work.IsValid = is_valid;
             }
-
-
-            this.KSWorks.Validate();
+         
+                this.KSWorks.Validate();
             base.Validate();
         }
+        public void AddDeafaultChildWork(MSGExellModel model)
+        {
+            if (this.KSWorks.Count == 0)
+            {
+                var vovr_work = this;
+                KSWork ks_work = new KSWork();
+                ks_work.Worksheet = model.RegisterSheet;
+                int rowIndex = vovr_work["Number"].Row;
+                model.Register(ks_work, "Number", rowIndex, KSWork.KS_NUMBER_COL, model.RegisterSheet);
+                model.Register(ks_work, "Code", rowIndex, KSWork.KS_CODE_COL, model.RegisterSheet);
+                model.Register(ks_work, "Name", rowIndex, KSWork.KS_NAME_COL, model.RegisterSheet);
+                model.Register(ks_work, "ProjectQuantity", rowIndex, KSWork.KS_QUANTITY_COL, model.RegisterSheet);
+                model.Register(ks_work, "Quantity", rowIndex, KSWork.KS_QUANTITY_FACT_COL, model.RegisterSheet);
+                model.Register(ks_work, "Laboriousness", rowIndex, KSWork.KS_LABOURNESS_COL, model.RegisterSheet);
+                model.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, KSWork.KS_MEASURE_COL, model.RegisterSheet);
+            
+                ks_work.Number = $"{vovr_work.Number}.1";
+                ks_work.Code = "-";
+                ks_work.Name = vovr_work.Name;
+                ks_work.UnitOfMeasurement = vovr_work.UnitOfMeasurement;
+                ks_work.ProjectQuantity = vovr_work.ProjectQuantity;
+                ks_work.Laboriousness = vovr_work.Laboriousness;
+
+                ks_work.AddDeafaultChildWork(model);
+                this.KSWorks.Add(ks_work);
+            }
+        }
+
     }
 }

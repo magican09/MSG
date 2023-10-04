@@ -21,13 +21,20 @@ namespace ExellAddInsLib.MSG
         bool IsValid { get; set; }
         bool IsChanged { get; set; }
         //   ObservableCollection<IExcelBindableBase> Owners { get; set; }
+        
+
         Excel.Range GetRange();
+        Excel.Range RowsRange();
+      
+        
         Excel.Range GetRange(int right_border = 100000000, int low_borde = 1000000000, int left_border = 0, int up_border = 0);
         void SetInvalidateCellsColor(XlRgbColor color);
         void ChangeTopRow(int row);
         int GetBottomRow();
         int GetTopRow();
         int GetLeftColumn();
+      
+        int GetLastRow();
 
         int GetRowsCount();
         void SetNumberItem(int possition, string number, bool first_itaration = true);

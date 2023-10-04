@@ -189,10 +189,19 @@ namespace ExellAddInsLib.MSG
 
             try
             {
-                var msg_work_full_range = msg_work.GetRange();
-                Excel.Range lowest_edge_range = msg_work_full_range.GetRangeWithLowestEdge();
-                Excel.Range range = Worksheet.Range[Worksheet.Rows[msg_work_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _MSG_WORKS_GAP]];
-                range.Group();
+
+              
+                int top_row = this.GetTopRow();
+                int msg_last_row = this.GetLastRow();
+                var msg_work_full_range  = Worksheet.Range[Worksheet.Rows[top_row+1], Worksheet.Rows[msg_last_row + _MSG_WORKS_GAP]];
+
+                //  var vovrs_range = msg_work.VOVRWorks.RowsRange();
+                //  var ks_range = msg_work.VOVRWorks.RowsRange();
+
+                //      Excel.Range lowest_edge_range = msg_work_full_range.GetRangeWithLowestEdge();
+                //     Excel.Range range = Worksheet.Range[Worksheet.Rows[msg_work_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _MSG_WORKS_GAP]];
+                //  range.Group();
+                msg_work_full_range.Group();
             }
             catch (Exception exp)
             {
@@ -202,11 +211,21 @@ namespace ExellAddInsLib.MSG
 
         public override Range GetRange()
         {
+          
             Excel.Range base_range = base.GetRange();
-            Excel.Range vovr_works_range = this.VOVRWorks.GetRange();
             Excel.Range w_schedules_works_range = this.WorkSchedules.GetRange();
-            Excel.Range range = Worksheet.Application.Union(new List<Excel.Range>() { base_range, vovr_works_range, w_schedules_works_range });
+            Excel.Range range = Worksheet.Application.Union(new List<Excel.Range>() { base_range, w_schedules_works_range });
             return range;
+        }
+
+        public override int GetLastRow()
+        {
+            int top_row = this.GetTopRow();
+            int bottom_row = base.GetLastRow();
+            int last_row = this.VOVRWorks.GetLastRow();
+            if (last_row < bottom_row) last_row = bottom_row;
+
+            return last_row;
         }
 
         public override object Clone()
@@ -238,6 +257,31 @@ namespace ExellAddInsLib.MSG
 
             this.VOVRWorks.Validate();
             base.Validate();
+        }
+
+        public void AddDeafaultChildWork(MSGExellModel model)
+        {
+            if (this.VOVRWorks.Count == 0)
+            {
+                MSGWork msg_work = this;
+                VOVRWork vovr_work = new VOVRWork();
+                  int rowIndex = msg_work["Number"].Row;
+                model.Register(vovr_work, "Number", rowIndex, VOVRWork.VOVR_NUMBER_COL, model.RegisterSheet);
+                model.Register(vovr_work, "Name", rowIndex, VOVRWork.VOVR_NAME_COL, model.RegisterSheet);
+                model.Register(vovr_work, "ProjectQuantity", rowIndex, VOVRWork.VOVR_QUANTITY_COL, model.RegisterSheet);
+                model.Register(vovr_work, "Quantity", rowIndex, VOVRWork.VOVR_QUANTITY_FACT_COL, model.RegisterSheet);
+                model.Register(vovr_work, "Laboriousness", rowIndex, VOVRWork.VOVR_LABOURNESS_COL, model.RegisterSheet);
+                model.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, VOVRWork.VOVR_MEASURE_COL, model.RegisterSheet);
+                vovr_work.Worksheet = model.RegisterSheet;
+                vovr_work.Number = $"{msg_work.Number}.1";
+                vovr_work.Name = msg_work.Name;
+                vovr_work.UnitOfMeasurement = msg_work.UnitOfMeasurement;
+                vovr_work.ProjectQuantity = msg_work.ProjectQuantity;
+                vovr_work.Laboriousness = msg_work.Laboriousness;
+
+                vovr_work.AddDeafaultChildWork(model);
+                this.VOVRWorks.Add(vovr_work);
+            }
         }
     }
 }

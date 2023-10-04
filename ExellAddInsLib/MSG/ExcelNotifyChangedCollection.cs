@@ -555,6 +555,44 @@ namespace ExellAddInsLib.MSG
         {
             return this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == prop_name).Cell;
         }
+        public Excel.Range RowsRange()
+        {
+            if (this._observers.Count == 0) return null;
+            //Excel.Range range = null;
+
+            //foreach (T itm in this)
+            //{
+            //    Excel.Range rg = itm.RowsRange();
+            //    if (rg != null)
+            //    {
+            //        if (range == null) range = rg;
+            //        else
+            //            range = Worksheet.Application.Union(range, rg);
+            //    }
+            //}
+
+            var top_row = this.GetTopRow();
+            var bottom_row = this.GetBottomRow(); ;
+
+            return Worksheet.Range[Worksheet.Rows[top_row], Worksheet.Rows[bottom_row]];
+
+
+        }
+        public  int  GetLastRow()
+        {
+            if(this.Count==0) return 0;
+            int last_row = 0;
+            foreach(T elm in this)
+            {
+                int l_row = elm.GetLastRow();
+                if (last_row < l_row)
+                    last_row = l_row;
+            }
+
+            return this.OrderBy(elm=>elm.GetLastRow()).LastOrDefault().GetLastRow();
+        }
+
+
         public ExcelPropAddress GetPropAddress(string prop_name)
         {
             return this._observers.Select(s => s as ExcelPropAddress).FirstOrDefault(obs => obs.ProprertyName == prop_name);

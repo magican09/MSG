@@ -61,8 +61,10 @@
             this.btnCopyMachineComposition = this.Factory.CreateRibbonButton();
             this.menuVOVR = this.Factory.CreateRibbonMenu();
             this.btnCopyVOVRWork = this.Factory.CreateRibbonButton();
+            this.btnInitVOVRContent = this.Factory.CreateRibbonButton();
             this.menuKS = this.Factory.CreateRibbonMenu();
             this.btnCopyKSWork = this.Factory.CreateRibbonButton();
+            this.btnInitKSContent = this.Factory.CreateRibbonButton();
             this.menuRC = this.Factory.CreateRibbonMenu();
             this.btnCopyRCWork = this.Factory.CreateRibbonButton();
             this.buttonPaste = this.Factory.CreateRibbonButton();
@@ -287,6 +289,7 @@
             // 
             this.menuVOVR.Enabled = false;
             this.menuVOVR.Items.Add(this.btnCopyVOVRWork);
+            this.menuVOVR.Items.Add(this.btnInitVOVRContent);
             this.menuVOVR.Label = " ВОВР";
             this.menuVOVR.Name = "menuVOVR";
             // 
@@ -297,10 +300,18 @@
             this.btnCopyVOVRWork.ShowImage = true;
             this.btnCopyVOVRWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyVOVRWork_Click);
             // 
+            // btnInitVOVRContent
+            // 
+            this.btnInitVOVRContent.Label = "Дописать ...";
+            this.btnInitVOVRContent.Name = "btnInitVOVRContent";
+            this.btnInitVOVRContent.ShowImage = true;
+            this.btnInitVOVRContent.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnInitVOVRContent_Click);
+            // 
             // menuKS
             // 
             this.menuKS.Enabled = false;
             this.menuKS.Items.Add(this.btnCopyKSWork);
+            this.menuKS.Items.Add(this.btnInitKSContent);
             this.menuKS.Label = "КС-2";
             this.menuKS.Name = "menuKS";
             // 
@@ -310,6 +321,13 @@
             this.btnCopyKSWork.Name = "btnCopyKSWork";
             this.btnCopyKSWork.ShowImage = true;
             this.btnCopyKSWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnCopyKSWork_Click);
+            // 
+            // btnInitKSContent
+            // 
+            this.btnInitKSContent.Label = "Дописать ...";
+            this.btnInitKSContent.Name = "btnInitKSContent";
+            this.btnInitKSContent.ShowImage = true;
+            this.btnInitKSContent.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnInitKSContent_Click);
             // 
             // menuRC
             // 
@@ -518,6 +536,8 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnLoadInModelLocal;
         internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox chckBoxHashEnable;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCreateMSGForEmployers;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitVOVRContent;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitKSContent;
     }
 
     partial class ThisRibbonCollection

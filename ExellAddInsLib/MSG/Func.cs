@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -60,6 +61,7 @@ namespace ExellAddInsLib.MSG
         }
         public static Excel.Range GetRangeWithLowestEdge(this Excel.Range range)
         {
+     
             Excel.Range lowest_range = null;
             foreach (Excel.Range r in range)
             {
@@ -69,6 +71,18 @@ namespace ExellAddInsLib.MSG
                     lowest_range = r;
             }
             return lowest_range;
+        }
+        public static Excel.Range GetRangeWithUpperEdge(this Excel.Range range)
+        {
+            Excel.Range upper_range = null;
+            foreach (Excel.Range r in range)
+            {
+                if (upper_range == null)
+                    upper_range = r;
+                else if (upper_range.Rows[upper_range.Rows.Count].Row > r.Row)
+                    upper_range = r;
+            }
+            return upper_range;
         }
         public static Excel.Range Union(this Excel._Application aplication, List<Excel.Range> ranges)
         {

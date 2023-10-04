@@ -127,7 +127,6 @@ namespace ExellAddInsLib.MSG
             return PropertyChanged != null;
         }
 
-        // public ObservableCollection<IObservableExcelBindableBase> Owners { get; set; } = new ObservableCollection<IObservableExcelBindableBase>();
         private IObservableExcelBindableBase _owner;
 
         [NonGettinInReflection]
@@ -142,47 +141,7 @@ namespace ExellAddInsLib.MSG
             }
         }
 
-        //private void RegisterNewValInCellAddresMap(IObservableExcelBindableBase excell_bindable_new_val, string property_name)
-        //{
-        //    //    excell_bindable_new_val.Owners.Add(this);
-        //    var non_reg_in_upper_attribute = this.GetType().GetProperty(property_name).GetCustomAttribute(typeof(NonRegisterInUpCellAddresMapAttribute));
-        //    if (non_reg_in_upper_attribute == null)
-        //    {
-        //        //  excell_bindable_new_val.Owners.Add(this);
-        //        foreach (var kvp in excell_bindable_new_val._observers)
-        //        {
-        //            string key_str = $"{excell_bindable_new_val.Id.ToString()}_{observer.ProprertyName}";
-        //            if (!this._observers.ContainsKey(key_str))
-        //                this._observers.Add(key_str, observer);
-        //        }
-        //        excell_bindable_new_val._observers.AddEvent += OnCellAdressAdd;
-        //    }
-        //}
-        //private void UnregisterMemberValInCellAddresMap(IObservableExcelBindableBase excell_bindable_member, string property_name)
-        //{
-        //    //     excell_bindable_member.Owners.Remove(this);
-        //    foreach (var kvp in excell_bindable_member._observers)
-        //    {
-        //        string key_str = $"{excell_bindable_member.Id.ToString()}_{observer.ProprertyName}";
-        //        if (this._observers.ContainsKey(key_str))
-        //            this._observers.Remove(key_str);
-        //    }
-
-        //    excell_bindable_member._observers.AddEvent -= OnCellAdressAdd;
-        //}
-
-
-        //private void OnCellAdressAdd(IObservableExcelBindableBase sender, ExellCellAddressMapDictationary.AddEventArgs pAddEventArgs)
-        //{
-        //    if (pAddEventArgs != null)
-        //    {
-        //        Excel.Worksheet worksheet = pAddEventArgs.Value.Worksheet;
-        //        string key_str = $"{sender.Id.ToString()}_{pAddEventArgs.Value.ProprertyName}";
-        //        this._observers.Add(key_str, pAddEventArgs.Value);
-        //    }
-
-        //}
-
+ 
 
         public virtual Excel.Range GetRange(int right_border, int low_border = 100000000, int left_border = 0, int up_border = 0)
         {
@@ -217,6 +176,22 @@ namespace ExellAddInsLib.MSG
             }
             return range;
         }
+     
+        public virtual Excel.Range RowsRange()
+        {
+            Excel.Range base_range = this.GetRange();
+            var top_row = base_range.GetRangeWithUpperEdge().Row;
+            var bottom_row = base_range.GetRangeWithLowestEdge().Row;
+            return Worksheet.Range[Worksheet.Rows[top_row], Worksheet.Rows[bottom_row]]; ;
+
+        }
+       
+        public virtual int  GetLastRow()
+        {
+
+            return this.Worksheet.Rows[this._observers.Select(s => s as ExcelPropAddress).OrderBy(r => r.Row).LastOrDefault().Row].Row;
+        }
+
         public virtual void SetInvalidateCellsColor(XlRgbColor color)
         {
             var invalide_cells = this._observers.Select(s => s as ExcelPropAddress).Where(cm => (cm as ExcelPropAddress).IsValid == false);
@@ -497,5 +472,7 @@ namespace ExellAddInsLib.MSG
         {
 
         }
+
+        
     }
 }

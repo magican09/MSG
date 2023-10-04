@@ -28,5 +28,7 @@ namespace ExellAddInsLib.MSG
             Date = day.Date;
             Quantity = day.Quantity;
         }
+     
+        
     }
 }

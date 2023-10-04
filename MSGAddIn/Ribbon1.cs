@@ -1364,79 +1364,7 @@ namespace MSGAddIn
         private List<IExcelBindableBase> CopyedObjectsList = new List<IExcelBindableBase>();
         private string commands_group_label = "";
 
-        /// <summary>
-        /// Допивать в пустые МСГ все ВОВР, КС и табельные работы
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnInitMSGContent_Click(object sender, RibbonControlEventArgs e)
-        {
-            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
-            var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
-
-            foreach (MSGWork msg_work in sected_object)
-            {
-                if (msg_work.VOVRWorks.Count == 0)
-                {
-                    VOVRWork vovr_work = new VOVRWork();
-                    vovr_work.Worksheet = CurrentMSGExellModel.RegisterSheet;
-                    vovr_work.Number = $"{msg_work.Number}.1";
-                    vovr_work.Name = msg_work.Name;
-                    vovr_work.UnitOfMeasurement = msg_work.UnitOfMeasurement;
-                    vovr_work.ProjectQuantity = msg_work.ProjectQuantity;
-                    vovr_work.Laboriousness = msg_work.Laboriousness;
-                    int rowIndex = msg_work["Number"].Row;
-                    CurrentMSGExellModel.Register(vovr_work, "Number", rowIndex, VOVRWork.VOVR_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "Name", rowIndex, VOVRWork.VOVR_NAME_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "ProjectQuantity", rowIndex, VOVRWork.VOVR_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "Quantity", rowIndex, VOVRWork.VOVR_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "Laboriousness", rowIndex, VOVRWork.VOVR_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, VOVRWork.VOVR_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
-
-                    KSWork ks_work = new KSWork();
-                    ks_work.Worksheet = CurrentMSGExellModel.RegisterSheet;
-                    ks_work.Number = $"{vovr_work.Number}.1";
-                    ks_work.Code = "-";
-                    ks_work.Name = msg_work.Name;
-                    ks_work.UnitOfMeasurement = msg_work.UnitOfMeasurement;
-                    ks_work.ProjectQuantity = msg_work.ProjectQuantity;
-                    ks_work.Laboriousness = msg_work.Laboriousness;
-                    CurrentMSGExellModel.Register(ks_work, "Number", rowIndex, KSWork.KS_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "Code", rowIndex, KSWork.KS_CODE_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "Name", rowIndex, KSWork.KS_NAME_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "ProjectQuantity", rowIndex, KSWork.KS_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "Quantity", rowIndex, KSWork.KS_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "Laboriousness", rowIndex, KSWork.KS_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(ks_work, "UnitOfMeasurement.Name", rowIndex, KSWork.KS_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
-
-                    RCWork rc_work = new RCWork();
-                    rc_work.Worksheet = CurrentMSGExellModel.RegisterSheet;
-                    rc_work.Number = $"{ks_work.Number}.1";
-                    rc_work.Code = "-";
-                    rc_work.Name = msg_work.Name;
-                    rc_work.UnitOfMeasurement = msg_work.UnitOfMeasurement;
-                    rc_work.ProjectQuantity = msg_work.ProjectQuantity;
-                    rc_work.Laboriousness = msg_work.Laboriousness;
-                    CurrentMSGExellModel.Register(rc_work, "Number", rowIndex, RCWork.RC_NUMBER_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "Code", rowIndex, RCWork.RC_CODE_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "Name", rowIndex, RCWork.RC_NAME_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "ProjectQuantity", rowIndex, RCWork.RC_QUANTITY_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "Quantity", rowIndex, RCWork.RC_QUANTITY_FACT_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "LabournessCoefficient", rowIndex, RCWork.RC_LABOURNESS_COEFFICIENT_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "Laboriousness", rowIndex, RCWork.RC_LABOURNESS_COL, CurrentMSGExellModel.RegisterSheet);
-                    CurrentMSGExellModel.Register(rc_work, "UnitOfMeasurement.Name", rowIndex, RCWork.RC_MEASURE_COL, CurrentMSGExellModel.RegisterSheet);
-
-
-                    msg_work.VOVRWorks.Add(vovr_work);
-                    vovr_work.KSWorks.Add(ks_work);
-                    ks_work.RCWorks.Add(rc_work);
-
-                    msg_work.AdjustExcelRepresentionTree(rowIndex);
-                    msg_work.UpdateExcelRepresetation();
-                    msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
-                }
-            }
-        }
+       
 
         /// <summary>
         /// Вставить из беферного списка объекты
@@ -1959,6 +1887,64 @@ namespace MSGAddIn
             {
 
                 MessageBox.Show($"Ошибка при выводе данных в шаблом графика МСГ. Ошибка:{exp.Message}");
+            }
+        }
+        /// <summary>
+        /// Допивать в пустые МСГ все ВОВР, КС и табельные работы
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnInitMSGContent_Click(object sender, RibbonControlEventArgs e)
+        {
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork));
+
+            foreach (MSGWork msg_work in sected_object)
+            {
+                if (msg_work.VOVRWorks.Count == 0)
+                {
+                    msg_work.AddDeafaultChildWork(CurrentMSGExellModel);
+                    int rowIndex = msg_work["Number"].Row;
+                    msg_work.AdjustExcelRepresentionTree(rowIndex);
+                    msg_work.UpdateExcelRepresetation();
+                    msg_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
+                }
+            }
+        }
+
+        private void btnInitVOVRContent_Click(object sender, RibbonControlEventArgs e)
+        {
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(VOVRWork));
+
+            foreach (VOVRWork vovr_work in sected_object)
+            {
+                if (vovr_work.KSWorks.Count == 0)
+                {
+                    vovr_work.AddDeafaultChildWork(CurrentMSGExellModel);
+                    int rowIndex = vovr_work["Number"].Row;
+                    vovr_work.AdjustExcelRepresentionTree(rowIndex);
+                    vovr_work.UpdateExcelRepresetation();
+                    vovr_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
+                }
+            }
+        }
+
+        private void btnInitKSContent_Click(object sender, RibbonControlEventArgs e)
+        {
+            var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+            var sected_object = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(KSWork));
+
+            foreach (KSWork ks_work in sected_object)
+            {
+                if (ks_work.RCWorks.Count == 0)
+                {
+                    ks_work.AddDeafaultChildWork(CurrentMSGExellModel);
+                    int rowIndex = ks_work["Number"].Row;
+                    ks_work.AdjustExcelRepresentionTree(rowIndex);
+                    ks_work.UpdateExcelRepresetation();
+                    ks_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
+                }
             }
         }
     }

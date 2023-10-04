@@ -98,10 +98,15 @@ namespace ExellAddInsLib.MSG
 
             try
             {
-                var section_full_range = section.GetRange();
-                var lowest_edge_range = section_full_range.GetRangeWithLowestEdge();
-                Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _SECTIONS_GAP]];
-                range.Group();
+                int top_row = this.GetTopRow();
+                int last_row = this.GetLastRow();
+                var section_full_range =  Worksheet.Range[Worksheet.Rows[top_row+1], Worksheet.Rows[last_row + _SECTIONS_GAP]];
+
+            //  var lowest_edge_range = section_full_range.GetRangeWithLowestEdge();
+            //  Excel.Range range = Worksheet.Range[Worksheet.Rows[section_full_range.Row + 1], lowest_edge_range.Rows[lowest_edge_range.Rows.Count + _SECTIONS_GAP]];
+           //   range.Group();
+            
+                section_full_range.Group();
             }
             catch (Exception exp)
             {
@@ -124,6 +129,21 @@ namespace ExellAddInsLib.MSG
 
             return range;
         }
+        public override int GetLastRow()
+        {
+            int  top_row = this.GetTopRow();
+            int bottom_row = base.GetLastRow();
+            int last_row = this.MSGWorks.GetLastRow();
+            if (last_row < bottom_row) last_row = bottom_row;
+
+            return last_row;
+        }
+        //public override  Excel.Range RowsRange()
+        //{
+        //    var top_row = this.GetTopRow();
+        //    var bottom_row = this.MSGWorks.RowsRange();
+        //    return Worksheet.Range[Worksheet.Rows[top_row], Worksheet.Rows[bottom_row]]; ;
+        //}
         public override object Clone()
         {
             WorksSection new_obj = (WorksSection)base.Clone();

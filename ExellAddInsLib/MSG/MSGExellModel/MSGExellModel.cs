@@ -1868,7 +1868,7 @@ namespace ExellAddInsLib.MSG
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
                             string rc_works_labourness_sum_formula = "";
-                            if (this.Owner == null) tmp_first_rc_card_days_row.Copy();
+                            if (this.Owner == null && tmp_first_rc_card_days_row!=null) tmp_first_rc_card_days_row.Copy();
                             foreach (RCWork rc_work in ks_work.RCWorks)
                             {
                                 if (rc_work.ReportCard == null)
