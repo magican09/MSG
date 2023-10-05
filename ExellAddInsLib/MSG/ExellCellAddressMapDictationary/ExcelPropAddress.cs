@@ -159,7 +159,6 @@ namespace ExellAddInsLib.MSG
                     }
                     this.Cell.Value = prop_val;
                 }
-
             }
             this.IsValid = value.PropertyIsValid;
             }

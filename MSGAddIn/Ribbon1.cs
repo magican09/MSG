@@ -186,8 +186,11 @@ namespace MSGAddIn
             btnChangePosts.Enabled = state;
             btnChangeUOM.Enabled = state;
             btnMachines.Enabled = state;
-            chckBoxHashEnable.Enabled = state;
-            btnLoadInModelLocal.Enabled = state & chckBoxHashEnable.Checked;
+       
+            //chckBoxHashEnable.Enabled = state;
+          
+         //   btnLoadInModelLocal.Enabled = state & chckBoxHashEnable.Checked;
+         
             btnCreateMSGForEmployers.Enabled = state;
         }
         private void AjastBtnsState()
