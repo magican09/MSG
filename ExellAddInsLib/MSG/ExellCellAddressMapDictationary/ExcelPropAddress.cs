@@ -137,6 +137,8 @@ namespace ExellAddInsLib.MSG
         
         public void OnNext(PropertyChangeState value)
         {
+            try
+            { 
             var sender = value.Sender;
             string[] prop_chain = this.ProprertyName.Split('.');
             if (prop_chain[0] != value.PropertyName) return;
@@ -160,6 +162,11 @@ namespace ExellAddInsLib.MSG
 
             }
             this.IsValid = value.PropertyIsValid;
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"{e.Message}\n Строка:{this.Row} Столбец: {this.Column} \n Свойство:{value.PropertyName} Корректность записи:{value.PropertyIsValid}");;  
+            }
         }
       
         private void GetPropValue(IExcelBindableBase obj, string prop_name, bool first_itaration = true)

@@ -1942,10 +1942,17 @@ namespace ExellAddInsLib.MSG
                     string cons_quantity_formula = "";
                     foreach (MSGExellModel model in this.Children)
                     {
-                        var child_consumption = model.WorkerConsumptions.FirstOrDefault(cn => cn.Number == consumption.Number);
-                        if (child_consumption != null)
+                        //var child_consumption = model.WorkerConsumptions.FirstOrDefault(cn => cn.Number == consumption.Number);
+                        //if (child_consumption != null)
+                        //{
+                        //    int cons_row = child_consumption["Number"].Row;
+                        //    var child_cons_day_range =
+                        //         model.WorkerConsumptionsSheet.Cells[cons_row, col_iterator];
+                        //    cons_quantity_formula += $"{model.WorkerConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
+                        //}
+                        if(model.WorkerConsumptionsSheet!=null)
                         {
-                            int cons_row = child_consumption["Number"].Row;
+                            int cons_row = consumption["Number"].Row;
                             var child_cons_day_range =
                                  model.WorkerConsumptionsSheet.Cells[cons_row, col_iterator];
                             cons_quantity_formula += $"{model.WorkerConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
@@ -1967,13 +1974,21 @@ namespace ExellAddInsLib.MSG
                     string cons_quantity_formula = "";
                     foreach (MSGExellModel model in this.Children)
                     {
-                        var child_consumption = model.MachineConsumptions.FirstOrDefault(cn => cn.Number == consumption.Number);
-                        if (child_consumption != null)
+                        //var child_consumption = model.MachineConsumptions.FirstOrDefault(cn => cn.Number == consumption.Number);
+                        //if (child_consumption != null)
+                        //{
+                        //    int cons_row = child_consumption["Number"].Row;
+                        //    var child_cons_day_range =
+                        //         model.MachineConsumptionsSheet.Cells[cons_row, col_iterator];
+                        //    cons_quantity_formula += $"{model.MachineConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
+                        //}
+                        if(model.MachineConsumptionsSheet!=null)
                         {
-                            int cons_row = child_consumption["Number"].Row;
+                            int cons_row = consumption["Number"].Row;
                             var child_cons_day_range =
                                  model.MachineConsumptionsSheet.Cells[cons_row, col_iterator];
                             cons_quantity_formula += $"{model.MachineConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
+
                         }
                     }
                     cons_quantity_formula = cons_quantity_formula.TrimEnd('+');
@@ -2223,7 +2238,7 @@ namespace ExellAddInsLib.MSG
 
             //}
             //  this.ClearWorksheetCommonPart();
-
+            if (this.WorksSections.Count == 0) return;
 
             int last_row = FIRST_ROW_INDEX - _SECTIONS_GAP;
             foreach (WorksSection w_section in this.WorksSections.OrderBy(s => Int32.Parse(s.Number)))
@@ -2231,7 +2246,7 @@ namespace ExellAddInsLib.MSG
                 last_row = w_section.AdjustExcelRepresentionTree(last_row + _SECTIONS_GAP);
                 w_section.UpdateExcelRepresetation();
             }
-            Excel.Range all_sections_lowest_range = this.WorksSections.GetRange().GetRangeWithLowestEdge();
+            Excel.Range all_sections_lowest_range = this.WorksSections.GetRange()?.GetRangeWithLowestEdge();
             int lowest_row = all_sections_lowest_range.Rows[all_sections_lowest_range.Rows.Count].Row;
 
             int section_first_row = lowest_row + _SECTIONS_GAP_FOR_INVALID_OBJECTS - _SECTIONS_GAP;
