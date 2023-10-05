@@ -14,8 +14,9 @@ namespace ExellAddInsLib.MSG
         public bool IsValid
         {
             get { return _isValid; }
-            set { 
-                
+            set
+            {
+
                 _isValid = value;
                 if (_isValid == false)
                     this.Cell.Interior.Color = XlRgbColor.rgbRed;
@@ -93,7 +94,7 @@ namespace ExellAddInsLib.MSG
             if (_valueType == typeof(double) || _valueType == typeof(decimal))
             {
                 Char separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator[0];
-                CellNumberFormat =  $"0.00";
+                CellNumberFormat = $"0.00";
             }
             if (_valueType == typeof(int))
             {
@@ -114,12 +115,12 @@ namespace ExellAddInsLib.MSG
         {
             int int_num_part = (int)val;
             var fractional_num_part = val - int_num_part;
-            string str  =fractional_num_part.ToString();
+            string str = fractional_num_part.ToString();
             string out_str = "0.";
             int ii = 2;
             try
             {
-                while (str.Length >= 2 && ii< str.Length && str[ii] == '0')
+                while (str.Length >= 2 && ii < str.Length && str[ii] == '0')
                 {
                     out_str = $"{out_str}0";
                     ii++;
@@ -132,42 +133,47 @@ namespace ExellAddInsLib.MSG
 
             if (ii == 2)
                 return "#0.00";
-            return out_str+'0';
+            return out_str + '0';
         }
-        
+
         public void OnNext(PropertyChangeState value)
         {
             try
-            { 
-            var sender = value.Sender;
-            string[] prop_chain = this.ProprertyName.Split('.');
-            if (prop_chain[0] != value.PropertyName) return;
-
-            var prop_names = value.PropertyName.Split(new char[] { '.' });
-            Type prop_type = sender.GetType().GetProperty(prop_names[0]).PropertyType;
-
-            foreach (string prop_name in prop_chain)
             {
-                var prop_val = sender.GetType().GetProperty(prop_name).GetValue(sender, null);
-                if (prop_val is IExcelBindableBase exbb_val)
-                    sender = exbb_val;
-                else if (prop_val.GetType() == this.ValueType && IsReadOnly == false)
+                var sender = value.Sender;
+                string[] prop_chain = this.ProprertyName.Split('.');
+                //    if (prop_chain[0] != value.PropertyName) return;
+                if (this.ProprertyName!= value.PropertyName) return;
+
+
+                var prop_names = value.PropertyName.Split(new char[] { '.' });
+                Type prop_type = sender.GetType().GetProperty(prop_names[0]).PropertyType;
+
+                foreach (string prop_name in prop_chain)
                 {
-                    if(prop_val is decimal dec_val)
+                    var prop_val = sender.GetType().GetProperty(prop_name).GetValue(sender, null);
+                    if (prop_val == null) break;
+                    if (prop_val is IExcelBindableBase exbb_val)
+                        sender = exbb_val;
+                    else if (prop_val.GetType() == this.ValueType && IsReadOnly == false)
                     {
-                        this.Cell.NumberFormat= GetNumberFormat(dec_val);//
+                        if (prop_val is decimal dec_val)
+                        {
+                            this.Cell.NumberFormat = GetNumberFormat(dec_val);//
+                        }
+                        this.Cell.Value = prop_val;
                     }
-                    this.Cell.Value = prop_val;
                 }
+                this.IsValid = value.PropertyIsValid;
+                if (!value.PropertyIsValid) throw new Exception("Неверный формат ячейки.");
             }
-            this.IsValid = value.PropertyIsValid;
-            }
-            catch(Exception e)
+            catch (Exception e)
             {
-                throw new Exception($"{e.Message}\n Строка:{this.Row} Столбец: {this.Column} \n Свойство:{value.PropertyName} Корректность записи:{value.PropertyIsValid}");;  
+                throw new Exception($"{e.Message}\nЯчейка:   {Cell.RangeAddress()}\nСтрока:{this.Row} Столбец: {this.Column} \n Свойство:{value.PropertyName} Корректность записи:{value.PropertyIsValid}"); ;
             }
+
         }
-      
+
         private void GetPropValue(IExcelBindableBase obj, string prop_name, bool first_itaration = true)
         {
 
