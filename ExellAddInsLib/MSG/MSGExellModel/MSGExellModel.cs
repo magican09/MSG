@@ -73,7 +73,7 @@ namespace ExellAddInsLib.MSG
         public DateTime RecordCardStartDate
         {
             get { return _recordCardStartDate; }
-            set { _recordCardStartDate = value; }
+            set { SetProperty(ref _recordCardStartDate, value); }
         }
 
         private DateTime _worksEndDate;
@@ -517,7 +517,7 @@ namespace ExellAddInsLib.MSG
                 Excel.Range end_date_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_END_DATE_COL];
                 Excel.Range duration_cell = registerSheet.Cells[rowIndex, MSGWork.MSG_DURATION_DATE_COL];
                 DateTime end_time;
-            
+
                 if (start_time < this.WorksStartDate) this.WorksStartDate = start_time;
 
                 if (duration_cell.Value != null && Int32.TryParse(duration_cell.Value.ToString(), out duration) && duration != 0)
@@ -662,7 +662,7 @@ namespace ExellAddInsLib.MSG
                     foreach (NeedsOfWorkersDay needsOfWorkersDay in msg_needs_of_workers.NeedsOfWorkersReportCard)
                         global_needs_of_worker.NeedsOfWorkersReportCard.Add(needsOfWorkersDay);
 
-                  
+
                 }
                 else
                 {
@@ -680,7 +680,7 @@ namespace ExellAddInsLib.MSG
                             global_needs_of_worker.NeedsOfWorkersReportCard.Add(new_nw_day);
                         }
                     }
-                
+
                 }
                 if (!this.WorkersComposition.Contains(global_needs_of_worker))
                     this.WorkersComposition.Add(global_needs_of_worker);
@@ -805,7 +805,7 @@ namespace ExellAddInsLib.MSG
                 vovr_work.SetPropertyValidStatus("Name", false);
             var unit_of_measurement_name = registerSheet.Cells[rowIndex, VOVRWork.VOVR_MEASURE_COL].Value;
             if (unit_of_measurement_name != null)
-                vovr_work.UnitOfMeasurement = new UnitOfMeasurement(unit_of_measurement_name);
+                vovr_work.UnitOfMeasurement = new UnitOfMeasurement(unit_of_measurement_name.ToString());
             else
                 vovr_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);
 
@@ -866,7 +866,7 @@ namespace ExellAddInsLib.MSG
 
             ks_work.LoadSessionId = this.LoadSessionId;
             ks_work.Worksheet = registerSheet;
-        
+
             this.Register(ks_work, "Number", rowIndex, KSWork.KS_NUMBER_COL, this.RegisterSheet, false, v => Regex.IsMatch(v.ToString(), @"^\d+\.\d+\.\d+\.\d+$"));
             this.Register(ks_work, "EstimateNumber", rowIndex, KSWork.KS_ESTIMATE_NUMBER_COL, this.RegisterSheet);
             this.Register(ks_work, "Code", rowIndex, KSWork.KS_CODE_COL, this.RegisterSheet);
@@ -880,9 +880,9 @@ namespace ExellAddInsLib.MSG
             var estimate_namber = registerSheet.Cells[rowIndex, KSWork.KS_ESTIMATE_NUMBER_COL].Value;
             if (estimate_namber != null)
                 ks_work.EstimateNumber = estimate_namber.ToString();
-           
 
-                var code = registerSheet.Cells[rowIndex, KSWork.KS_CODE_COL].Value;
+
+            var code = registerSheet.Cells[rowIndex, KSWork.KS_CODE_COL].Value;
             if (code != null)
                 ks_work.Code = code.ToString();
             else
@@ -1002,7 +1002,7 @@ namespace ExellAddInsLib.MSG
             else
             {
                 rc_work.LabournessCoefficient = 0;
-                rc_work.SetPropertyValidStatus("LabournessCoefficient", false);
+                //  rc_work.SetPropertyValidStatus("LabournessCoefficient", false);
 
             }
             var laboriousness = registerSheet.Cells[rowIndex, RCWork.RC_LABOURNESS_COL].Value;
@@ -1011,9 +1011,10 @@ namespace ExellAddInsLib.MSG
             else
             {
                 rc_work.Laboriousness = 0;
-                rc_work.SetPropertyValidStatus("Laboriousness", false);
+                //    rc_work.SetPropertyValidStatus("Laboriousness", false);
 
             }
+
             if (!this.RCWorks.Contains(rc_work))
                 this.RCWorks.Add(rc_work);
 
@@ -1069,6 +1070,7 @@ namespace ExellAddInsLib.MSG
             while (date_index < this.WorkedDaysNumber)
             {
                 DateTime current_date = DateTime.Parse(registerSheet.Cells[WorkReportCard.WRC_DATE_ROW, WorkReportCard.WRC_DATE_COL + date_index].Value.ToString());
+
                 decimal quantity = 0;
                 if (registerSheet.Cells[rowIndex, WorkReportCard.WRC_DATE_COL + date_index].Value != null)
                     quantity = Decimal.Parse(registerSheet.Cells[rowIndex, WorkReportCard.WRC_DATE_COL + date_index].Value.ToString());
@@ -1083,6 +1085,7 @@ namespace ExellAddInsLib.MSG
                 }
                 date_index++;
             }
+            report_card.DaysFirsDate = this.RecordCardStartDate;
             if (!this.WorkReportCards.Contains(report_card))
                 this.WorkReportCards.Add(report_card);
         }
@@ -1155,6 +1158,7 @@ namespace ExellAddInsLib.MSG
 
                         date_index++;
                     }
+                    worker_consumption.WorkersConsumptionReportCard.DaysFirsDate = this.RecordCardStartDate;
                     if (!this.WorkerConsumptions.Contains(worker_consumption))
                         this.WorkerConsumptions.Add(worker_consumption);
 
@@ -1282,6 +1286,28 @@ namespace ExellAddInsLib.MSG
             }
             this.WorkReportCards.Clear();
         }
+
+        public void ClearAllWorkerConsuptions()
+        {
+            List<WorkerConsumption> all_wconsumpts = new List<WorkerConsumption>(this.WorkerConsumptions);
+            foreach (var wc in all_wconsumpts)
+            {
+                this.WorkerConsumptions.Remove(wc);
+                this.Unregister(wc);
+            }
+            this.WorkerConsumptions.Clear();
+        }
+        public void ClearAllMachineConsuptions()
+        {
+            List<MachineConsumption> all_mconsumpts = new List<MachineConsumption>(this.MachineConsumptions);
+            foreach (var mc in all_mconsumpts)
+            {
+                this.MachineConsumptions.Remove(mc);
+                this.Unregister(mc);
+            }
+            this.MachineConsumptions.Clear();
+        }
+
         public void AdjustObjectModel()
         {
             foreach (WorksSection section in this.WorksSections.ToList())
@@ -1291,7 +1317,7 @@ namespace ExellAddInsLib.MSG
                     this.Unregister(section);
                     if (section.Owner != null && section.Owner is MSGExellModel model)
                         model.WorksSections.Remove(section);
-                
+
                     this.WorksSections.Remove(section);
                 }
                 var sections = this.WorksSections.Where(s => s.Number == section.Number && !InvalidObjects.Contains(s)).ToList();
@@ -1312,11 +1338,11 @@ namespace ExellAddInsLib.MSG
                 if (work.LoadSessionId != this.LoadSessionId)
                 {
                     this.Unregister(work);
-                    if (work.Owner != null && work.Owner is WorksSection  section)
+                    if (work.Owner != null && work.Owner is WorksSection section)
                         section.MSGWorks.Remove(work);
                     this.MSGWorks.Remove(work);
                 }
-                
+
                 var works = this.MSGWorks.Where(w => w.Number == work.Number && !InvalidObjects.Contains(w)).ToList();
                 if (works.Count > 1)
                 {
@@ -1380,8 +1406,8 @@ namespace ExellAddInsLib.MSG
                 if (work.LoadSessionId != this.LoadSessionId)
                 {
                     this.Unregister(work);
-                    if(work.Owner!=null && work.Owner is KSWork ks_work)
-                            ks_work.RCWorks.Remove(work);
+                    if (work.Owner != null && work.Owner is KSWork ks_work)
+                        ks_work.RCWorks.Remove(work);
 
                     this.RCWorks.Remove(work);
                 }
@@ -1503,9 +1529,11 @@ namespace ExellAddInsLib.MSG
         public void ReloadSheetModel()
         {
 
-          //  this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
-        //   this.Register(this, "WorksStartDate", WORKS_START_DATE_ROW, WORKS_END_DATE_COL, this.RegisterSheet);
+            //  this.WorksStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
+            //   this.Register(this, "WorksStartDate", WORKS_START_DATE_ROW, WORKS_END_DATE_COL, this.RegisterSheet);
             this.RecordCardStartDate = DateTime.Parse(this.RegisterSheet.Cells[WORKS_START_DATE_ROW, WORKS_END_DATE_COL].Value.ToString());
+            this.Register(this, "RecordCardStartDate", WORKS_START_DATE_ROW, WORKS_END_DATE_COL, this.RegisterSheet);
+
 
             this.ContractCode = this.CommonSheet.Cells[CONTRACT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
             this.ContructionObjectCode = this.CommonSheet.Cells[CONSTRUCTION_OBJECT_CODE_ROW, COMMON_PARAMETRS_VALUE_COL].Value.ToString();
@@ -1868,7 +1896,7 @@ namespace ExellAddInsLib.MSG
                         foreach (KSWork ks_work in vovr_work.KSWorks)
                         {
                             string rc_works_labourness_sum_formula = "";
-                            if (this.Owner == null && tmp_first_rc_card_days_row!=null) tmp_first_rc_card_days_row.Copy();
+                            if (this.Owner == null && tmp_first_rc_card_days_row != null) tmp_first_rc_card_days_row.Copy();
                             foreach (RCWork rc_work in ks_work.RCWorks)
                             {
                                 if (rc_work.ReportCard == null)
@@ -1950,7 +1978,7 @@ namespace ExellAddInsLib.MSG
                         //         model.WorkerConsumptionsSheet.Cells[cons_row, col_iterator];
                         //    cons_quantity_formula += $"{model.WorkerConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
                         //}
-                        if(model.WorkerConsumptionsSheet!=null)
+                        if (model.WorkerConsumptionsSheet != null)
                         {
                             int cons_row = consumption["Number"].Row;
                             var child_cons_day_range =
@@ -1982,7 +2010,7 @@ namespace ExellAddInsLib.MSG
                         //         model.MachineConsumptionsSheet.Cells[cons_row, col_iterator];
                         //    cons_quantity_formula += $"{model.MachineConsumptionsSheet.Name}!{Func.RangeAddress(cons_day_range)}+";
                         //}
-                        if(model.MachineConsumptionsSheet!=null)
+                        if (model.MachineConsumptionsSheet != null)
                         {
                             int cons_row = consumption["Number"].Row;
                             var child_cons_day_range =
@@ -2208,6 +2236,8 @@ namespace ExellAddInsLib.MSG
                     var report_card = this.WorkReportCards.FirstOrDefault(rc => rc.Number == tuple.Item1);
                     if (report_card != null)
                     {
+                        report_card.DaysFirsDate = this.RecordCardStartDate;
+
                         report_card.AdjustExcelRepresentionTree(tuple.Item2);
                         report_card.UpdateExcelRepresetation();
                     }
@@ -2246,6 +2276,12 @@ namespace ExellAddInsLib.MSG
                 last_row = w_section.AdjustExcelRepresentionTree(last_row + _SECTIONS_GAP);
                 w_section.UpdateExcelRepresetation();
             }
+
+            foreach(var rc in this.WorkReportCards)
+            {
+                this.UpdateExcelReportCardsRepresetation(this.RCWorks.Select(s => new Tuple<string, int>(s.Number, s.GetTopRow())));
+            }
+
             Excel.Range all_sections_lowest_range = this.WorksSections.GetRange()?.GetRangeWithLowestEdge();
             int lowest_row = all_sections_lowest_range.Rows[all_sections_lowest_range.Rows.Count].Row;
 
@@ -2267,7 +2303,130 @@ namespace ExellAddInsLib.MSG
                 if (obj is WorkReportCard reportCard) repordCard_first_row = reportCard.AdjustExcelRepresentionTree(repordCard_first_row++);
                 obj.UpdateExcelRepresetation();
             }
+
+          
+
         }
+
+        public  void UpdateExcelWorkerConsuptionsRepresentation()
+        {
+            foreach (var wc in this.WorkerConsumptions)
+            {
+                foreach (var w in wc.WorkersConsumptionReportCard)
+                {
+                    int d_col = (w.Date - this.RecordCardStartDate).Days;
+                    w.ChangeLeftColumn(WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + d_col);
+                    w.UpdateExcelRepresetation();
+                }
+
+            }
+        }
+        public void UpdateExcelMachineConsuptionsRepresentation()
+        {
+            foreach (var mc in this.MachineConsumptions)
+            {
+                foreach (var m in mc.MachinesConsumptionReportCard)
+                {
+                    int d_col = (m.Date - this.RecordCardStartDate).Days;
+                    m.ChangeLeftColumn(WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL + d_col);
+                    m.UpdateExcelRepresetation();
+                }
+
+            }
+        }
+
+        public void UpdateRecordCardsArea()
+        {
+            if (this.Owner != null)
+            {
+                DateTime date = this.RecordCardStartDate;
+                this.ClearAllRecordCards();
+                this.LoadWorksReportCards();
+                this.RecordCardStartDate = this.Owner.RecordCardStartDate;
+                this.ClearWorksheetRecorCardPart(); ;
+                this.UpdateExcelReportCardsRepresetation(this.Owner.RCWorks.Select(s => new Tuple<string, int>(s.Number, s.GetTopRow())));
+                this.RecordCardStartDate = date;
+               }
+
+        }
+        public void UpdateReegisterSheet()
+        {
+            if (this.Owner != null)
+            {
+
+                this.ClearWorksheetCommonPart();
+                this.Owner.WorksSections.Worksheet = this.RegisterSheet;
+                this.Owner.UpdateExcelRepresetation();
+                this.Owner.WorksSections.Worksheet = this.Owner.RegisterSheet;
+             //   this.UpdateExcelReportCardsRepresetation(this.Owner.RCWorks.Select(s => new Tuple<string, int>(s.Number, s.GetTopRow())));
+             
+            }
+
+        }
+        public void UpdateWorkerConsumptionsArea()
+        {
+            if (this.Owner != null)
+            {
+                DateTime date = this.RecordCardStartDate;
+                this.ClearAllWorkerConsuptions();
+                this.LoadWorkerConsumptions();
+                this.RecordCardStartDate = this.Owner.RecordCardStartDate;
+                this.ClearWorksheetWorkerConsumptionsPart();
+                this.UpdateExcelWorkerConsuptionsRepresentation();
+                 this.RecordCardStartDate = date;
+            }
+
+        }
+        public void UpdateMachineConsumptionsArea()
+        {
+            if (this.Owner != null)
+            {
+                DateTime date = this.RecordCardStartDate;
+                this.ClearAllMachineConsuptions();
+                this.LoadMachineConsumptions();
+                this.RecordCardStartDate = this.Owner.RecordCardStartDate;
+                this.ClearWorksheetMachineConsumptionsPart();
+                this.UpdateExcelMachineConsuptionsRepresentation();
+                this.RecordCardStartDate = date;
+            }
+
+        }
+        public void UpdateAll()
+        {
+            {
+                if (this.Owner != null)
+                {
+                    this.WorkedDaysNumber = this.Owner.WorkedDaysNumber;
+                    this.UpdateReegisterSheet();
+                    this.UpdateRecordCardsArea();
+                    this.UpdateWorkerConsumptionsArea();
+                    this.UpdateMachineConsumptionsArea();
+
+                    this.RecordCardStartDate = this.Owner.RecordCardStartDate;
+                    this.RegisterSheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_START_DATE_COL].Value = this.RecordCardStartDate.ToString("d");
+                    this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL].Value = this.RecordCardStartDate.ToString("d");
+                    this.MachineConsumptionsSheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL].Value = this.RecordCardStartDate.ToString("d");
+
+                    this.ReloadSheetModel();
+                    this.SetFormulas();
+                    this.LoadMSGWorks();
+                    this.SetStyleFormats();
+
+
+                }
+                else
+                {
+                    this.ClearWorksheetCommonPart();
+                    this.ClearWorksheetRecorCardPart();
+
+                    this.UpdateExcelRepresetation();
+                    this.SetFormulas();
+                    this.SetStyleFormats();
+                }
+
+            }
+        }
+
 
         /// <summary>
         /// Функция копирует часть объектой модели из родительской модеи в текущую
@@ -2461,7 +2620,44 @@ namespace ExellAddInsLib.MSG
             this.RemoveGroups(this.RegisterSheet);
 
         }
+        public void ClearWorksheetWorkerConsumptionsPart()
+        {
+            try
+            {
+                Excel.Range last_cell = this.WorkerConsumptionsSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
 
+                Excel.Range common_area_range = this.WorkerConsumptionsSheet.Range[
+                    this.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_FIRST_ROW_INDEX, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL],
+                      this.WorkerConsumptionsSheet.Cells[last_cell.Row, last_cell.Column]];
+                common_area_range.ClearContents();
+
+            }
+            catch (Exception exp)
+            {
+                throw new Exception($"Ошибка при очистке листа.Ошибка:{exp.Message}");
+            }
+
+   
+        }
+        public void ClearWorksheetMachineConsumptionsPart()
+        {
+            try
+            {
+                Excel.Range last_cell = this.MachineConsumptionsSheet.Cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+
+                Excel.Range common_area_range = this.MachineConsumptionsSheet.Range[
+                    this.MachineConsumptionsSheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_FIRST_ROW_INDEX, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL],
+                      this.MachineConsumptionsSheet.Cells[last_cell.Row, last_cell.Column]];
+                common_area_range.ClearContents();
+
+            }
+            catch (Exception exp)
+            {
+                throw new Exception($"Ошибка при очистке листа.Ошибка:{exp.Message}");
+            }
+
+
+        }
         public void ClearWorksheetAll()
         {
             this.ClearWorksheetCommonPart();

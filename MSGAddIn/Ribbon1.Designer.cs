@@ -41,6 +41,7 @@
             this.btnLoadFromModel = this.Factory.CreateRibbonButton();
             this.menuCommon = this.Factory.CreateRibbonMenu();
             this.btnUpdateAll = this.Factory.CreateRibbonButton();
+            this.btnChangeModelGlobals = this.Factory.CreateRibbonButton();
             this.btnLoadInModelLocal = this.Factory.CreateRibbonButton();
             this.chckBoxHashEnable = this.Factory.CreateRibbonCheckBox();
             this.separator4 = this.Factory.CreateRibbonSeparator();
@@ -143,6 +144,7 @@
             // menuCommon
             // 
             this.menuCommon.Items.Add(this.btnUpdateAll);
+            this.menuCommon.Items.Add(this.btnChangeModelGlobals);
             this.menuCommon.Label = "Глобальные команды";
             this.menuCommon.Name = "menuCommon";
             // 
@@ -153,6 +155,13 @@
             this.btnUpdateAll.Name = "btnUpdateAll";
             this.btnUpdateAll.ShowImage = true;
             this.btnUpdateAll.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnUpdateAll_Click);
+            // 
+            // btnChangeModelGlobals
+            // 
+            this.btnChangeModelGlobals.Label = "Общие настройки";
+            this.btnChangeModelGlobals.Name = "btnChangeModelGlobals";
+            this.btnChangeModelGlobals.ShowImage = true;
+            this.btnChangeModelGlobals.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnChangeModelGlobals_Click);
             // 
             // btnLoadInModelLocal
             // 
@@ -538,6 +547,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnCreateMSGForEmployers;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitVOVRContent;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitKSContent;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeModelGlobals;
     }
 
     partial class ThisRibbonCollection

@@ -82,7 +82,7 @@ namespace ExellAddInsLib.MSG
         }
 
 
-        public override int AdjustExcelRepresentionTree(int row)
+        public override int AdjustExcelRepresentionTree(int row, int col = 0)
         {
             KSWork ks_work = this;
             int ks_row = row;

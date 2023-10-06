@@ -61,7 +61,7 @@ namespace ExellAddInsLib.MSG
                 msg_work.UpdateExcelRepresetation();
 
         }
-        public override int AdjustExcelRepresentionTree(int row)
+        public override int AdjustExcelRepresentionTree(int row, int col = 0)
         {
             int section_row = row;
             int msg_row = row - _MSG_WORKS_GAP;

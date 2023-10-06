@@ -20,6 +20,14 @@ namespace ExellAddInsLib.MSG
             set { SetProperty(ref _number, value); }
         }//Номер работы
 
+        private DateTime _daysFirsDate;
+
+        public DateTime DaysFirsDate
+        {
+            get { return _daysFirsDate; }
+            set { SetProperty(ref _daysFirsDate, value); }
+        }
+
         private decimal _quantity;
         [NonGettinInReflection]
         public decimal Quantity
@@ -80,13 +88,24 @@ namespace ExellAddInsLib.MSG
 
         }
 
-        public override int AdjustExcelRepresentionTree(int row)
+        public override int AdjustExcelRepresentionTree(int row,int col=0)
         {
             base.ChangeTopRow(row);
-
+            
             foreach (var w_day in this)
-                w_day.ChangeTopRow(row);
+            {
+                try
+                {
+                    int d_col = (w_day.Date - this.DaysFirsDate).Days;
+                    w_day.ChangeTopRow(row);
+                    w_day.ChangeLeftColumn(WRC_DATE_COL+d_col);
 
+                }
+                catch
+                {
+
+                }
+            }
             return row;
         }
 

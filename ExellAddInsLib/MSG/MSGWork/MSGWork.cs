@@ -90,7 +90,7 @@ namespace ExellAddInsLib.MSG
 
         }
 
-        public override int AdjustExcelRepresentionTree(int row)
+        public override int AdjustExcelRepresentionTree(int row, int col = 0)
         {
             MSGWork msg_work = this;
             int msg_row = row;

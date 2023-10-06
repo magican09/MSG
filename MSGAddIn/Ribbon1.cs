@@ -186,11 +186,11 @@ namespace MSGAddIn
             btnChangePosts.Enabled = state;
             btnChangeUOM.Enabled = state;
             btnMachines.Enabled = state;
-       
+
             //chckBoxHashEnable.Enabled = state;
-          
-         //   btnLoadInModelLocal.Enabled = state & chckBoxHashEnable.Checked;
-         
+
+            //   btnLoadInModelLocal.Enabled = state & chckBoxHashEnable.Checked;
+
             btnCreateMSGForEmployers.Enabled = state;
         }
         private void AjastBtnsState()
@@ -294,9 +294,9 @@ namespace MSGAddIn
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-                catch (Exception exp)
+            catch (Exception exp)
             {
-                          MessageBox.Show($"Ошибка при зазугрузка данных: {exp.Message}");
+                MessageBox.Show($"Ошибка при зазугрузка данных: {exp.Message}");
             }
 
         }
@@ -419,10 +419,10 @@ namespace MSGAddIn
                     var start_date_cell = CommonMSGWorksheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_START_DATE_COL];
                     string date_formula = $"={CommonMSGWorksheet.Name}!{Func.RangeAddress(start_date_cell)}";
 
-                    Excel.Range cons_start_date_cell = employer_worker_consumption_worksheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL];
-                    cons_start_date_cell.Formula = date_formula;
-                    new_employer_worksheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_START_DATE_COL]
-                        .Formula = date_formula;
+                    //Excel.Range cons_start_date_cell = employer_worker_consumption_worksheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL];
+                    //cons_start_date_cell.Formula = date_formula;
+                    //new_employer_worksheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_START_DATE_COL]
+                    //    .Formula = date_formula;
 
                     ///////////////////
                     Excel.Worksheet employer_machine_consumption_worksheet = CurrentWorkbook.Worksheets.Add(CommonMachineConsumptionsWorksheet, Type.Missing, Type.Missing, Type.Missing);
@@ -444,7 +444,7 @@ namespace MSGAddIn
                     MachineConsumptionsWorksheets.Add(employer_machine_consumption_worksheet);
 
                     Excel.Range machine_cons_start_date_cell = employer_machine_consumption_worksheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL];
-                    cons_start_date_cell.Formula = date_formula;
+                    //cons_start_date_cell.Formula = date_formula;
 
                     ///////////////////
 
@@ -667,42 +667,14 @@ namespace MSGAddIn
 
         private void btnLoadFromModel_Click(object sender, RibbonControlEventArgs e)
         {
-            try
+            //try
             {
-                if (CurrentMSGExellModel.Owner != null)
-                {
-                    CurrentMSGExellModel.WorkedDaysNumber = CurrentMSGExellModel.Owner.WorkedDaysNumber;
-                    CurrentMSGExellModel.ClearAllRecordCards();
-                    CurrentMSGExellModel.LoadWorksReportCards();
-
-                    CurrentMSGExellModel.ClearWorksheetCommonPart();
-                    CurrentMSGExellModel.Owner.WorksSections.Worksheet = CurrentMSGExellModel.RegisterSheet;
-                    CurrentMSGExellModel.Owner.UpdateExcelRepresetation();
-                  
-                    CurrentMSGExellModel.ClearWorksheetRecorCardPart(); ;
-
-                    CurrentMSGExellModel.Owner.WorksSections.Worksheet = CurrentMSGExellModel.Owner.RegisterSheet;
-                    CurrentMSGExellModel.UpdateExcelReportCardsRepresetation(CurrentMSGExellModel.Owner.RCWorks.Select(s => new Tuple<string, int>(s.Number, s.GetTopRow())));
-
-                    CurrentMSGExellModel.ReloadSheetModel();
-                    CurrentMSGExellModel.SetFormulas();
-                    CurrentMSGExellModel.LoadMSGWorks();
-                    CurrentMSGExellModel.SetStyleFormats();
-                }
-                else
-                {
-                    CurrentMSGExellModel.ClearWorksheetCommonPart();
-                    CurrentMSGExellModel.ClearWorksheetRecorCardPart();
-
-                    CurrentMSGExellModel.UpdateExcelRepresetation();
-                    CurrentMSGExellModel.SetFormulas();
-                    CurrentMSGExellModel.SetStyleFormats();
-                }
+                CurrentMSGExellModel.UpdateAll();
 
             }
-            catch (Exception exp)
+            //  catch (Exception exp)
             {
-                MessageBox.Show($"Ошибка при выгрузке данных из модели в документ. Ошибка:{exp.Message}");
+                //      MessageBox.Show($"Ошибка при выгрузке данных из модели в документ. Ошибка:{exp.Message}");
             }
         }
         private void btnUpdateAll_Click(object sender, RibbonControlEventArgs e)
@@ -1367,7 +1339,7 @@ namespace MSGAddIn
         private List<IExcelBindableBase> CopyedObjectsList = new List<IExcelBindableBase>();
         private string commands_group_label = "";
 
-       
+
 
         /// <summary>
         /// Вставить из беферного списка объекты
@@ -1949,6 +1921,45 @@ namespace MSGAddIn
                     ks_work.SetStyleFormats(MSGExellModel.W_SECTION_COLOR + 1);
                 }
             }
+        }
+
+        private void btnChangeModelGlobals_Click(object sender, RibbonControlEventArgs e)
+        {
+            if (CurrentMSGExellModel != null && CurrentMSGExellModel.Owner == null)
+            {
+                SetGlobalsForm sg_form = new SetGlobalsForm();
+                sg_form.RecordCardStartDate = CurrentMSGExellModel.RecordCardStartDate;
+                sg_form.ContractCode = CurrentMSGExellModel.ContractCode;
+                sg_form.ContructionObjectCode = CurrentMSGExellModel.ContructionObjectCode;
+                sg_form.ConstructionSubObjectCode = CurrentMSGExellModel.ConstructionSubObjectCode;
+
+                sg_form.ShowDialog();
+                if (sg_form.DialogResult == DialogResult.OK)
+                {
+                    CurrentMSGExellModel.RecordCardStartDate = sg_form.RecordCardStartDate;
+                    CurrentMSGExellModel.ContractCode = sg_form.ContractCode;
+                    CurrentMSGExellModel.ContructionObjectCode = sg_form.ContructionObjectCode;
+                    CurrentMSGExellModel.ConstructionSubObjectCode = sg_form.ConstructionSubObjectCode;
+               
+                    foreach (MSGExellModel model in CurrentMSGExellModel.Children)
+                    {
+                        model.WorkedDaysNumber = model.Owner.WorkedDaysNumber;
+                        model.UpdateRecordCardsArea();
+                        model.UpdateWorkerConsumptionsArea();
+                        model.UpdateMachineConsumptionsArea();
+                        model.RecordCardStartDate = model.Owner.RecordCardStartDate;
+                        model.RegisterSheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_START_DATE_COL].Value = model.RecordCardStartDate.ToString("d");
+                        model.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL].Value = model.RecordCardStartDate.ToString("d");
+                        model.MachineConsumptionsSheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL].Value = model.RecordCardStartDate.ToString("d");
+
+                    }
+
+                }
+
+            }
+
+
+
         }
     }
 

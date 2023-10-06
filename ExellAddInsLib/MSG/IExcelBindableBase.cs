@@ -30,6 +30,8 @@ namespace ExellAddInsLib.MSG
         Excel.Range GetRange(int right_border = 100000000, int low_borde = 1000000000, int left_border = 0, int up_border = 0);
         void SetInvalidateCellsColor(XlRgbColor color);
         void ChangeTopRow(int row);
+        void ChangeLeftColumn(int col);
+
         int GetBottomRow();
         int GetTopRow();
         int GetLeftColumn();
@@ -41,7 +43,7 @@ namespace ExellAddInsLib.MSG
         string GetSelfNamber();
 
         void UpdateExcelRepresetation();
-        int AdjustExcelRepresentionTree(int top_row);
+        int AdjustExcelRepresentionTree(int top_row,int col =0);
         void SetStyleFormats(int col);
         //void SetBordersLine(Excel.Range range);
         //void SetBordersLine(Excel.Range range, bool right = true, bool left = true, bool top = true, bool bottom = true);

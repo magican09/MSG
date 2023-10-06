@@ -141,7 +141,7 @@ namespace ExellAddInsLib.MSG
             }
         }
 
- 
+
 
         public virtual Excel.Range GetRange(int right_border, int low_border = 100000000, int left_border = 0, int up_border = 0)
         {
@@ -176,7 +176,7 @@ namespace ExellAddInsLib.MSG
             }
             return range;
         }
-     
+
         public virtual Excel.Range RowsRange()
         {
             Excel.Range base_range = this.GetRange();
@@ -185,8 +185,8 @@ namespace ExellAddInsLib.MSG
             return Worksheet.Range[Worksheet.Rows[top_row], Worksheet.Rows[bottom_row]]; ;
 
         }
-       
-        public virtual int  GetLastRow()
+
+        public virtual int GetLastRow()
         {
 
             return this.Worksheet.Rows[this._observers.Select(s => s as ExcelPropAddress).OrderBy(r => r.Row).LastOrDefault().Row].Row;
@@ -200,6 +200,10 @@ namespace ExellAddInsLib.MSG
                 observer.Cell.Interior.Color = color;
             }
         }
+        /// <summary>
+        /// Изменяет первую строку
+        /// </summary>
+        /// <param name="row"></param>
         public virtual void ChangeTopRow(int row)
         {
             int top_row = this._observers.Select(s => s as ExcelPropAddress).Where(observer => !observer.ProprertyName.Contains("_")).OrderBy(observer => observer.Row).First().Row;
@@ -211,6 +215,22 @@ namespace ExellAddInsLib.MSG
                 observer.Row += row_delta;
             }
         }
+        /// <summary>
+        /// Изменяет первый слева столбец
+        /// </summary>
+        /// <param name="col"></param>
+        public virtual void ChangeLeftColumn(int col)
+        {
+            int left_col = this._observers.Select(s => s as ExcelPropAddress).Where(observer => !observer.ProprertyName.Contains("_")).OrderBy(observer => observer.Column).First().Column;
+            int col_delta = col - left_col;
+            if (left_col + col_delta <= 0) col_delta = 0;
+            //  foreach(var kvp in this._observers.Where(k=>k.Key.Contains('_')))
+            foreach (var observer in this._observers.Select(s => s as ExcelPropAddress).Where(observer => !observer.ProprertyName.Contains("_")))
+            {
+                observer.Column += col_delta;
+            }
+        }
+
         public virtual int GetRowsCount()
         {
             int top_row = this._observers.Select(s => s as ExcelPropAddress).OrderBy(observer => observer.Row).First().Row;
@@ -282,7 +302,7 @@ namespace ExellAddInsLib.MSG
         {
             this.UpdateExellBindableObject();
         }
-        public virtual int AdjustExcelRepresentionTree(int row)
+        public virtual int AdjustExcelRepresentionTree(int row, int col =0)
         {
             this.ChangeTopRow(row);
             return row;
@@ -473,6 +493,6 @@ namespace ExellAddInsLib.MSG
 
         }
 
-        
+
     }
 }

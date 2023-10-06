@@ -1,4 +1,5 @@
 ﻿using Microsoft.Office.Interop.Excel;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace MSGAddIn
@@ -12,6 +13,10 @@ namespace MSGAddIn
         public event ActiveWorksheetChangedEventHeandler OnActiveWorksheetChanged;
         public event ActiveWorkbookChangedEventHeandler OnActiveWorkbookChanged;
         public event WorkbookBeforeCloseChangedEventHeandler OnBeforeCloseWorkbookChanged;
+        
+        SidePane sP;
+        private Microsoft.Office.Tools.CustomTaskPane myCustomTaskPane;
+
 
         private Excel.Worksheet _currentActiveWorkSheet;
 
@@ -44,6 +49,10 @@ namespace MSGAddIn
             this.Application.SheetActivate += Application_SheetActivate;
             this.Application.WorkbookActivate += Application_WorkbookActivate;
             this.Application.WorkbookBeforeClose += Application_WorkbookBeforeClose;
+            sP = new SidePane();
+            myCustomTaskPane = this.CustomTaskPanes.Add(sP, "Title");
+            myCustomTaskPane.Visible = true;
+          
         }
 
         private void Application_WorkbookBeforeClose(Workbook Wb, ref bool Cancel)

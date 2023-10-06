@@ -52,11 +52,11 @@ namespace ExellAddInsLib.MSG
             var rc_card = rc_work.ReportCard;
             if (rc_card != null)
             {
-                rc_card.UpdateExcelRepresetation();
+          //      rc_card.UpdateExcelRepresetation();
             }
         }
 
-        public override int AdjustExcelRepresentionTree(int row)
+        public override int AdjustExcelRepresentionTree(int row, int col = 0)
         {
             RCWork rc_work = this;
             int rc_row = row;

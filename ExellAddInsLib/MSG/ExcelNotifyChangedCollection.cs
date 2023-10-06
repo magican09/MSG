@@ -312,6 +312,18 @@ namespace ExellAddInsLib.MSG
                 kvp.Row += row_delta;
             }
         }
+        public void ChangeLeftColumn(int col)
+        {
+            if (this._observers.Count == 0) return;
+            int left_col = this._observers.Select(s => s as ExcelPropAddress).OrderBy(kvp => kvp.Column).First().Column;
+            int col_delta = col - left_col;
+            if (left_col + col_delta <= 0) col_delta = 0;
+            foreach (var kvp in this._observers.Select(s => s as ExcelPropAddress))
+            {
+                kvp.Column += col_delta;
+            }
+        }
+
         public int GetRowsCount()
         {
             if (this._observers.Count == 0) return 0;
@@ -415,10 +427,10 @@ namespace ExellAddInsLib.MSG
             foreach (T itm in this)
                 itm.UpdateExcelRepresetation();
         }
-        public virtual int AdjustExcelRepresentionTree(int row)
+        public virtual int AdjustExcelRepresentionTree(int row,int col=0)
         {
-            this.ChangeTopRow(row);
-
+            if(row!=0)this.ChangeTopRow(row);
+            if (col != 0) this.ChangeLeftColumn(col);
             return row;
         }
         public virtual void SetStyleFormats(int col)
