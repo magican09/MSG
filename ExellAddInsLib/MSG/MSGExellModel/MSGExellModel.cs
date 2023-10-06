@@ -2230,9 +2230,11 @@ namespace ExellAddInsLib.MSG
         {
             if (numbers_rows != null)
             {
-
+             //  var   first_work_date = this.WorkReportCards.Where(rc => rc.Where(wd=>wd.Date< this.RecordCardStartDate)!=null)?.Select(rc=>rc.First())?.OrderBy(wd=>wd.Date)?.FirstOrDefault()?.Date;
+           
                 foreach (Tuple<string, int> tuple in numbers_rows)
                 {
+                
                     var report_card = this.WorkReportCards.FirstOrDefault(rc => rc.Number == tuple.Item1);
                     if (report_card != null)
                     {
