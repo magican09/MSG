@@ -1,11 +1,14 @@
 ﻿using ExellAddInsLib.MSG;
 using Microsoft.Office.Interop.Excel;
+using Microsoft.Office.Tools.Excel;
 using Microsoft.Office.Tools.Ribbon;
 using Microsoft.Vbe.Interop;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Design;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -53,14 +56,14 @@ namespace MSGAddIn
 
         public Guid Workbook_Guid { get; set; }
 
-        ObservableCollection<Excel.Worksheet> EmployerMSGWorksheets = new ObservableCollection<Worksheet>();
-        ObservableCollection<Excel.Worksheet> EmployerWorkConsumptionsWorksheets = new ObservableCollection<Worksheet>();
-        ObservableCollection<Excel.Worksheet> MachineMSGWorksheets = new ObservableCollection<Worksheet>();
-        ObservableCollection<Excel.Worksheet> MachineConsumptionsWorksheets = new ObservableCollection<Worksheet>();
+        ObservableCollection<Excel.Worksheet> EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
+        ObservableCollection<Excel.Worksheet> EmployerWorkConsumptionsWorksheets = new ObservableCollection<Excel.Worksheet>();
+        ObservableCollection<Excel.Worksheet> MachineMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
+        ObservableCollection<Excel.Worksheet> MachineConsumptionsWorksheets = new ObservableCollection<Excel.Worksheet>();
 
         Employer SelectedEmloeyer;
         private bool InMSGWorkbook = false;
-        private void OnActiveWorkbookChanged(Workbook last_wbk, Workbook new_wbk)
+        private void OnActiveWorkbookChanged(Excel.Workbook last_wbk, Excel.Workbook new_wbk)
         {
             CommonMSGWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Ведомость_общая");
             CommonWorkConsumptionsWorksheet = new_wbk.Worksheets.OfType<Excel.Worksheet>().FirstOrDefault(w => w.Name == "Люди_общая");
@@ -115,7 +118,7 @@ namespace MSGAddIn
 
 
         }
-        private void OnBeforeCloseWorkbookChanged(Workbook Wb, ref bool Cancel)
+        private void OnBeforeCloseWorkbookChanged(Excel.Workbook Wb, ref bool Cancel)
         {
             if (CommonMSGWorksheet != null && CommonWorksheet != null
                 && UnitMeasurementsWorksheet != null
@@ -186,6 +189,7 @@ namespace MSGAddIn
             btnChangePosts.Enabled = state;
             btnChangeUOM.Enabled = state;
             btnMachines.Enabled = state;
+            menuCommon.Enabled = state;
 
             //chckBoxHashEnable.Enabled = state;
 
@@ -246,6 +250,7 @@ namespace MSGAddIn
                 CommonWorkConsumptionsWorksheet = CurrentWorkbook.Worksheets["Люди_общая"];
                 CommonMachineConsumptionsWorksheet = CurrentWorkbook.Worksheets["Техника_общая"];
 
+             //   CommonWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
                 //   this.AddExcellVBAFunctions();
 
                 EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
@@ -261,11 +266,25 @@ namespace MSGAddIn
                     {
                         string emoloyer_namber_str = worksheet.Name.Substring(worksheet.Name.LastIndexOf("_") + 1, worksheet.Name.Length - worksheet.Name.LastIndexOf("_") - 1);
                         if (worksheet.Name.Contains("Ведомость_"))
-                            EmployerMSGWorksheets.Add(worksheet);
+                        {
+                            if (!EmployerMSGWorksheets.Contains(worksheet)) EmployerMSGWorksheets.Add(worksheet);
+                            worksheet.Cells[WorkReportCard.WRC_DATE_ROW, WorkReportCard.WRC_DATE_COL].Value =
+                                 DateTime.Parse(worksheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_END_DATE_COL].Value.ToString()); ;
+                        }
                         else if (worksheet.Name.Contains("Люди_"))
-                            EmployerWorkConsumptionsWorksheets.Add(worksheet);
+                        {
+                            if (!EmployerWorkConsumptionsWorksheets.Contains(worksheet)) EmployerWorkConsumptionsWorksheets.Add(worksheet);
+                            worksheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL].Value =
+                                 DateTime.Parse(worksheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL].Value.ToString()); ;
+
+                        }
                         else if (worksheet.Name.Contains("Техника_"))
-                            MachineConsumptionsWorksheets.Add(worksheet);
+                        {
+                            if (!MachineConsumptionsWorksheets.Contains(worksheet)) MachineConsumptionsWorksheets.Add(worksheet);
+                            worksheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL].Value =
+                           DateTime.Parse(worksheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL].Value.ToString()); ;
+
+                        }
                         else if (worksheet.Name.Contains("Guid_"))
                         {
                             GuidWorksheet = worksheet;
@@ -512,12 +531,13 @@ namespace MSGAddIn
         /// <param name="visibility"></param>
         private void SetAllWorksheetsVisibleState(Excel.XlSheetVisibility visibility)
         {
-            CommonMSGWorksheet.Visible = visibility;
+           // CommonMSGWorksheet.Visible = visibility;
             CommonWorkConsumptionsWorksheet.Visible = visibility;
             EmployersWorksheet.Visible = visibility;
             PostsWorksheet.Visible = visibility;
             UnitMeasurementsWorksheet.Visible = visibility;
             MachinesWorksheet.Visible = visibility;
+
 
             foreach (Excel.Worksheet worksheet in EmployerMSGWorksheets)
                 worksheet.Visible = visibility;
@@ -1933,14 +1953,26 @@ namespace MSGAddIn
                 sg_form.ContructionObjectCode = CurrentMSGExellModel.ContructionObjectCode;
                 sg_form.ConstructionSubObjectCode = CurrentMSGExellModel.ConstructionSubObjectCode;
 
+
                 sg_form.ShowDialog();
-                if (sg_form.DialogResult == DialogResult.OK)
-                {
-                    CurrentMSGExellModel.RecordCardStartDate = sg_form.RecordCardStartDate;
+                if (sg_form.DialogResult == DialogResult.OK && !string.IsNullOrEmpty(sg_form.ContractCode)
+                                            && !string.IsNullOrEmpty(sg_form.ContructionObjectCode)
+                                            && !string.IsNullOrEmpty(sg_form.ConstructionSubObjectCode))
+                { 
+                    var first_record_card_date = CurrentMSGExellModel.WorkReportCards.Where(rc => rc.Where(wd => wd.Date < sg_form.RecordCardStartDate).FirstOrDefault() != null)
+                                                          ?.OrderBy(rc => rc.OrderBy(d => d.Date).First().Date)?.FirstOrDefault()?.FirstOrDefault()?.Date;
+
+
+                    CurrentMSGExellModel.RecordCardStartDate = first_record_card_date ?? sg_form.RecordCardStartDate;
+
                     CurrentMSGExellModel.ContractCode = sg_form.ContractCode;
                     CurrentMSGExellModel.ContructionObjectCode = sg_form.ContructionObjectCode;
                     CurrentMSGExellModel.ConstructionSubObjectCode = sg_form.ConstructionSubObjectCode;
-               
+                  
+                    CurrentMSGExellModel.RegisterSheet.Cells[WorkReportCard.WRC_DATE_ROW, WorkReportCard.WRC_DATE_COL].Value = CurrentMSGExellModel.RecordCardStartDate.ToString("d"); ;
+                    CurrentMSGExellModel.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL].Value = CurrentMSGExellModel.RecordCardStartDate.ToString("d");
+                    CurrentMSGExellModel.MachineConsumptionsSheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL].Value = CurrentMSGExellModel.RecordCardStartDate.ToString("d");
+
                     foreach (MSGExellModel model in CurrentMSGExellModel.Children)
                     {
                         model.WorkedDaysNumber = model.Owner.WorkedDaysNumber;
@@ -1948,7 +1980,9 @@ namespace MSGAddIn
                         model.UpdateWorkerConsumptionsArea();
                         model.UpdateMachineConsumptionsArea();
                         model.RecordCardStartDate = model.Owner.RecordCardStartDate;
+
                         model.RegisterSheet.Cells[MSGExellModel.WORKS_START_DATE_ROW, MSGExellModel.WORKS_START_DATE_COL].Value = model.RecordCardStartDate.ToString("d");
+                        model.RegisterSheet.Cells[WorkReportCard.WRC_DATE_ROW, WorkReportCard.WRC_DATE_COL].Value = model.RecordCardStartDate.ToString("d"); ;
                         model.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL].Value = model.RecordCardStartDate.ToString("d");
                         model.MachineConsumptionsSheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL].Value = model.RecordCardStartDate.ToString("d");
 

@@ -18,8 +18,14 @@ namespace MSGAddIn
         private Label label4;
         private TextBox textBoxConstructionSubObjectCode;
         private Button btnSave;
+        private DateTime _recordCardStartDate;
 
-        public DateTime RecordCardStartDate { get; set; }
+        public DateTime RecordCardStartDate
+        {
+            get { return _recordCardStartDate; }
+            set { _recordCardStartDate = value;
+                this.dateTimePickerStartDate.Value = _recordCardStartDate;
+            } }
         public string ContractCode { get; set; }
         public string ContructionObjectCode { get; set; }
         public string ConstructionSubObjectCode { get; set; }
@@ -140,7 +146,7 @@ namespace MSGAddIn
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            RecordCardStartDate = this.dateTimePickerStartDate.Value;
+            _recordCardStartDate = this.dateTimePickerStartDate.Value;
             ContractCode = this.textBoxContractCode.Text;
             ConstructionSubObjectCode = this.textBoxConstructionSubObjectCode.Text;
             ContructionObjectCode = this.textBoxContructionObjectCode.Text;
@@ -151,7 +157,7 @@ namespace MSGAddIn
 
         private void SetGlobalsForm_Load(object sender, EventArgs e)
         {
-            this.dateTimePickerStartDate.Value = RecordCardStartDate;
+            this.dateTimePickerStartDate.Value =_recordCardStartDate;
             this.textBoxContractCode.Text = ContractCode;
             this.textBoxConstructionSubObjectCode.Text = ConstructionSubObjectCode;
             this.textBoxContructionObjectCode.Text = ContructionObjectCode;
