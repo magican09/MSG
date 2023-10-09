@@ -238,7 +238,7 @@ namespace MSGAddIn
 
         private void btnLoadMSGFile_Click(object sender, RibbonControlEventArgs e)
         {
-            try
+            //try
             {
                 CurrentWorkbook = Globals.ThisAddIn.CurrentActivWorkbook;
                 EmployersWorksheet = CurrentWorkbook.Worksheets["Ответственные"];
@@ -313,9 +313,9 @@ namespace MSGAddIn
                 //    CurrentMSGExellModel.SetFormulas(); 
                 CurrentMSGExellModel.SetStyleFormats();
             }
-            catch (Exception exp)
+            //catch (Exception exp)
             {
-                MessageBox.Show($"Ошибка при зазугрузка данных: {exp.Message}");
+            //    MessageBox.Show($"Ошибка при зазугрузка данных: {exp.Message}");
             }
 
         }

@@ -407,7 +407,7 @@ namespace ExellAddInsLib.MSG
             w_section.Number = number;
       
             var name = registerSheet.Cells[rowIndex, WorksSection.WSEC_NAME_COL].Value;
-            if (!string.IsNullOrEmpty(name))
+            if (name!=null && !string.IsNullOrEmpty(name.ToString()))
                 w_section.Name = name;
             else
                 w_section.SetPropertyValidStatus("Name", false);
@@ -430,7 +430,7 @@ namespace ExellAddInsLib.MSG
             while (null_str_count < SECTIONS_NULL_COUNTER)
             {
                 var number = registerSheet.Cells[rowIndex, WorksSection.WSEC_NUMBER_COL].Value;
-                if (string.IsNullOrEmpty(number)) null_str_count++;
+                if (number==null) null_str_count++;
                 else
                 {
                     null_str_count = 0;
@@ -471,7 +471,7 @@ namespace ExellAddInsLib.MSG
                 msg_work.SetPropertyValidStatus("Name", false); ;
 
             var unit_of_measurement_name = registerSheet.Cells[rowIndex, MSGWork.MSG_MEASURE_COL].Value;
-            if (!string.IsNullOrEmpty(unit_of_measurement_name))
+            if (unit_of_measurement_name!=null && !string.IsNullOrEmpty(unit_of_measurement_name.ToString()))
                 msg_work.UnitOfMeasurement = UnitOfMeasurements.FirstOrDefault(um => um.Name == unit_of_measurement_name.ToString());
             else
                 msg_work.SetPropertyValidStatus("UnitOfMeasurement.Name", false);
