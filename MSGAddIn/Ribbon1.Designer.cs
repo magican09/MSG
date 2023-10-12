@@ -86,6 +86,7 @@
             this.labelConractCode = this.Factory.CreateRibbonLabel();
             this.labelCurrentEmployerName = this.Factory.CreateRibbonLabel();
             this.openMSGTemplateFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.btnDeleteMSGWork = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.groupFileLaod.SuspendLayout();
             this.groupMSGCommon.SuspendLayout();
@@ -263,6 +264,7 @@
             this.menuMSG.Items.Add(this.btnInitMSGContent);
             this.menuMSG.Items.Add(this.btnCopyWorkerComposition);
             this.menuMSG.Items.Add(this.btnCopyMachineComposition);
+            this.menuMSG.Items.Add(this.btnDeleteMSGWork);
             this.menuMSG.Label = "МСГ";
             this.menuMSG.Name = "menuMSG";
             // 
@@ -470,6 +472,13 @@
             // 
             this.openMSGTemplateFileDialog.FileName = "Шаблон МСГ";
             // 
+            // btnDeleteMSGWork
+            // 
+            this.btnDeleteMSGWork.Label = "Удалить";
+            this.btnDeleteMSGWork.Name = "btnDeleteMSGWork";
+            this.btnDeleteMSGWork.ShowImage = true;
+            this.btnDeleteMSGWork.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.btnDeleteMSGWork_Click);
+            // 
             // Ribbon1
             // 
             this.Name = "Ribbon1";
@@ -548,6 +557,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitVOVRContent;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnInitKSContent;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton btnChangeModelGlobals;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton btnDeleteMSGWork;
     }
 
     partial class ThisRibbonCollection

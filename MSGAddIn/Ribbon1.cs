@@ -250,7 +250,7 @@ namespace MSGAddIn
                 CommonWorkConsumptionsWorksheet = CurrentWorkbook.Worksheets["Люди_общая"];
                 CommonMachineConsumptionsWorksheet = CurrentWorkbook.Worksheets["Техника_общая"];
 
-             //   CommonWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
+                //   CommonWorksheet.Visible = XlSheetVisibility.xlSheetHidden;
                 //   this.AddExcellVBAFunctions();
 
                 EmployerMSGWorksheets = new ObservableCollection<Excel.Worksheet>();
@@ -531,7 +531,7 @@ namespace MSGAddIn
         /// <param name="visibility"></param>
         private void SetAllWorksheetsVisibleState(Excel.XlSheetVisibility visibility)
         {
-           // CommonMSGWorksheet.Visible = visibility;
+            // CommonMSGWorksheet.Visible = visibility;
             CommonWorkConsumptionsWorksheet.Visible = visibility;
             EmployersWorksheet.Visible = visibility;
             PostsWorksheet.Visible = visibility;
@@ -1958,7 +1958,7 @@ namespace MSGAddIn
                 if (sg_form.DialogResult == DialogResult.OK && !string.IsNullOrEmpty(sg_form.ContractCode)
                                             && !string.IsNullOrEmpty(sg_form.ContructionObjectCode)
                                             && !string.IsNullOrEmpty(sg_form.ConstructionSubObjectCode))
-                { 
+                {
                     var first_record_card_date = CurrentMSGExellModel.WorkReportCards.Where(rc => rc.Where(wd => wd.Date < sg_form.RecordCardStartDate).FirstOrDefault() != null)
                                                           ?.OrderBy(rc => rc.OrderBy(d => d.Date).First().Date)?.FirstOrDefault()?.FirstOrDefault()?.Date;
 
@@ -1968,7 +1968,7 @@ namespace MSGAddIn
                     CurrentMSGExellModel.ContractCode = sg_form.ContractCode;
                     CurrentMSGExellModel.ContructionObjectCode = sg_form.ContructionObjectCode;
                     CurrentMSGExellModel.ConstructionSubObjectCode = sg_form.ConstructionSubObjectCode;
-                  
+
                     CurrentMSGExellModel.RegisterSheet.Cells[WorkReportCard.WRC_DATE_ROW, WorkReportCard.WRC_DATE_COL].Value = CurrentMSGExellModel.RecordCardStartDate.ToString("d"); ;
                     CurrentMSGExellModel.WorkerConsumptionsSheet.Cells[WorkerConsumption.W_CONSUMPTIONS_DATE_RAW, WorkerConsumption.W_CONSUMPTIONS_FIRST_DATE_COL].Value = CurrentMSGExellModel.RecordCardStartDate.ToString("d");
                     CurrentMSGExellModel.MachineConsumptionsSheet.Cells[MachineConsumption.MCH_CONSUMPTIONS_DATE_RAW, MachineConsumption.MCH_CONSUMPTIONS_FIRST_DATE_COL].Value = CurrentMSGExellModel.RecordCardStartDate.ToString("d");
@@ -1994,6 +1994,39 @@ namespace MSGAddIn
 
 
 
+        }
+
+        private void btnDeleteMSGWork_Click(object sender, RibbonControlEventArgs e)
+        {
+            try
+            {
+                var selection = (Excel.Range)Globals.ThisAddIn.Application.Selection;
+                var sected_objects = CurrentMSGExellModel.GetObjectsBySelection(selection, typeof(MSGWork)).Where(ob => !CopyedObjectsList.Contains(ob));
+                if (sected_objects != null)
+                {
+                    var dialog_result = MessageBox.Show($"Вы действиетльно удалить работы?!", "Удаление..", MessageBoxButtons.YesNo);
+                    if (dialog_result == DialogResult.Yes)
+                    {
+                        foreach (var obj in sected_objects)
+                        {
+                            var msg_work = obj as MSGWork;
+                            var section = msg_work.Owner as WorksSection;
+                            section.MSGWorks.Remove(msg_work);
+                        }
+                        CurrentMSGExellModel.ClearWorksheetAll();
+                        CurrentMSGExellModel.UpdateExcelRepresetation();
+
+                        CurrentMSGExellModel.SetStyleFormats();
+                        commands_group_label = "";
+                    }
+                }
+
+            }
+            catch
+
+            {
+
+            }
         }
     }
 

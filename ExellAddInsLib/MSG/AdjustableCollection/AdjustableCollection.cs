@@ -62,8 +62,38 @@ namespace ExellAddInsLib.MSG
         }
         protected override void RemoveItem(int index)
         {
+            T item = this[index];
 
-            base.RemoveItem(index);
+            if (this.Count>1 && item.Number != null && this.Owner != null)
+            {
+                item.Owner = this.Owner;
+                var _subsequent_items = this.Where(itm => this.IndexOf(itm) >= index).ToList();
+                var _previous_items = this.Where(itm => this.IndexOf(itm) < index).ToList();
+                if (index == this.Count - 1 && _subsequent_items.Count > 0)
+                {
+                    _previous_items.Add(_subsequent_items[0]);
+                    _subsequent_items.Remove(_subsequent_items[0]);
+                }
+
+                int item_suffix_num = _previous_items.Count + 1;
+
+                string[] item_prefix_numbers = { };
+
+                if (item.NumberPrefix != null)
+                    item_prefix_numbers = item.NumberPrefix.Split('.');
+
+                item_suffix_num-=2;
+                foreach (T itm in _subsequent_items)
+                {
+                    item_suffix_num++;
+                    int subsq_itm_indx = 0;
+                    foreach (string num in item_prefix_numbers)
+                        itm.SetNumberItem(subsq_itm_indx++, num);
+                    itm.SetNumberItem(subsq_itm_indx, (item_suffix_num).ToString());
+                }
+            }
+
+                base.RemoveItem(index);
         }
     }
 }
