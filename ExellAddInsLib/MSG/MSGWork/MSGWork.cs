@@ -190,10 +190,10 @@ namespace ExellAddInsLib.MSG
             try
             {
 
-              
+
                 int top_row = this.GetTopRow();
                 int msg_last_row = this.GetLastRow();
-                var msg_work_full_range  = Worksheet.Range[Worksheet.Rows[top_row+1], Worksheet.Rows[msg_last_row + _MSG_WORKS_GAP]];
+                var msg_work_full_range = Worksheet.Range[Worksheet.Rows[top_row + 1], Worksheet.Rows[msg_last_row + _MSG_WORKS_GAP]];
 
                 //  var vovrs_range = msg_work.VOVRWorks.RowsRange();
                 //  var ks_range = msg_work.VOVRWorks.RowsRange();
@@ -211,7 +211,7 @@ namespace ExellAddInsLib.MSG
 
         public override Range GetRange()
         {
-          
+
             Excel.Range base_range = base.GetRange();
             Excel.Range w_schedules_works_range = this.WorkSchedules.GetRange();
             Excel.Range range = Worksheet.Application.Union(new List<Excel.Range>() { base_range, w_schedules_works_range });
@@ -247,11 +247,17 @@ namespace ExellAddInsLib.MSG
             }
             var curent_work_laboriousness = this.Laboriousness * this.ProjectQuantity;
             bool is_valid = Math.Round(vovr_laboriosness_sum, 3) == Math.Round(curent_work_laboriousness, 3);
+
+
             foreach (var vovr_work in this.VOVRWorks)
             {
-                vovr_work.SetPropertyValidStatus("Laboriousness", is_valid);
-                vovr_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
-                vovr_work.IsValid = is_valid;
+                if (vovr_work.KSWorks.Count > 0)
+                {
+                    vovr_work.SetPropertyValidStatus("Laboriousness", is_valid);
+                    vovr_work.SetPropertyValidStatus("ProjectQuantity", is_valid);
+                    vovr_work.IsValid = is_valid;
+                }
+
             }
 
 
@@ -265,7 +271,7 @@ namespace ExellAddInsLib.MSG
             {
                 MSGWork msg_work = this;
                 VOVRWork vovr_work = new VOVRWork();
-                  int rowIndex = msg_work["Number"].Row;
+                int rowIndex = msg_work["Number"].Row;
                 model.Register(vovr_work, "Number", rowIndex, VOVRWork.VOVR_NUMBER_COL, model.RegisterSheet);
                 model.Register(vovr_work, "Name", rowIndex, VOVRWork.VOVR_NAME_COL, model.RegisterSheet);
                 model.Register(vovr_work, "ProjectQuantity", rowIndex, VOVRWork.VOVR_QUANTITY_COL, model.RegisterSheet);

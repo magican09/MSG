@@ -169,7 +169,7 @@ namespace ExellAddInsLib.MSG
             }
             catch (Exception e)
             {
-                throw new Exception($"{e.Message}\nЯчейка:   {Cell.RangeAddress()}\nСтрока:{this.Row} Столбец: {this.Column} \n Свойство:{value.PropertyName} Корректность записи:{value.PropertyIsValid}"); ;
+               throw new Exception($"{e.Message}\nЯчейка:   {Cell.RangeAddress()}\nСтрока:{this.Row} Столбец: {this.Column} \n Свойство:{value.PropertyName} Корректность записи:{value.PropertyIsValid}"); ;
             }
 
         }

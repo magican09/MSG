@@ -611,6 +611,7 @@ namespace ExellAddInsLib.MSG
         }
         public virtual void Validate()
         {
+            if(this.Count>0)
             foreach (var item in this)
                 item.Validate();
         }

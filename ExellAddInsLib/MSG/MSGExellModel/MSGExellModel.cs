@@ -792,7 +792,6 @@ namespace ExellAddInsLib.MSG
             this.Register(vovr_work, "UnitOfMeasurement.Name", rowIndex, VOVRWork.VOVR_MEASURE_COL, this.RegisterSheet);
 
             vovr_work.Number = number;
-
             //  if (this.VOVRWorks.FirstOrDefault(w => w.Number == vovr_work.Number) != null && this.Owner == null)
             //   vovr_work.CellAddressesMap["Number"].IsValid = false;
 
@@ -822,8 +821,8 @@ namespace ExellAddInsLib.MSG
             var labouriosness = registerSheet.Cells[rowIndex, VOVRWork.VOVR_LABOURNESS_COL].Value;
             if (labouriosness != null)
                 vovr_work.Laboriousness = Decimal.Parse(labouriosness.ToString());
-            else
-                vovr_work.SetPropertyValidStatus("Laboriousness", false);
+            //else
+            //    vovr_work.SetPropertyValidStatus("Laboriousness", false);
 
             if (!this.VOVRWorks.Contains(vovr_work))
                 this.VOVRWorks.Add(vovr_work);
