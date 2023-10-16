@@ -315,7 +315,7 @@ namespace MSGAddIn
             }
             catch (Exception exp)
             {
-                MessageBox.Show($"Ошибка при зазугрузка данных: {exp.Message}");
+                MessageBox.Show($"Ошибка при загрузке данных:\n {exp.Message}");
             }
 
         }

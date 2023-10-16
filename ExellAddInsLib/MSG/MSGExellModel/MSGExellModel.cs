@@ -1810,6 +1810,8 @@ namespace ExellAddInsLib.MSG
             {
                 // consumption.GetRange(this.WorkerConsumptionsSheet).Interior.ColorIndex = w_consumption_col++;
                 int days_namber = (this.WorksEndDate - this.RecordCardStartDate).Days;
+                if (this.WorksEndDate == DateTime.MinValue)
+                    throw new Exception($"Нет возможности определить общую длительность работ!\n Возможно это связанно с тем, что нет ни одной работы с проставленными сроками выполнения!");
                 Excel.Range cons_range = this.WorkerConsumptionsSheet.Range[
                     this.WorkerConsumptionsSheet.Cells[consumption.GetTopRow(), WorkerConsumption.W_CONSUMPTIONS_NUMBER_COL],
                     this.WorkerConsumptionsSheet.Cells[consumption.GetTopRow(), days_namber]];
